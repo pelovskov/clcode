@@ -1,5 +1,5 @@
 # clcode
-Det er en fornuftig plan. Et nyt repo ved siden af dit gamle setup betyder, at du kan eksperimentere uden risiko.
+Det er en fornuftig plan. Et nyt repo ved siden af dit gamle setup betyder, at du kan eksperimentere uden risiko. 
 
 **Køreplan**
 
