@@ -625,7 +625,8 @@ const state = {
   ctaText:'', ctaUrl:'',
   homeMode:'auto', homeLabel:'', homeUrl:'',
   visGem:true, visOmFil:true,
-  taellerBlock:''
+  taellerBlock:'',
+  favicon:'', faviconFor:''
 };
 
 // Hvert billede: {id, title, description, alt, src, pending, originalBytes, storedBytes, note, origName, takenTime}
@@ -638,8 +639,8 @@ const DC_FIELDS = ['title','creator','subject','description','publisher','contri
   'date','type','format','identifier','source','language','relation','coverage','rights'];
 
 const DC_LABELS = {
-  title:'Titel', creator:'Ophav', subject:'Emne', description:'Beskrivelse',
-  publisher:'Udgiver', contributor:'Bidragyder', date:'Dato', type:'Type',
+  title:'Titel', creator:'Ophav / skaber', subject:'Emne / nøgleord', description:'Beskrivelse',
+  publisher:'Udgiver / område', contributor:'Bidragyder', date:'Dato', type:'Type',
   format:'Format', identifier:'Identifikator', source:'Kilde', language:'Sprog',
   relation:'Relation', coverage:'Dækning', rights:'Rettigheder'
 };
@@ -1002,7 +1003,7 @@ function buildAlbumHTML(s, isPreview){
 + (ogDesc ? '<meta property="og:description" content="' + escapeHtml(ogDesc) + '">\n' : '')
 + (share ? '<meta property="og:image" content="' + escapeHtml(share) + '">\n<meta name="twitter:card" content="summary_large_image">\n' : '')
 + dcMeta + '\n'
-+ (ready.length ? '<link rel="icon" href="' + ready[0].src + '">\n' : '')
++ ((ready.length && s.faviconFor === ready[0].src) ? '<link rel="icon" href="' + s.favicon + '">\n' : '')
 + '<script type="application/json" id="builder-source-data">' + safeJson(sourceData) + '<\/script>\n'
 + '<style>\n'
 + ':root{\n'
@@ -1153,6 +1154,44 @@ function loadBitmap(file, cb){
     } catch(e){ /* falder igennem */ }
   }
   fallback();
+}
+
+function loadImage(src){
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error('Billedet kunne ikke vises'));
+    img.src = src;
+  });
+}
+
+// Lille ikon til browserfanen (64 px, firkantet), så billedet ikke ligger i filen to gange.
+function makeIcon(img){
+  const w = img.naturalWidth || img.width, h = img.naturalHeight || img.height;
+  const side = Math.min(w, h);
+  const c = document.createElement('canvas');
+  c.width = 64; c.height = 64;
+  const k = c.getContext('2d');
+  k.imageSmoothingQuality = 'high';
+  k.drawImage(img, Math.round((w - side) / 2), Math.round((h - side) / 2), side, side, 0, 0, 64, 64);
+  return c.toDataURL('image/jpeg', 0.8);
+}
+
+function firstReadyImage(){
+  return images.find(x => !x.pending && x.src);
+}
+
+// Sørger for, at ikonet passer til det første billede i albummet.
+async function ensureIcon(){
+  const first = firstReadyImage();
+  if (!first){ state.favicon = ''; state.faviconFor = ''; return; }
+  if (state.faviconFor === first.src) return;
+  try {
+    state.favicon = makeIcon(await loadImage(first.src));
+    state.faviconFor = first.src;
+  } catch(e){
+    state.favicon = ''; state.faviconFor = '';
+  }
 }
 
 function processImageFile(file){
@@ -1378,6 +1417,8 @@ function makeField(labelText, el, id){
 }
 
 function render(){
+  const iconWas = state.faviconFor;
+  ensureIcon().then(() => { if (state.faviconFor !== iconWas) renderPreview(); });
   const grid = $('grid');
   grid.innerHTML = '';
   const waiting = pendingCount();
@@ -1598,8 +1639,9 @@ $('metaJsonBtn').addEventListener('click', () => {
   showMsg('Metadatafilen er downloadet.', 'ok');
 });
 
-$('generateBtn').addEventListener('click', () => {
+$('generateBtn').addEventListener('click', async () => {
   try {
+    await ensureIcon();
     readForm();
     syncAutoDc();
     if (!images.length){ showMsg('Tilføj mindst ét billede, før du genererer albummet.', 'err'); return; }
