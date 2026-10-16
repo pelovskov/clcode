@@ -50,4 +50,3 @@ Efter en ændring skal du beskrive, hvordan jeg selv kan afprøve den i browsere
 
 <!-- Tilføj løbende nye regler her, når du opdager noget, Claude bør huske. -->
 
-werewr 
