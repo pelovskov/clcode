@@ -474,7 +474,8 @@ const state = {
   infoBtnText:'', infoContent:'',
   homeMode:'auto', homeLabel:'', homeUrl:'',
   visGem:true, visOmFil:true,
-  taellerBlock:''
+  taellerBlock:'',
+  favicon:'', faviconFor:''
 };
 
 /* ---------- Dublin Core ---------- */
@@ -483,8 +484,8 @@ const DC_FIELDS = ['title','creator','subject','description','publisher','contri
   'date','type','format','identifier','source','language','relation','coverage','rights'];
 
 const DC_LABELS = {
-  title:'Titel', creator:'Ophav', subject:'Emne', description:'Beskrivelse',
-  publisher:'Udgiver', contributor:'Bidragyder', date:'Dato', type:'Type',
+  title:'Titel', creator:'Ophav / skaber', subject:'Emne / nøgleord', description:'Beskrivelse',
+  publisher:'Udgiver / område', contributor:'Bidragyder', date:'Dato', type:'Type',
   format:'Format', identifier:'Identifikator', source:'Kilde', language:'Sprog',
   relation:'Relation', coverage:'Dækning', rights:'Rettigheder'
 };
@@ -606,6 +607,44 @@ function compressImage(file, maxDim, quality){
     };
     reader.readAsDataURL(file);
   });
+}
+
+function loadImage(src){
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error('Billedet kunne ikke vises'));
+    img.src = src;
+  });
+}
+
+// Lille ikon til browserfanen (64 px, firkantet), så billedet ikke ligger i filen to gange.
+function makeIcon(img){
+  const w = img.naturalWidth || img.width, h = img.naturalHeight || img.height;
+  const side = Math.min(w, h);
+  const c = document.createElement('canvas');
+  c.width = 64; c.height = 64;
+  const k = c.getContext('2d');
+  k.imageSmoothingQuality = 'high';
+  k.drawImage(img, Math.round((w - side) / 2), Math.round((h - side) / 2), side, side, 0, 0, 64, 64);
+  return c.toDataURL('image/jpeg', 0.8);
+}
+
+function firstPageImage(s){
+  return s.top.concat(s.gallery).find(im => im.data);
+}
+
+// Sørger for, at ikonet passer til det første billede på siden.
+async function ensureIcon(){
+  const first = firstPageImage(state);
+  if (!first){ state.favicon = ''; state.faviconFor = ''; return; }
+  if (state.faviconFor === first.data) return;
+  try {
+    state.favicon = makeIcon(await loadImage(first.data));
+    state.faviconFor = first.data;
+  } catch(e){
+    state.favicon = ''; state.faviconFor = '';
+  }
 }
 
 function fileToDataURL(file){
@@ -888,8 +927,8 @@ function buildPageHTML(s, isPreview){
 
   const ogDesc = stripMdToPlain(s.subtitle, 200) || stripMdToPlain(s.articleText, 200);
   const shareUrl = (s.shareImage || '').trim();
-  const firstImg = s.top.concat(s.gallery).find(im => im.data);
-  const iconSrc = firstImg ? firstImg.data : '';
+  const firstImg = firstPageImage(s);
+  const iconSrc = (firstImg && s.faviconFor === firstImg.data) ? s.favicon : '';
   const taellerBlock = (s.taellerBlock && !isPreview) ? '\n' + s.taellerBlock + '\n' : '';
 
   return '<!DOCTYPE html>\n<html lang="' + escapeHtml(pageLang) + '">\n<head>\n'
@@ -1263,6 +1302,7 @@ function hookImage(inputId, statusId, assign){
     try {
       const data = await compressImage(file, 1600, 0.82);
       assign(data);
+      ensureIcon().then(renderPreview);
       const kb = Math.round(data.length * 0.75 / 1024);
       $(statusId).textContent = 'Billede klar (~' + kb + ' KB)';
       $(statusId).className = 'status';
@@ -1461,6 +1501,7 @@ $('loadPage').addEventListener('change', async (e) => {
       + (publisherFixed ? ' · udgiveren "' + publisherFixed + '"' : '');
     $('loadStatus').className = 'status';
     renderPreview();
+    ensureIcon().then(renderPreview);
   } catch(err){
     $('loadStatus').textContent = 'Fejl ved indlæsning: ' + err.message;
     $('loadStatus').className = 'status pending';
@@ -1497,10 +1538,11 @@ $('metaJsonBtn').addEventListener('click', () => {
   msg.className = 'msg ok';
 });
 
-$('generateBtn').addEventListener('click', () => {
+$('generateBtn').addEventListener('click', async () => {
   const msg = $('msgBox');
   try {
     readForm();
+    await ensureIcon();
     syncAutoDc();
     const html = buildPageHTML(state, false);
     downloadBlob(html, 'text/html', slugify(state.title, 'side') + '.html');
