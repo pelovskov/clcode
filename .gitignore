@@ -1,0 +1,12 @@
+# Macens skjulte systemfiler
+.DS_Store
+
+# Søgeindeks · Online (sbtv): adgangskoder og driftsdata hører til på serveren, ikke i repoet.
+# Repoet er offentligt. Brug sbtv/config-eksempel.php som skabelon til config.php.
+sbtv/config.php
+sbtv/data/*
+!sbtv/data/.htaccess
+!sbtv/data/foreninger.json
+!sbtv/data/grafik/
+sbtv/filer/*
+!sbtv/filer/.htaccess

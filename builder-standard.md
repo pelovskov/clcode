@@ -1,7 +1,7 @@
 # Builder-standard
 
 **Fælles specifikation for værktøjskassen**
-Version 2.0 · oktober 2026
+Version 2.1 · oktober 2026
 
 Referenceimplementering: **Sidebygger** (`side-bygger.html`, version 1.5).
 Når noget er i tvivl, er det referencefilen der gælder.
@@ -40,6 +40,10 @@ Piwigo Albumbygger afviger bevidst på ét punkt: den kører ikke lokalt uden se
 Vejledningsbygger og PWA · Bygger afviger bevidst på enkelte punkter, fordi de ikke laver indhold på samme måde som de andre. Afvigelserne skal stå i appens egen beskrivelse.
 
 Metadata-hjælper laver ingen outputfil og har derfor hverken temaer, forhåndsvisning af en side, indlæsning eller afsnit 5. Den følger standarden for builderens udseende (afsnit 2 og 3), `PUBLISHERS`, dc.type-listen og de 15 felter i afsnit 4.
+
+Søgeside · Bygger (`tools/soegeside-bygger.html`, v1.2) og Søgeindeks · Online (`sbtv/`, den samme søgeside med login, upload og administration på et webhotel med PHP) er værktøjer, ikke byggere. De læser metadata fra byggernes filer (`builder-source-data` med de 15 Dublin Core-felter), men laver ikke selv en fil efter afsnit 5 og har derfor hverken temaer, Dublin Core-panel eller byggernes udseende. De følger standarden på disse punkter: `?hjem=` sendes med til filerne (5.3), `dc.publisher` vises som *Område* med valget **Uden område** (4.1), og en henvisning kendes på sin `link` og vises med 🔗, uanset `dc.type`. Kun `http(s)`-adresser bliver til links.
+
+Søgeindeks · Online lægger aldrig `config.php` og `data/` i repoet. Repoet er offentligt, og de to dele indeholder adgangskoder og driftsdata. Brug `sbtv/config-eksempel.php` som skabelon.
 
 Ældre filer, der er lavet før en bygger blev bragt i overensstemmelse med standarden, laves om i den nye bygger. Byggerne skal ikke bære rundt på kode til at forstå gamle formater.
 
@@ -331,6 +335,8 @@ Hver genereret fil indeholder en JSON-blok, der gør filen redigerbar igen:
 
 Knaptekst (standard "Hjem") og adresse (standard `index.html`) kan ændres. En adresse i URL'en (`?hjem=…`) går forud for den indbyggede, og knappen vises så altid. I forhåndsvisningen vises knappen altid.
 
+**Adressen i `?hjem=` skal kontrolleres.** Den må kun være en relativ adresse (fx `soegeside.html?q=lyd`) eller begynde med `http://` eller `https://`. Alt andet, fx `javascript:` og `data:`, ignoreres, som om der ikke stod noget. Mellemrum, tabulator og andre styretegn fjernes først, fordi browsere ser bort fra dem i en adresse. Ellers kunne et fabrikeret link få knappen til at køre kode på sitet. Det gælder alle byggere og er kontrolleret i dem alle.
+
 Det er sådan en samling fører tilbage til sig selv: Samling · Bygger sender sit eget filnavn med i linket til hver fil (`historie.html?hjem=samling.html`). Filerne skal derfor ikke laves om for at kunne indgå i en samling, men alle byggere skal læse `?hjem=` som beskrevet her. En samlings egen hjem-knap i "Automatisk" vises ikke, når man kommer tilbage fra en af samlingens egne filer.
 
 ### 5.4 Nederst i filen
@@ -482,6 +488,7 @@ Regler:
 - [ ] `builder-source-data` med format, builderVersion og theme
 - [ ] Temaet som CSS-variabler i `:root`, med mørk tilstand
 - [ ] Hjem-knap med Automatisk / Altid / Aldrig, og `?hjem=` i adressen går forud
+- [ ] `?hjem=` accepterer kun relative og `http(s)`-adresser (5.3)
 - [ ] "Gem filen" gemmer en ren kopi
 - [ ] "Gem filen" og "Om denne fil" kan slås fra
 - [ ] Skriftstørrelse og op-pil (på lange sider)
@@ -588,6 +595,12 @@ Udgiverlisten i prompten skal altid svare til `PUBLISHERS` i 4.1. Kommer der en 
 ---
 
 ## 12. Ændringslog
+
+**Version 2.1 — oktober 2026.**
+- Afsnit 5.3 og tjeklisten: `?hjem=` skal kontrolleres. Kun relative adresser og `http(s)` er tilladt; `javascript:`, `data:` og lignende ignoreres. Før blev adressen sat direkte på Hjem-knappen. Rettet i alle ni byggere. Allerede færdige filer har den gamle kode og skal laves om for at få rettelsen.
+- Afsnit 1: Søgeside · Bygger (v1.2) og Søgeindeks · Online er beskrevet som værktøjer og skriver, hvilke dele af standarden de følger.
+- Søgeside · Bygger v1.2 og Søgeindeks · Online: henvisninger vises med 🔗 efter deres `link` (ikke efter `dc.type`), kun `http(s)`-adresser bliver til links, og valget uden udgiver hedder **Uden område**.
+- Søgeindeks · Online: udgiveren for Røde Kors i `foreninger.json` er rettet til `Røde Kors`, som i `PUBLISHERS`. `config.php` og driftsdata er fjernet fra repoet, og `config-eksempel.php` er kommet til. Den ubrugte kopi `_faelles.php` er slettet.
 
 **Version 2.0 — oktober 2026.** Indholdet er som i 1.9; det er filnavnene, der er ensrettet.
 - Alle byggere hedder nu `navn-bygger.html`: `side-bygger.html` (før `sidebygger-hs.html`), `album-bygger.html` (før `albumbygger-dc-v3.html`), `bog-bygger.html` (før `bogbygger.html`), `enkeltbillede-bygger.html` (før `enkeltbillede-dc-v3.html`), `samling-bygger.html` (før `samlingsbygger.html`) og `piwigo-album-bygger.html` (før `piwigo-albumbygger.html`). `henvisning-bygger.html`, `lydfortaelling-bygger.html` og `mediekort-bygger.html` hed allerede sådan.

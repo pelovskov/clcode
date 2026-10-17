@@ -6,7 +6,9 @@
 <title>Søgeside · Bygger</title>
 <style>
 /* ---------------------------------------------------------------
-   Søgeside · Bygger — version 1.1 (okt. 2026)
+   Søgeside · Bygger — version 1.2 (okt. 2026)
+   1.2: henvisninger får altid 🔗-ikonet, kun http(s)-adresser bliver til links,
+        og "Uden område" hedder som i Builder-standard 4.1.
    1.1: links til egne filer får ?hjem=soegeside.html med og åbnes i
         samme faneblad, så Hjem-knappen virker – også lokalt og på USB.
    Bygger en søgeside ud af en mappe med singlefile-HTML-filer.
@@ -514,7 +516,7 @@ Array.from(omrSeen).sort((a,b)=>a.localeCompare(b,"da")).forEach(p=>{
 });
 if(udenOmraade){
   const o=document.createElement("option");
-  o.value="__uden__"; o.textContent="(uden udgiver — " + udenOmraade + ")";
+  o.value="__uden__"; o.textContent="Uden område (" + udenOmraade + ")";
   omrSel.appendChild(o);
 }
 
@@ -599,7 +601,7 @@ function render(){
     }
 
     const icon=document.createElement("span");
-    icon.className="icon"; icon.textContent = ICONS[r.type]||"📄";
+    icon.className="icon"; icon.textContent = r.link ? "🔗" : (ICONS[r.type]||"📄");
     icon.setAttribute("aria-hidden","true");
 
     const main=document.createElement("span");
@@ -707,7 +709,7 @@ async function laesPost(navn, file){
      så gamle og nye filer kan ligge i samme mappe. */
   const dc = (data && (data.dublinCore || data.dc)) || {};
   const post = {filnavn: navn,
-                link: String((data && data.link) || "").trim(),
+                link: /^https?:\/\//i.test(String((data && data.link) || "").trim()) ? String(data.link).trim() : "",
                 appformat: (data && (data.format || data.builder)) || ""};
   DC_FIELDS.forEach(f => post[f] = String(dc[f] || "").trim());
   if (!post.title) post.title = navn.replace(/\.html?$/i, "");

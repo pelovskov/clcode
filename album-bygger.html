@@ -573,6 +573,7 @@ figure{margin:0;}
     function show(){ bar.classList.add("show"); }
     var fromUrl = null;
     try { var p = new URLSearchParams(location.search); fromUrl = p.get("hjem") || p.get("home"); } catch(e){}
+    if (fromUrl){ var _c = ""; for (var _i = 0; _i < fromUrl.length; _i++){ if (fromUrl.charCodeAt(_i) > 32) _c += fromUrl.charAt(_i); } if (/^[a-z][a-z0-9+.-]*:/i.test(_c) && !/^https?:/i.test(_c)) fromUrl = null; }
     if (fromUrl){ target = fromUrl; }
     link.setAttribute("href", target);
     if (mode === "always" || fromUrl){ show(); }

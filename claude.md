@@ -42,6 +42,11 @@ Efter en ændring skal du beskrive, hvordan jeg selv kan afprøve den i browsere
 - Hver builder får, når det er relevant, sin egen korte beskrivelse i `README.md`.
 - Dokumentation skrives i Markdown.
 
+## Sikkerhed
+
+- Repoet er **offentligt**. Læg aldrig adgangskoder, hashes, nøgler, logfiler eller driftsdata fra serveren i det (fx `sbtv/config.php` og `sbtv/data/`). Brug eksempelfiler uden rigtige værdier.
+- Tag imod adresser fra brugere (fx `?hjem=`) med forsigtighed: kun relative adresser og `http(s)` er tilladt, aldrig `javascript:` eller `data:`.
+
 ## Ting jeg er særligt optaget af
 
 - At resultatet kan bruges af mennesker, der ikke er vant til it.

@@ -21,7 +21,10 @@ singlefile-HTML fra Byggerne, henvisninger og videokort.
 
 ## Sådan sætter du det op
 
-1. Læg hele mappen op på webhotellet, fx i `/arkiv/`.
+1. Læg hele mappen op på webhotellet, fx i `/arkiv/`. Kopiér `config-eksempel.php` til
+   `config.php` på webhotellet. Selve `config.php` med adgangskoderne ligger **ikke** i
+   repoet, fordi det er offentligt. Det samme gælder `data/` (indeks, log og login-forsøg),
+   som serveren selv opretter og fylder.
 2. Åbn `https://ditdomæne.dk/arkiv/lav-hash.php`, skriv brugernavn og adgangskode,
    og kopiér den linje, du får.
 3. Sæt linjen ind i `config.php` under `$BRUGERE`. Gentag for hver bruger.
