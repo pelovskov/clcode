@@ -1,7 +1,7 @@
 # Builder-standard
 
 **Fælles specifikation for værktøjskassen**
-Version 1.8 · oktober 2026
+Version 1.9 · oktober 2026
 
 Referenceimplementering: **Sidebygger** (`sidebygger-hs.html`, version 1.5).
 Når noget er i tvivl, er det referencefilen der gælder.
@@ -29,9 +29,9 @@ Værktøjskassen består af flere små, uafhængige builder-apps:
 | PWA · Bygger | samler færdige filer til en app til hjemmeskærmen | afklares |
 | Metadata-hjælper | ingen fil; laver en AI-prompt til Dublin Core og kontrollerer svaret (se afsnit 11) | - |
 
-Bragt i overensstemmelse med standarden: Sidebygger (v1.5), Album · Bygger (v3.0, `albumbygger-dc-v3.html`, følger 1.2), Præsentation · Bygger (v1.0, `praesentation-bygger.html`, følger 1.4), Samling · Bygger (v2.0, `samlingsbygger.html`, følger 1.5), Mediekort · Bygger (v1.2, `mediekort-bygger.html`, følger 1.6), Piwigo Albumbygger (v2.0, `piwigo-albumbygger.html`, følger 1.6) og Henvisning · Bygger (v2.0, `henvisning-bygger.html`, følger 1.8).
+Bragt i overensstemmelse med standarden: Sidebygger (v1.5), Album · Bygger (v3.0, `albumbygger-dc-v3.html`, følger 1.2), Præsentation · Bygger (v1.0, `praesentation-bygger.html`, følger 1.4), Samling · Bygger (v2.0, `samlingsbygger.html`, følger 1.5), Mediekort · Bygger (v1.2, `mediekort-bygger.html`, følger 1.6), Piwigo Albumbygger (v2.0, `piwigo-albumbygger.html`, følger 1.6), Henvisning · Bygger (v2.0, `henvisning-bygger.html`, følger 1.8), Bogbygger (v4.0, `bogbygger.html`, følger 1.9) og Lydfortælling · Bygger (v4.0, `lydfortaelling-bygger.html`, følger 1.9).
 
-Den Talende Booklet er udgået. Dens opgave, ét billede med lyd og tekst, løses nu af Mediekort · Bygger med typen **Talende billede**.
+Den Talende Booklet er udgået. Dens opgave, ét billede med lyd og tekst, løses nu af Mediekort · Bygger med typen **Talende billede**. Lydfortælling · Bygger består dog som den enkle udgave til dem, der kun skal bruge ét billede, lyd og tekst.
 
 De løser hver sin opgave, men skal se ens ud, opføre sig ens og producere filer med samme metadata-struktur. Det er kun de dele, dette dokument beskriver. Alt andet må gerne være appspecifikt.
 
@@ -586,6 +586,11 @@ Udgiverlisten i prompten skal altid svare til `PUBLISHERS` i 4.1. Kommer der en 
 ---
 
 ## 12. Ændringslog
+
+**Version 1.9 — oktober 2026.**
+- Bogbygger (v4.0, `bogbygger.html`, tidligere `bogbygger-v4.html`) og Lydfortælling · Bygger (v4.0, `lydfortaelling-bygger.html`, tidligere `lyd-fort-gen-dc-v4.html`) er bragt i overensstemmelse med standarden og står i listen over byggere, der følger den.
+- Afsnit 1: Lydfortælling · Bygger består som den enkle udgave ved siden af Mediekort · Bygger.
+- Bogbygger og Lydfortælling · Bygger laver nu et lille ikon til `<link rel="icon">`, som i afsnit 5.2, så forsiden og billedet ikke ligger to gange i filen. Lydfortælling · Bygger viser desuden de fulde Dublin Core-labels i panelet Om denne fil.
 
 **Version 1.8 — oktober 2026.**
 - Henvisning · Bygger (v2.0, `henvisning-bygger.html`, tidligere `henvisning-gen-dc-v2.html`) er bragt i overensstemmelse med standarden og står i listen over byggere, der følger den.

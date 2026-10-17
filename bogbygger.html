@@ -376,7 +376,8 @@ const state = {
   ctas:[{text:'',url:''},{text:'',url:''},{text:'',url:''}],
   homeMode:'auto', homeLabel:'', homeUrl:'',
   visGem:true, visOmFil:true,
-  taellerBlock:''
+  taellerBlock:'',
+  favicon:'', faviconFor:''
 };
 
 /* ---------- Dublin Core ---------- */
@@ -811,7 +812,7 @@ function buildBookHTML(s, isPreview){
 + '<meta property="og:title" content="' + escapeHtml(pageTitle) + '">\n'
 + (ogDesc ? '<meta property="og:description" content="' + escapeHtml(ogDesc) + '">\n' : '')
 + (shareUrl ? '<meta property="og:image" content="' + escapeHtml(shareUrl) + '">\n<meta name="twitter:card" content="summary_large_image">\n' : '')
-+ (s.coverData ? '<link rel="icon" href="' + s.coverData + '">\n' : '')
++ ((s.coverData && s.faviconFor === s.coverData) ? '<link rel="icon" href="' + s.favicon + '">\n' : '')
 + dcMeta + '\n'
 + '<script type="application/json" id="builder-source-data">' + sourceJson + '<\/script>\n'
 + '<style>\n'
@@ -1185,7 +1186,47 @@ function checkReady(){
 // Felter, Dublin Core og størrelse opdateres med det samme. Selve rammen tegnes
 // med en kort forsinkelse, så skrivningen ikke bliver tung i lange manuskripter.
 let frameTimer = null;
+function loadImage(src){
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error('Billedet kunne ikke vises'));
+    img.src = src;
+  });
+}
+
+// Lille ikon til browserfanen (64 px, firkantet), så billedet ikke ligger i filen to gange.
+function makeIcon(img){
+  const w = img.naturalWidth || img.width, h = img.naturalHeight || img.height;
+  const side = Math.min(w, h);
+  const c = document.createElement('canvas');
+  c.width = 64; c.height = 64;
+  const k = c.getContext('2d');
+  k.imageSmoothingQuality = 'high';
+  k.drawImage(img, Math.round((w - side) / 2), Math.round((h - side) / 2), side, side, 0, 0, 64, 64);
+  return c.toDataURL('image/jpeg', 0.8);
+}
+
+// Sørger for, at ikonet passer til forsiden. Giver true, hvis ikonet er ændret.
+async function ensureIcon(){
+  const src = state.coverData;
+  if (!src){
+    const changed = !!state.favicon;
+    state.favicon = ''; state.faviconFor = '';
+    return changed;
+  }
+  if (state.faviconFor === src) return false;
+  try {
+    state.favicon = makeIcon(await loadImage(src));
+    state.faviconFor = src;
+  } catch(e){
+    state.favicon = ''; state.faviconFor = '';
+  }
+  return true;
+}
+
 function renderPreview(){
+  ensureIcon().then(changed => { if (changed) renderPreview(); });
   readForm();
   syncAutoDc();
   updateSizeBar();
@@ -1424,9 +1465,10 @@ $('metaJsonBtn').addEventListener('click', () => {
   msg.className = 'msg ok';
 });
 
-$('generateBtn').addEventListener('click', () => {
+$('generateBtn').addEventListener('click', async () => {
   const msg = $('msgBox');
   try {
+    await ensureIcon();
     readForm();
     syncAutoDc();
     const html = buildBookHTML(state, false);

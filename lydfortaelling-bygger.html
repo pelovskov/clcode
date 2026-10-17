@@ -365,7 +365,8 @@ const state = {
   ctaText:'', ctaUrl:'',
   homeMode:'auto', homeLabel:'', homeUrl:'',
   visGem:true, visOmFil:true,
-  taellerBlock:''
+  taellerBlock:'',
+  favicon:'', faviconFor:''
 };
 
 /* ---------- Dublin Core ---------- */
@@ -374,8 +375,8 @@ const DC_FIELDS = ['title','creator','subject','description','publisher','contri
   'date','type','format','identifier','source','language','relation','coverage','rights'];
 
 const DC_LABELS = {
-  title:'Titel', creator:'Ophav', subject:'Emne', description:'Beskrivelse',
-  publisher:'Udgiver', contributor:'Bidragyder', date:'Dato', type:'Type',
+  title:'Titel', creator:'Ophav / skaber', subject:'Emne / nøgleord', description:'Beskrivelse',
+  publisher:'Udgiver / område', contributor:'Bidragyder', date:'Dato', type:'Type',
   format:'Format', identifier:'Identifikator', source:'Kilde', language:'Sprog',
   relation:'Relation', coverage:'Dækning', rights:'Rettigheder'
 };
@@ -728,7 +729,7 @@ function buildPlayerHTML(s, isPreview){
 + '<meta property="og:title" content="' + escapeHtml(pageTitle) + '">\n'
 + '<meta property="og:description" content="' + escapeHtml(ogDesc) + '">\n'
 + (shareUrl ? '<meta property="og:image" content="' + escapeHtml(shareUrl) + '">\n<meta name="twitter:card" content="summary_large_image">\n' : '')
-+ (s.imageDataUrl ? '<link rel="icon" href="' + s.imageDataUrl + '">\n' : '')
++ ((s.imageDataUrl && s.faviconFor === s.imageDataUrl) ? '<link rel="icon" href="' + s.favicon + '">\n' : '')
 + (dcMeta ? dcMeta + '\n' : '')
 + '<script type="application/json" id="builder-source-data">' + JSON.stringify(sourceData).replace(/</g, '\\u003c') + '<\/script>\n'
 + '<style>\n'
@@ -1118,7 +1119,47 @@ function checkReady(){
 
 // Tællerkoden udelades bevidst i forhåndsvisningen — ellers ville den
 // registrere en åbning, hver gang du taster et bogstav.
+function loadImage(src){
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error('Billedet kunne ikke vises'));
+    img.src = src;
+  });
+}
+
+// Lille ikon til browserfanen (64 px, firkantet), så billedet ikke ligger i filen to gange.
+function makeIcon(img){
+  const w = img.naturalWidth || img.width, h = img.naturalHeight || img.height;
+  const side = Math.min(w, h);
+  const c = document.createElement('canvas');
+  c.width = 64; c.height = 64;
+  const k = c.getContext('2d');
+  k.imageSmoothingQuality = 'high';
+  k.drawImage(img, Math.round((w - side) / 2), Math.round((h - side) / 2), side, side, 0, 0, 64, 64);
+  return c.toDataURL('image/jpeg', 0.8);
+}
+
+// Sørger for, at ikonet passer til billedet. Giver true, hvis ikonet er ændret.
+async function ensureIcon(){
+  const src = state.imageDataUrl;
+  if (!src){
+    const changed = !!state.favicon;
+    state.favicon = ''; state.faviconFor = '';
+    return changed;
+  }
+  if (state.faviconFor === src) return false;
+  try {
+    state.favicon = makeIcon(await loadImage(src));
+    state.faviconFor = src;
+  } catch(e){
+    state.favicon = ''; state.faviconFor = '';
+  }
+  return true;
+}
+
 function renderPreview(){
+  ensureIcon().then(changed => { if (changed) renderPreview(); });
   readForm();
   syncAutoDc();
   updateSizeBar();
@@ -1354,9 +1395,10 @@ $('metaJsonBtn').addEventListener('click', () => {
   msg.className = 'msg ok';
 });
 
-$('generateBtn').addEventListener('click', () => {
+$('generateBtn').addEventListener('click', async () => {
   const msg = $('msgBox');
   try {
+    await ensureIcon();
     readForm();
     syncAutoDc();
     const html = buildPlayerHTML(state, false);
