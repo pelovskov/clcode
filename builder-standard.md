@@ -1,9 +1,9 @@
 # Builder-standard
 
 **Fælles specifikation for værktøjskassen**
-Version 1.9 · oktober 2026
+Version 2.0 · oktober 2026
 
-Referenceimplementering: **Sidebygger** (`sidebygger-hs.html`, version 1.5).
+Referenceimplementering: **Sidebygger** (`side-bygger.html`, version 1.5).
 Når noget er i tvivl, er det referencefilen der gælder.
 
 ---
@@ -29,7 +29,7 @@ Værktøjskassen består af flere små, uafhængige builder-apps:
 | PWA · Bygger | samler færdige filer til en app til hjemmeskærmen | afklares |
 | Metadata-hjælper | ingen fil; laver en AI-prompt til Dublin Core og kontrollerer svaret (se afsnit 11) | - |
 
-Bragt i overensstemmelse med standarden: Sidebygger (v1.5), Album · Bygger (v3.0, `albumbygger-dc-v3.html`, følger 1.2), Enkeltbillede · Bygger (v3.0, `enkeltbillede-dc-v3.html`, følger 1.9), Præsentation · Bygger (v1.0, `praesentation-bygger.html`, følger 1.4), Samling · Bygger (v2.0, `samlingsbygger.html`, følger 1.5), Mediekort · Bygger (v1.2, `mediekort-bygger.html`, følger 1.6), Piwigo Albumbygger (v2.0, `piwigo-albumbygger.html`, følger 1.6), Henvisning · Bygger (v2.0, `henvisning-bygger.html`, følger 1.8), Bogbygger (v4.0, `bogbygger.html`, følger 1.9) og Lydfortælling · Bygger (v4.0, `lydfortaelling-bygger.html`, følger 1.9).
+Bragt i overensstemmelse med standarden: Sidebygger (v1.5, `side-bygger.html`), Album · Bygger (v3.0, `album-bygger.html`, følger 1.2), Enkeltbillede · Bygger (v3.0, `enkeltbillede-bygger.html`, følger 1.9), Præsentation · Bygger (v1.0, `praesentation-bygger.html`, følger 1.4), Samling · Bygger (v2.0, `samling-bygger.html`, følger 1.5), Mediekort · Bygger (v1.2, `mediekort-bygger.html`, følger 1.6), Piwigo Albumbygger (v2.0, `piwigo-album-bygger.html`, følger 1.6), Henvisning · Bygger (v2.0, `henvisning-bygger.html`, følger 1.8), Bogbygger (v4.0, `bog-bygger.html`, følger 1.9) og Lydfortælling · Bygger (v4.0, `lydfortaelling-bygger.html`, følger 1.9).
 
 Den Talende Booklet er udgået. Dens opgave, ét billede med lyd og tekst, løses nu af Mediekort · Bygger med typen **Talende billede**. Lydfortælling · Bygger består dog som den enkle udgave til dem, der kun skal bruge ét billede, lyd og tekst.
 
@@ -67,6 +67,8 @@ byggere/                 ← én fil pr. bygger, kun nyeste version
 arkiv/                   ← gamle versioner
 eksempler/               ← en færdig testfil fra hver bygger
 ```
+
+**Filnavne på byggerne:** `navn-bygger.html`, med små bogstaver, bindestreg mellem ordene og uden æ, ø og å, fx `side-bygger.html`, `album-bygger.html` og `lydfortaelling-bygger.html`. Versionsnummeret står i byggerens topbar, ikke i filnavnet, så adressen er den samme fra version til version.
 
 ---
 
@@ -586,6 +588,11 @@ Udgiverlisten i prompten skal altid svare til `PUBLISHERS` i 4.1. Kommer der en 
 ---
 
 ## 12. Ændringslog
+
+**Version 2.0 — oktober 2026.** Indholdet er som i 1.9; det er filnavnene, der er ensrettet.
+- Alle byggere hedder nu `navn-bygger.html`: `side-bygger.html` (før `sidebygger-hs.html`), `album-bygger.html` (før `albumbygger-dc-v3.html`), `bog-bygger.html` (før `bogbygger.html`), `enkeltbillede-bygger.html` (før `enkeltbillede-dc-v3.html`), `samling-bygger.html` (før `samlingsbygger.html`) og `piwigo-album-bygger.html` (før `piwigo-albumbygger.html`). `henvisning-bygger.html`, `lydfortaelling-bygger.html` og `mediekort-bygger.html` hed allerede sådan.
+- Afsnit 1.2: filnavnsreglen er skrevet ind. Versionsnummer hører ikke til i filnavnet.
+- Ældre poster i denne log nævner de gamle filnavne, som de var på det tidspunkt.
 
 **Version 1.9 — oktober 2026.**
 - Bogbygger (v4.0, `bogbygger.html`, tidligere `bogbygger-v4.html`) og Lydfortælling · Bygger (v4.0, `lydfortaelling-bygger.html`, tidligere `lyd-fort-gen-dc-v4.html`) er bragt i overensstemmelse med standarden og står i listen over byggere, der følger den.
