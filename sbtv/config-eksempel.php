@@ -1,6 +1,8 @@
 <?php
 /* =========================================================================
-   Søgeindeks · Online — indstillinger
+   Søgeindeks · Online — indstillinger (EKSEMPEL)
+   Kopiér denne fil til config.php på webhotellet, og ret i kopien.
+   config.php skal ALDRIG lægges i repoet, fordi den indeholder adgangskoder.
    Dette er den eneste fil, du normalt skal rette i.
    ========================================================================= */
 
@@ -8,8 +10,8 @@
    Format:  'brugernavn' => 'bcrypt-hash',
    Lav hashen med lav-hash.php (eller dit eget hash-værktøj, cost 12).
    Skriv brugernavne med små bogstaver. */
-$BRUGERE = [    
-'lovskov' => '$2y$12$ozpbyMeJSkhs0nLZlcTuQOGsh95qhokUbWewtmQ9/w0r99uWxxkSi',
+$BRUGERE = [
+    // 'brugernavn' => '$2y$12$................................................',
     // 'kim'  => '$2y$12$................................................',
     // 'anne' => '$2y$12$................................................',
 ];
