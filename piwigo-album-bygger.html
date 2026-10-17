@@ -8,7 +8,7 @@
   Piwigo Albumbygger · version 2.0 · følger Builder-standard 1.6
   Bevidste afvigelser fra standarden:
   - Hentningen fra Piwigo kræver, at filen ligger på galleriets egen webadresse
-    (fx https://sfbbilleder.eu/piwigo-albumbygger.html). Åbnet fra computeren kan
+    (fx https://sfbbilleder.eu/piwigo-album-bygger.html). Åbnet fra computeren kan
     den kun redigere album, der allerede er lavet.
   - Afsnit 8.1 (sidecar-filer) gælder ikke: titler og beskrivelser hentes direkte fra Piwigo.
   - Ud over albumfilen kan originalerne gemmes som ZIP med album.json.
@@ -1597,7 +1597,7 @@ $('btnNone').addEventListener('click', () => { state.images.forEach(i => i.med_o
 if (location.protocol === 'file:'){
   const w = $('originWarn');
   w.hidden = false;
-  w.innerHTML = 'Filen er åbnet direkte fra din computer. Du kan rette i et album, du allerede har lavet, men <strong>ikke hente fra Piwigo</strong>. Det kræver, at filen ligger på samme webadresse som galleriet, fx https://sfbbilleder.eu/piwigo-albumbygger.html';
+  w.innerHTML = 'Filen er åbnet direkte fra din computer. Du kan rette i et album, du allerede har lavet, men <strong>ikke hente fra Piwigo</strong>. Det kræver, at filen ligger på samme webadresse som galleriet, fx https://sfbbilleder.eu/piwigo-album-bygger.html';
 }
 
 selectTheme('original');
