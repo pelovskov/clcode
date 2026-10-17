@@ -920,7 +920,7 @@ Array.from(omrSeen).sort((a,b)=>a.localeCompare(b,"da")).forEach(p=>{
 });
 if(udenOmraade){
   const o=document.createElement("option");
-  o.value="__uden__"; o.textContent="(uden udgiver — " + udenOmraade + ")";
+  o.value="__uden__"; o.textContent="Uden område (" + udenOmraade + ")";
   omrSel.appendChild(o);
 }
 
@@ -1060,7 +1060,7 @@ function render(){
     } else {
       icon=document.createElement("span");
       icon.className = MED_BILLEDER ? "thumb thumb--ikon" : "icon";
-      icon.textContent = ICONS[r.type]||"📄";
+      icon.textContent = r.link ? "🔗" : (ICONS[r.type]||"📄");
       icon.setAttribute("aria-hidden","true");
     }
 
