@@ -1,7 +1,7 @@
 # Builder-standard
 
 **Fælles specifikation for værktøjskassen**
-Version 1.7 · oktober 2026
+Version 1.8 · oktober 2026
 
 Referenceimplementering: **Sidebygger** (`sidebygger-hs.html`, version 1.5).
 Når noget er i tvivl, er det referencefilen der gælder.
@@ -24,12 +24,12 @@ Værktøjskassen består af flere små, uafhængige builder-apps:
 | Mediekort · Bygger | kort til en video (YouTube eller videofil), en podcast eller et talende billede, med kapitler og evt. transskription | MovingImage (video), Sound (podcast og talende billede) |
 | Præsentation · Bygger | billedshow til foredrag og oplæg, med pile, fuld skærm og automatisk visning | Image |
 | Samling · Bygger | forside der binder 2-6 færdige filer sammen til en kurateret samling | Collection |
-| Henvisning · Bygger | "skilt" der sender videre til en ekstern side | afklares |
+| Henvisning · Bygger | "skilt" der sender videre til en ekstern side | Text som standard; vælges efter det, der henvises til |
 | Vejledningsbygger | trin-for-trin vejledning | afklares |
 | PWA · Bygger | samler færdige filer til en app til hjemmeskærmen | afklares |
 | Metadata-hjælper | ingen fil; laver en AI-prompt til Dublin Core og kontrollerer svaret (se afsnit 11) | - |
 
-Bragt i overensstemmelse med standarden: Sidebygger (v1.5), Album · Bygger (v3.0, `albumbygger-dc-v3.html`, følger 1.2), Præsentation · Bygger (v1.0, `praesentation-bygger.html`, følger 1.4), Samling · Bygger (v2.0, `samlingsbygger.html`, følger 1.5), Mediekort · Bygger (v1.2, `mediekort-bygger.html`, følger 1.6) og Piwigo Albumbygger (v2.0, `piwigo-albumbygger.html`, følger 1.6).
+Bragt i overensstemmelse med standarden: Sidebygger (v1.5), Album · Bygger (v3.0, `albumbygger-dc-v3.html`, følger 1.2), Præsentation · Bygger (v1.0, `praesentation-bygger.html`, følger 1.4), Samling · Bygger (v2.0, `samlingsbygger.html`, følger 1.5), Mediekort · Bygger (v1.2, `mediekort-bygger.html`, følger 1.6), Piwigo Albumbygger (v2.0, `piwigo-albumbygger.html`, følger 1.6) og Henvisning · Bygger (v2.0, `henvisning-bygger.html`, følger 1.8).
 
 Den Talende Booklet er udgået. Dens opgave, ét billede med lyd og tekst, løses nu af Mediekort · Bygger med typen **Talende billede**.
 
@@ -270,7 +270,7 @@ Værdierne gengives tegn for tegn, med **almindelig bindestreg**. Afvigende stav
 
 Indlæses en fil med en gammel værdi, rettes den til den gældende: tankestreg bliver til bindestreg, og "Røde Kors Roskilde" bliver til "Røde Kors". Status ved indlæsning nævner rettelsen. Står der et helt ukendt navn, vises det som ekstra valg markeret "ikke på listen", så det ikke går tabt, men kan rettes.
 
-**dc.identifier** foreslås automatisk som `PRÆFIKS-type-titelslug-år`, fx `SFB-side-astersvej-2026` eller `SFB-album-skomagervaerkstedet-paa-algade-2026`. Titelslug laves efter reglen i 5.6. `type` er et kort, fast ord for appen (side, lyd, album, bog, billede, foernu, video, podcast, talende, praesentation, samling). Mediekort · Bygger bruger `video` til video og videofil, `podcast` til podcast og `talende` til et talende billede, fx `SFB-talende-bager-hansens-butik-2026`. Forslaget kan overskrives.
+**dc.identifier** foreslås automatisk som `PRÆFIKS-type-titelslug-år`, fx `SFB-side-astersvej-2026` eller `SFB-album-skomagervaerkstedet-paa-algade-2026`. Titelslug laves efter reglen i 5.6. `type` er et kort, fast ord for appen (side, lyd, album, bog, billede, foernu, video, podcast, talende, praesentation, samling, henvisning). Mediekort · Bygger bruger `video` til video og videofil, `podcast` til podcast og `talende` til et talende billede, fx `SFB-talende-bager-hansens-butik-2026`. Forslaget kan overskrives.
 
 **dc.subject:** udgiveren står som første emneord. En app med faste serier (fx Sidebyggerens "Gader og veje" og "Steder, institutioner og mennesker") indsætter serien som andet emneord.
 
@@ -587,6 +587,11 @@ Udgiverlisten i prompten skal altid svare til `PUBLISHERS` i 4.1. Kommer der en 
 
 ## 12. Ændringslog
 
+**Version 1.8 — oktober 2026.**
+- Henvisning · Bygger (v2.0, `henvisning-bygger.html`, tidligere `henvisning-gen-dc-v2.html`) er bragt i overensstemmelse med standarden og står i listen over byggere, der følger den.
+- Afsnit 1: dc.type for Henvisning er afgjort. Byggeren forvælger Text, og man vælger selv typen ud fra det, der henvises til. Det åbne punkt i afsnit 13 gælder nu kun Vejledning og PWA.
+- Afsnit 4.1: typeordet `henvisning` til dc.identifier, fx `HSR-henvisning-foreningens-hjemmeside-2026`.
+
 **Version 1.7 — oktober 2026.**
 - Ny bygger i oversigten: Piwigo Albumbygger (v2.0, `piwigo-albumbygger.html`), der laver et billedalbum ud fra et album i et Piwigo-galleri. dc.type er Image, og identifikatoren bruger typeordet `album`.
 - Afsnit 1: beskrevet, at Piwigo Albumbygger bevidst skal ligge på galleriets webadresse og derfor afviger fra grundprincippet om, at builderen kører uden server. Outputfilen er uændret en selvstændig fil.
@@ -653,5 +658,5 @@ Udgiverlisten i prompten skal altid svare til `PUBLISHERS` i 4.1. Kommer der en 
 ## 13. Åbne punkter
 
 **Afklares, når byggeren tages op:**
-- dc.type for Henvisning, Vejledning og PWA.
+- dc.type for Vejledning og PWA.
 - Hvilke af byggerne der skal have skriftstørrelse og op-pil (korte outputfiler kan undvære dem). Afgjort: Sidebygger, Album · Bygger og Præsentation · Bygger har begge dele.
