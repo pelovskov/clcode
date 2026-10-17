@@ -1,7 +1,7 @@
 # Builder-standard
 
 **Fælles specifikation for værktøjskassen**
-Version 1.6 · oktober 2026
+Version 1.7 · oktober 2026
 
 Referenceimplementering: **Sidebygger** (`sidebygger-hs.html`, version 1.5).
 Når noget er i tvivl, er det referencefilen der gælder.
@@ -17,6 +17,7 @@ Værktøjskassen består af flere små, uafhængige builder-apps:
 | Sidebygger | artikelside om gader, steder og mennesker | Text |
 | Lydfortælling · Bygger | lydafspiller med billede og tekst | Sound |
 | Album · Bygger | billedalbum med grid og lightbox | Image |
+| Piwigo Albumbygger | billedalbum hentet fra et album i et Piwigo-galleri, ellers som Album · Bygger | Image |
 | Bogbygger | e-bog / lydbog | Text |
 | Enkeltbillede · Bygger | ét billede i høj kvalitet med tekst og Exif | Image |
 | Før og Nu · Bygger | to billeder fra samme sted med slider | Image |
@@ -28,11 +29,13 @@ Værktøjskassen består af flere små, uafhængige builder-apps:
 | PWA · Bygger | samler færdige filer til en app til hjemmeskærmen | afklares |
 | Metadata-hjælper | ingen fil; laver en AI-prompt til Dublin Core og kontrollerer svaret (se afsnit 11) | - |
 
-Bragt i overensstemmelse med standarden: Sidebygger (v1.5), Album · Bygger (v3.0, `albumbygger-dc-v3.html`, følger 1.2), Præsentation · Bygger (v1.0, `praesentation-bygger.html`, følger 1.4), Samling · Bygger (v2.0, `samlingsbygger.html`, følger 1.5) og Mediekort · Bygger (v1.2, `mediekort-bygger.html`, følger 1.6).
+Bragt i overensstemmelse med standarden: Sidebygger (v1.5), Album · Bygger (v3.0, `albumbygger-dc-v3.html`, følger 1.2), Præsentation · Bygger (v1.0, `praesentation-bygger.html`, følger 1.4), Samling · Bygger (v2.0, `samlingsbygger.html`, følger 1.5), Mediekort · Bygger (v1.2, `mediekort-bygger.html`, følger 1.6) og Piwigo Albumbygger (v2.0, `piwigo-albumbygger.html`, følger 1.6).
 
 Den Talende Booklet er udgået. Dens opgave, ét billede med lyd og tekst, løses nu af Mediekort · Bygger med typen **Talende billede**.
 
 De løser hver sin opgave, men skal se ens ud, opføre sig ens og producere filer med samme metadata-struktur. Det er kun de dele, dette dokument beskriver. Alt andet må gerne være appspecifikt.
+
+Piwigo Albumbygger afviger bevidst på ét punkt: den kører ikke lokalt uden server, men skal ligge på galleriets egen webadresse, fordi den henter albummets oplysninger og billeder fra Piwigos egen grænseflade (`ws.php`). Åbnes den direkte fra computeren, kan den stadig indlæse og rette et album, man allerede har lavet, men ikke hente fra Piwigo, og den siger det selv. Den færdige fil er som i alle andre byggere en selvstændig HTML-fil uden server. Byggeren kan desuden gemme de hentede originaler som ZIP-fil og albummets oplysninger som `album.json`.
 
 Vejledningsbygger og PWA · Bygger afviger bevidst på enkelte punkter, fordi de ikke laver indhold på samme måde som de andre. Afvigelserne skal stå i appens egen beskrivelse.
 
@@ -583,6 +586,11 @@ Udgiverlisten i prompten skal altid svare til `PUBLISHERS` i 4.1. Kommer der en 
 ---
 
 ## 12. Ændringslog
+
+**Version 1.7 — oktober 2026.**
+- Ny bygger i oversigten: Piwigo Albumbygger (v2.0, `piwigo-albumbygger.html`), der laver et billedalbum ud fra et album i et Piwigo-galleri. dc.type er Image, og identifikatoren bruger typeordet `album`.
+- Afsnit 1: beskrevet, at Piwigo Albumbygger bevidst skal ligge på galleriets webadresse og derfor afviger fra grundprincippet om, at builderen kører uden server. Outputfilen er uændret en selvstændig fil.
+- Piwigo Albumbygger, Sidebygger, Mediekort · Bygger, Samling · Bygger, Album · Bygger og Enkeltbillede · Bygger viser nu de fulde Dublin Core-labels (Ophav / skaber, Emne / nøgleord, Udgiver / område) i panelet Om denne fil. Album · Bygger og Sidebygger laver nu et lille ikon til `<link rel="icon">`, som i afsnit 5.2.
 
 **Version 1.6 — oktober 2026.**
 - Mediekort · Bygger v1.2 har fået typen **Talende billede**: ét billede i god kvalitet med en kort, indtalt fortælling (30 sek. – 3 min.), fuld skærm-visning og dc.type Sound. Den Talende Booklet er udgået.
