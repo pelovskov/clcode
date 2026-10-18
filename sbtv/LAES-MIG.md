@@ -17,7 +17,8 @@ singlefile-HTML fra Byggerne, henvisninger og videokort.
 | `faelles.php` | Fælles kode, herunder skabelonen til søgesiden. |
 | `filer/` | Alle de filer, der er lagt op, plus en færdig `soegeside.html`. |
 | `filer/thumbs/` | Små billeder (240 × 180 px) til søgesiden og forsiden. Laves af sig selv. |
-| `data/` | Indeks, log og papirkurv. Spærret for adgang udefra. |
+| `grafik/` | Foreningernes logoer, fx `grafik/rmu.png`. Skal kunne ses udefra, så de må **ikke** ligge i `data/`. |
+| `data/` | Indeks, log, papirkurv og `foreninger.json`. Spærret for adgang udefra. |
 
 ## Sådan sætter du det op
 

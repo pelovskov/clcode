@@ -7,6 +7,5 @@ sbtv/config.php
 sbtv/data/*
 !sbtv/data/.htaccess
 !sbtv/data/foreninger.json
-!sbtv/data/grafik/
 sbtv/filer/*
 !sbtv/filer/.htaccess
