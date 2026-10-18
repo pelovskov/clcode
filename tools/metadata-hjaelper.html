@@ -222,6 +222,7 @@
 const PUBLISHERS = [
   { name:'Historisk Samfund for Roskilde Amt',      prefix:'HSR'  },
   { name:'Privat',                                  prefix:'PRIV' },
+  { name:'Roskilde Musik',                          prefix:'RMU'  },
   { name:'Roskilde TV',                             prefix:'RTV'  },
   { name:'Røde Kors',                               prefix:'RKR'  },
   { name:'Syd for Banen - Lokalhistorisk Forening', prefix:'SFB'  }
@@ -518,7 +519,7 @@ function validate(key, v, f){
     }
     case 'publisher':
       if (!v) n.push({lvl:'chk', text:'Ingen udgiver valgt. Filen havner under "Uden område" i søgesiden.'});
-      else if (!PUBLISHERS.some(p => p.name === v)) n.push({lvl:'err', text:'Udgiveren er ikke på listen. Vælg en af de fem.'});
+      else if (!PUBLISHERS.some(p => p.name === v)) n.push({lvl:'err', text:'Udgiveren er ikke på listen. Vælg en af udgiverne på listen.'});
       if (f.publisher && v !== f.publisher)
         n.push({lvl:'chk', text:'Afviger fra det, du valgte i trin 1: "' + f.publisher + '".', fix:f.publisher});
       break;
