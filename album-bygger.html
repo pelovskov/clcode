@@ -140,7 +140,7 @@
 
 <div class="topbar">
   <h1>Album · Bygger</h1>
-  <span>Lav et billedalbum som én fil, hvor billederne kan klikkes store · kører lokalt, ingen server · version 3.0</span>
+  <span>Lav et billedalbum som én fil, hvor billederne kan klikkes store · kører lokalt, ingen server · version 3.1</span>
 </div>
 
 <div class="layout">
@@ -607,7 +607,8 @@ figure{margin:0;}
 
 <script>
 /* ==========================================================================
-   Album · Bygger — version 3.0, efter Builder-standard 1.2 (september 2026)
+   Album · Bygger — version 3.1, efter Builder-standard 2.3 (oktober 2026)
+   3.1: læser også sidecar-filer fra Billedarkiv (afsnit 8.1).
    Referenceimplementering: Sidebygger (side-bygger.html, v1.3)
    ========================================================================== */
 
@@ -1226,8 +1227,10 @@ $('fileInput').addEventListener('change', async (e) => {
   if (!allFiles.length) return;
 
   const files = allFiles.filter(f => f.type && f.type.indexOf('image/') === 0);
-  const jsonFiles = allFiles.filter(f => /\.json$/i.test(f.name));
-  const txtFiles = allFiles.filter(f => /\.txt$/i.test(f.name));
+  // Billedarkivs _album-oversigt.json/.txt gentager blot oplysningerne fra sidecar-filerne.
+  const isOverview = f => /^_album-oversigt\./i.test(f.name);
+  const jsonFiles = allFiles.filter(f => /\.json$/i.test(f.name) && !isOverview(f));
+  const txtFiles = allFiles.filter(f => /\.txt$/i.test(f.name) && !isOverview(f));
 
   // Pladserne oprettes med det samme, så rækkefølgen følger det valgte.
   const slots = files.map(file => {
@@ -1280,15 +1283,31 @@ function readJsonFile(file){
 
 // En sidecar pr. billede har photoTakenTime/imageViews. Albummets egen metadata.json
 // har det ikke, men har en titel og evt. en enrichments-tekst (albumbeskrivelsen).
+// Billedarkiv lægger også en .json ved hvert billede; den kendes på exportedFilename.
 function applyTakeoutMetadata(jsonFiles, slots){
   Promise.all(jsonFiles.map(readJsonFile)).then(results => {
     const sidecars = {};
+    const arkiv = {};
     let albumMeta = null;
+    let arkivAlbum = '';
 
     results.forEach(r => {
-      if (!r.data) return;
+      if (!r.data || Array.isArray(r.data)) return;
       const d = r.data;
-      if (d.hasOwnProperty('photoTakenTime') || d.hasOwnProperty('imageViews')){
+      if (d.hasOwnProperty('exportedFilename')){
+        const key = String(d.exportedFilename || stripSidecarSuffix(r.name) || '').toLowerCase();
+        if (!key) return;
+        const year = String(d.year || '').match(/\d{4}/);
+        arkiv[key] = {
+          title: String(d.title || '').trim(),
+          description: String(d.description || '').trim(),
+          photographer: String(d.photographer || '').trim(),
+          // kl. 12 den 1. januar: et tidspunkt på 0 (1. jan. 1970 kl. 0) ville blive læst som "ingen dato"
+          takenTime: year ? Date.UTC(parseInt(year[0], 10), 0, 1, 12) : null,
+          order: (typeof d.order === 'number') ? d.order : null
+        };
+        if (!arkivAlbum && d.album) arkivAlbum = String(d.album).trim();
+      } else if (d.hasOwnProperty('photoTakenTime') || d.hasOwnProperty('imageViews')){
         const baseName = stripSidecarSuffix(r.name);
         if (!baseName) return;
         const takenTime = (d.photoTakenTime && d.photoTakenTime.timestamp) ? parseInt(d.photoTakenTime.timestamp, 10) * 1000 : null;
@@ -1313,6 +1332,38 @@ function applyTakeoutMetadata(jsonFiles, slots){
       }
     });
 
+    // Billedarkiv: titel, beskrivelse, fotograf, år og rækkefølge. Det, man selv har skrevet, bevares.
+    let arkivMatched = 0;
+    const photographers = [];
+    slots.forEach(entry => {
+      const a = entry.origName ? arkiv[entry.origName.toLowerCase()] : null;
+      if (!a) return;
+      arkivMatched++;
+      const defaultTitle = entry.origName.replace(/\.[^.]+$/, '');
+      if (a.title && (!entry.title || entry.title === defaultTitle)) entry.title = a.title;
+      if (a.description && !entry.description) entry.description = a.description;
+      if (a.takenTime && !entry.takenTime) entry.takenTime = a.takenTime;
+      entry.arkivOrder = a.order;
+      if (a.photographer && photographers.indexOf(a.photographer) === -1) photographers.push(a.photographer);
+    });
+    if (arkivMatched){
+      // Rækkefølgen fra Billedarkiv; de nye billeder ligger sidst i listen.
+      const start = images.length - slots.length;
+      const head = images.slice(0, start);
+      const tail = images.slice(start).map((x, i) => ({ x:x, i:i })).sort((p, q) => {
+        const a = p.x.arkivOrder, b = q.x.arkivOrder;
+        if (a != null && b != null) return a - b;
+        if (a != null) return -1;
+        if (b != null) return 1;
+        return p.i - q.i;
+      }).map(o => o.x);
+      images = head.concat(tail);
+      if (photographers.length && !$('dcCreator').value.trim()){
+        $('dcCreator').value = photographers.join('; ');
+      }
+      if (arkivAlbum && !$('albumTitle').value.trim()) $('albumTitle').value = arkivAlbum;
+    }
+
     if (albumMeta){
       if (!$('albumTitle').value.trim()) $('albumTitle').value = albumMeta.title;
       if (albumMeta.description && !$('albumDesc').value.trim()) $('albumDesc').value = albumMeta.description;
@@ -1321,8 +1372,10 @@ function applyTakeoutMetadata(jsonFiles, slots){
     const parts = [];
     if (matched) parts.push(matched + (matched === 1 ? ' billedbeskrivelse' : ' billedbeskrivelser') + ' hentet fra Google Takeout');
     if (albumMeta) parts.push('albumoplysninger fundet i metadata.json');
+    if (arkivMatched) parts.push(arkivMatched + (arkivMatched === 1 ? ' billede' : ' billeder') + ' fik oplysninger fra Billedarkiv'
+      + (photographers.length ? ' · fotograf: ' + photographers.join(', ') : ''));
     if (parts.length) showMsg(parts.join(' · ') + '.', 'ok');
-    else showMsg('Der var ingen genkendelige Google Takeout-oplysninger i de valgte .json-filer.', 'err');
+    else showMsg('Der var ingen genkendelige oplysninger fra Google Takeout eller Billedarkiv i de valgte .json-filer.', 'err');
 
     render();
   });
