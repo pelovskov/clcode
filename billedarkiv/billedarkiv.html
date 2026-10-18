@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Billedarkiv · version 1 (hed før lokalhistorisk_billedarkiv.html) -->
+    <!-- Billedarkiv · version 1.1 (hed før lokalhistorisk_billedarkiv.html). 1.1: kun lokal udgave, webhotel-udgaven med api.php er fjernet -->
     <title>Lokalhistorisk Billedarkiv</title>
     <!-- Alt herunder er indbygget, så filen virker helt uden internet -->
     <!-- Skrifttyper: Inter + Merriweather (SIL Open Font License) -->
@@ -319,101 +319,6 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         </div>
     </div>
 
-    <!-- Webhotel / PHP Setup Modal -->
-    <div id="serverModal" class="fixed inset-0 bg-stone-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl max-w-3xl w-full p-6 shadow-xl border border-archive-200 max-h-[90vh] flex flex-col">
-            <div class="flex justify-between items-center border-b pb-3 mb-4">
-                <div>
-                    <h3 class="font-serif text-xl font-bold text-stone-800">Læg arkivet på dit eget Webhotel</h3>
-                    <p class="text-xs text-stone-500">Sådan slipper du helt for at åbne mapper eller gemme filer manuelt</p>
-                </div>
-                <button onclick="toggleServerModal()" class="text-stone-400 hover:text-stone-700">✕</button>
-            </div>
-            
-            <div class="overflow-y-auto space-y-4 text-sm text-stone-700 pr-2">
-                <div id="serverDiagnosticsBox" class="p-4 rounded-lg border bg-stone-100 border-stone-300 text-stone-700">
-                    <div class="flex items-center justify-between">
-                        <span class="font-bold">Status på forbindelse til api.php:</span>
-                        <button onclick="tryLoadFromServer(true)" class="text-xs bg-archive-600 hover:bg-archive-700 text-white px-2.5 py-1 rounded">Test forbindelse nu</button>
-                    </div>
-                    <p id="serverDiagText" class="text-xs mt-1 font-mono">Endnu ikke testet på webhotel...</p>
-                </div>
-
-                <p>Denne opdaterede <code>api.php</code> finder <strong>automatisk</strong> alle billeder og undermapper – uanset om dine billeder ligger i en mappe kaldet <code>billeder</code>, <code>Billeder</code> eller i andre undermapper ved siden af HTML-filen!</p>
-
-                <div class="bg-archive-100 p-4 rounded-lg border border-archive-200 space-y-2">
-                    <h4 class="font-bold text-stone-900">Sådan gør du på dit webhotel:</h4>
-                    <ol class="list-decimal pl-5 space-y-1">
-                        <li>Opdater din <code>api.php</code> på webhotellet med den nye kode herunder (den finder selv alle billedmapper).</li>
-                        <li>Opdater også din <code>index.html</code> på webhotellet med koden fra dette dokument.</li>
-                    </ol>
-                </div>
-
-                <div>
-                    <div class="flex justify-between items-center mb-1">
-                        <span class="font-mono text-xs font-bold text-stone-600">Opdateret indhold til api.php (Finder automatisk alle billedmapper):</span>
-                        <button onclick="copyPhpCode()" class="text-xs bg-stone-800 hover:bg-stone-700 text-white px-3 py-1 rounded transition">Kopiér ny PHP-kode</button>
-                    </div>
-                    <pre id="phpCodeBlock" class="bg-stone-900 text-stone-200 p-4 rounded-lg text-xs font-mono overflow-x-auto leading-relaxed">&lt;?php
-header('Content-Type: application/json; charset=utf-8');
-$dataFile = 'arkiv-data.json';
-
-// 1. Håndter GEM (Når du trækker billeder eller retter tekst)
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $input = file_get_contents('php://input');
-    if (json_decode($input) !== null) {
-        file_put_contents($dataFile, $input);
-        echo json_encode(['status' => 'ok']);
-    } else {
-        http_response_code(400);
-        echo json_encode(['error' => 'Ugyldig JSON']);
-    }
-    exit;
-}
-
-// 2. Håndter HENT (Scanner automatisk nuværende mappe og alle undermapper for billeder)
-$saved = file_exists($dataFile) ? json_decode(file_get_contents($dataFile), true) : ['albums' => [], 'photos' => []];
-$files = [];
-$baseDir = __DIR__;
-
-$iterator = new RecursiveIteratorIterator(
-    new RecursiveDirectoryIterator($baseDir, RecursiveDirectoryIterator::SKIP_DOTS)
-);
-
-foreach ($iterator as $file) {
-    if ($file->isFile() && preg_match('/\.(jpg|jpeg|png|gif|webp|bmp)$/i', $file->getFilename())) {
-        // Find relativ sti fra mappen hvor api.php ligger
-        $relPath = substr($file->getPathname(), strlen($baseDir) + 1);
-        $relPath = str_replace('\\', '/', $relPath);
-        
-        // Find mappenavn (til automatisk album)
-        $dirName = dirname($relPath);
-        $folder = ($dirName === '.' || strtolower($dirName) === 'billeder') ? 'all' : basename($dirName);
-
-        // URL-encode hver del af stien så mellemrum og æøå virker i browseren
-        $urlParts = array_map('rawurlencode', explode('/', $relPath));
-        $safeUrl = implode('/', $urlParts);
-
-        $files[] = [
-            'id' => $relPath,
-            'filename' => $file->getFilename(),
-            'folder' => $folder,
-            'url' => $safeUrl
-        ];
-    }
-}
-
-echo json_encode(['saved' => $saved, 'scannedFiles' => $files], JSON_UNESCAPED_UNICODE);
-?&gt;</pre>
-                </div>
-            </div>
-
-            <div class="mt-4 pt-3 border-t flex justify-end">
-                <button onclick="toggleServerModal()" class="px-5 py-2 bg-stone-800 text-white rounded-lg text-sm font-medium">Luk</button>
-            </div>
-        </div>
-    </div>
-
     <!-- Notification Toast -->
     <div id="toast" class="fixed bottom-5 right-5 bg-stone-900 text-white px-4 py-3 rounded-lg shadow-lg text-sm font-medium transform translate-y-20 opacity-0 transition-all duration-300 z-50">
         Besked
@@ -508,66 +413,20 @@ echo json_encode(['saved' => $saved, 'scannedFiles' => $files], JSON_UNESCAPED_U
             draggedPhotoId: null,
             selectedPhotoIds: new Set(),
             moveSelectedOnNewAlbum: false,
-            storageMode: 'local', // 'local', 'smart_folder', or 'server'
+            storageMode: 'local', // 'local' eller 'smart_folder'
             directoryHandle: null // Used for direct auto-saving to PC / pCloud Drive
         };
 
         // Initialize App
         window.onload = async function() {
-            const connectedToServer = await tryLoadFromServer();
-            if (!connectedToServer) {
-                loadFromLocalStorage();
-                renderAlbums();
-                renderGallery();
-            }
+            loadFromLocalStorage();
+            renderAlbums();
+            renderGallery();
             setupFileListeners();
-            if (state.storageMode !== 'server') prepareReconnectButton();
+            prepareReconnectButton();
         };
 
-        // --- 1. WEBGL / WEBHOTEL SERVER MODE (api.php) ---
-        async function tryLoadFromServer(manualTrigger = false) {
-            const diagText = document.getElementById('serverDiagText');
-            if (!window.location.protocol.startsWith('http')) {
-                if (diagText) diagText.innerText = 'Kører lokalt fra computeren (ikke på et webhotel).';
-                return false;
-            }
-            try {
-                if (diagText) diagText.innerText = 'Kontakter api.php...';
-                const res = await fetch('api.php?t=' + Date.now(), { cache: 'no-store' });
-                if (!res.ok) {
-                    if (diagText) diagText.innerText = `Fejl: api.php svarede med HTTP-kode ${res.status}. Tjek at filen hedder api.php.`;
-                    return false;
-                }
-                const data = await res.json();
-                if (!data || !Array.isArray(data.scannedFiles)) {
-                    if (diagText) diagText.innerText = 'Fejl: api.php returnerede ikke gyldige billeddata.';
-                    return false;
-                }
-
-                state.storageMode = 'server';
-                updateSyncBadge(`Webhotel (${data.scannedFiles.length} billeder)`, true);
-                document.getElementById('statusText').innerText = `Webhotel: ${data.scannedFiles.length} billeder`;
-                if (diagText) {
-                    diagText.innerText = `✔ Forbundet! api.php fandt ${data.scannedFiles.length} billeder på dit webhotel.`;
-                }
-
-                if (data.scannedFiles.length === 0) {
-                    showToast('Forbundet til api.php, men 0 billeder blev fundet. Tjek mappenavn eller opdater api.php!');
-                    return true;
-                }
-
-                mergeScannedFilesWithMetadata(data.scannedFiles, data.saved);
-                renderAlbums();
-                renderGallery();
-                if (manualTrigger) showToast(`Indlæste ${data.scannedFiles.length} billeder fra webhotellet!`);
-                return true;
-            } catch (e) {
-                if (diagText) diagText.innerText = 'Kunne ikke kontakte api.php (' + e.message + ').';
-                return false; // api.php not present, fallback to local mode
-            }
-        }
-
-        // --- 2. LOKAL MAPPE (Chrome/Edge: File System Access API) ---
+        // --- LOKAL MAPPE (Chrome/Edge: File System Access API) ---
         // Mappe-håndtaget huskes i browserens IndexedDB, så man næste gang
         // kun skal klikke "Genforbind" og bekræfte - ikke lede mappen frem igen.
         const IDB_NAME = 'lokalarkiv_handles';
@@ -800,21 +659,6 @@ echo json_encode(['saved' => $saved, 'scannedFiles' => $files], JSON_UNESCAPED_U
                 } catch (err) {
                     console.error('Fejl ved direkte skrivning til mappe:', err);
                     updateSyncBadge('Fejl ved gemning', false);
-                }
-            }
-            // Mode B: Direct save to Webhotel via api.php
-            else if (state.storageMode === 'server') {
-                try {
-                    updateSyncBadge('Gemmer på server...', false);
-                    await fetch('api.php', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-                    updateSyncBadge('Gemt på webhotel ✔', true);
-                } catch (err) {
-                    console.error('Fejl ved gemning til server:', err);
-                    updateSyncBadge('Serverfejl!', false);
                 }
             }
         }
@@ -1598,21 +1442,6 @@ echo json_encode(['saved' => $saved, 'scannedFiles' => $files], JSON_UNESCAPED_U
             modal.classList.toggle('hidden');
         }
 
-        function toggleServerModal() {
-            const modal = document.getElementById('serverModal');
-            modal.classList.toggle('hidden');
-        }
-
-        function copyPhpCode() {
-            const code = document.getElementById('phpCodeBlock').innerText;
-            const textarea = document.createElement('textarea');
-            textarea.value = code;
-            document.body.appendChild(textarea);
-            textarea.select();
-            document.execCommand('copy');
-            textarea.remove();
-            showToast('PHP-kode kopieret til udklipsholderen!');
-        }
 
         function showToast(msg) {
             const toast = document.getElementById('toast');

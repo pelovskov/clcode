@@ -4,7 +4,7 @@ Billedarkiv er et lille program til at ordne billeder: lægge dem i albums, give
 
 Hele programmet er én fil, `billedarkiv.html`. Den virker uden internet. Skrifttyper og det, der skal til for at lave zip-filer, ligger inde i filen.
 
-Version 1.
+Version 1.1.
 
 ## Det skal du bruge
 
@@ -42,14 +42,9 @@ Det, du selv har skrevet i Album · Bygger, bliver aldrig overskrevet. Oversigts
 
 Dine oplysninger ligger i `arkiv-data.json` sammen med billederne. Tag backup af **hele arkivmappen** efter 3-2-1-reglen: tre kopier, på to slags medier, og én af dem et andet sted (fx hos et familiemedlem eller i foreningen). Billedarkiv gemmer også en ekstra kopi i browseren, men den forsvinder, hvis browserens data bliver slettet, så den er ikke en backup.
 
-## Webhotel-udgaven: brug den ikke offentligt endnu
+## Kun på din egen computer
 
-Billedarkiv kan også ligge på et webhotel sammen med en lille PHP-fil, `api.php`, som programmet selv kan give dig koden til. **Den udgave er ikke sikker at have liggende åbent på internettet**, som den er nu:
-
-- `api.php` har **ingen adgangskode**. Alle, der kender adressen, kan overskrive `arkiv-data.json` og dermed slette eller ændre alle dine oplysninger.
-- Billedarkiv viser titler og beskrivelser uden at rense dem. Nogen kunne derfor skrive kode ind i arkivet, som kører, når du selv åbner det.
-
-Brug Billedarkiv på din egen computer, sådan som det er beskrevet ovenfor. Skal webhotel-udgaven bruges, skal den først have adgangskode og rensning af teksten, eller mappen skal spærres med en adgangskode hos webhotellet.
+Billedarkiv kører kun lokalt. Der fandtes en webhotel-udgave med en lille PHP-fil (`api.php`), men den er fjernet i version 1.1, fordi den ikke havde nogen adgangskode. Billedarkiv kontakter ikke nogen server.
 
 ## Hænger sammen med
 

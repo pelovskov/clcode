@@ -41,7 +41,7 @@ Værktøjerne ligger i mappen `tools/`. De følger ikke Builder-standarden, men 
 
 | Navn | Fil | Version | Gør |
 |---|---|---|---|
-| Billedarkiv | `billedarkiv/billedarkiv.html` | 1 | ordner billeder i albums med titel, beskrivelse, fotograf, årstal og rækkefølge, og eksporterer et album som zip-fil til Album · Bygger. Kræver Chrome eller Edge. Se `billedarkiv/README.md` |
+| Billedarkiv | `billedarkiv/billedarkiv.html` | 1.1 | ordner billeder i albums med titel, beskrivelse, fotograf, årstal og rækkefølge, og eksporterer et album som zip-fil til Album · Bygger. Kræver Chrome eller Edge. Se `billedarkiv/README.md` |
 
 `–` betyder, at der ikke står noget versionsnummer i filen. Adgangskode-hashes til `sbtv/config.php` laver du med `sbtv/lav-hash.php` på serveren.
 
