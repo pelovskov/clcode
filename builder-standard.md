@@ -1,7 +1,7 @@
 # Builder-standard
 
 **Fælles specifikation for værktøjskassen**
-Version 2.2 · oktober 2026
+Version 2.3 · oktober 2026
 
 Referenceimplementering: **Sidebygger** (`side-bygger.html`, version 1.5).
 Når noget er i tvivl, er det referencefilen der gælder.
@@ -29,7 +29,7 @@ Værktøjskassen består af flere små, uafhængige builder-apps:
 | PWA · Bygger | samler færdige filer til en app til hjemmeskærmen | afklares |
 | Metadata-hjælper | ingen fil; laver en AI-prompt til Dublin Core og kontrollerer svaret (se afsnit 11) | - |
 
-Bragt i overensstemmelse med standarden: Sidebygger (v1.5, `side-bygger.html`), Album · Bygger (v3.0, `album-bygger.html`, følger 1.2), Enkeltbillede · Bygger (v3.0, `enkeltbillede-bygger.html`, følger 1.9), Præsentation · Bygger (v1.0, `praesentation-bygger.html`, følger 2.1), Samling · Bygger (v2.0, `samling-bygger.html`, følger 1.5), Mediekort · Bygger (v1.2, `mediekort-bygger.html`, følger 1.6), Piwigo Albumbygger (v2.0, `piwigo-album-bygger.html`, følger 1.6), Henvisning · Bygger (v2.0, `henvisning-bygger.html`, følger 1.8), Bogbygger (v4.0, `bog-bygger.html`, følger 1.9) og Lydfortælling · Bygger (v4.0, `lydfortaelling-bygger.html`, følger 1.9).
+Bragt i overensstemmelse med standarden: Sidebygger (v1.5, `side-bygger.html`), Album · Bygger (v3.1, `album-bygger.html`, følger 2.3), Enkeltbillede · Bygger (v3.0, `enkeltbillede-bygger.html`, følger 1.9), Præsentation · Bygger (v1.0, `praesentation-bygger.html`, følger 2.1), Samling · Bygger (v2.0, `samling-bygger.html`, følger 1.5), Mediekort · Bygger (v1.2, `mediekort-bygger.html`, følger 1.6), Piwigo Albumbygger (v2.0, `piwigo-album-bygger.html`, følger 1.6), Henvisning · Bygger (v2.0, `henvisning-bygger.html`, følger 1.8), Bogbygger (v4.0, `bog-bygger.html`, følger 1.9) og Lydfortælling · Bygger (v4.0, `lydfortaelling-bygger.html`, følger 1.9).
 
 Den Talende Booklet er udgået. Dens opgave, ét billede med lyd og tekst, løses nu af Mediekort · Bygger med typen **Talende billede**. Lydfortælling · Bygger består dog som den enkle udgave til dem, der kun skal bruge ét billede, lyd og tekst.
 
@@ -434,6 +434,7 @@ Byggere, der tager imod billeder, kan læse oplysninger fra de små filer, som a
 | Google Takeout, pr. billede | `.json` (også `.supplemental-metadata.json`) | `description`, `photoTakenTime` | billedets beskrivelse, optagelsesdato |
 | Google Takeout, albummet | `metadata.json` | `title`, første `narrativeEnrichment.text` | albummets titel og beskrivelse |
 | Fotosafari | `.txt`, linjer: fotograf, beskrivelse, bredde, længde, gruppe, kode | fotograf, beskrivelse | dc.creator (flere adskilt af semikolon), billedets beskrivelse |
+| Billedarkiv, pr. billede | `.json` med feltet `exportedFilename` | `title`, `description`, `photographer`, `year`, `order`, `album` | billedets titel og beskrivelse, dc.creator (flere adskilt af semikolon), optagelsesdato (1. januar i året), rækkefølgen, albummets titel |
 
 Regler:
 
@@ -441,6 +442,7 @@ Regler:
 - Et felt udfyldes kun, hvis det er tomt. Det, man selv har skrevet, overskrives aldrig.
 - Et usynligt BOM-tegn forrest i en tekstfil fjernes.
 - Koordinater, gruppe og kode fra Fotosafari bruges ikke og kommer ikke med i outputfilen.
+- En sidecar fra Billedarkiv kendes på feltet `exportedFilename` og kobles på det filnavn. Den må aldrig forveksles med Takeouts `metadata.json`, selv om begge har en `title`. Billedarkivs titel bruges kun, hvis billedet stadig har filnavnet som titel. Står der et årstal i `year` (også fx "ca. 1955"), bliver det til 1. januar det år. Billederne lægges i rækkefølgen fra `order`. Oversigtsfilerne `_album-oversigt.json` og `_album-oversigt.txt` springes over, fordi de blot gentager oplysningerne.
 - Er der optagelsesdatoer, vises knappen **Sortér efter optagelsesdato**, og datoen gemmes i kildedata, så sorteringen også virker efter genindlæsning.
 - Beskedboksen fortæller, hvor mange billeder der fik oplysninger, eller at ingen filer passede.
 
@@ -595,6 +597,10 @@ Udgiverlisten i prompten skal altid svare til `PUBLISHERS` i 4.1. Kommer der en 
 ---
 
 ## 12. Ændringslog
+
+**Version 2.3 — oktober 2026.**
+- Afsnit 8.1: Billedarkiv er kommet til som kilde. Hver sidecar pr. billede (`.json` med `exportedFilename`) giver titel, beskrivelse, fotograf, årstal, rækkefølge og albummets titel. Oversigtsfilerne `_album-oversigt.*` springes over.
+- Album · Bygger v3.1 læser Billedarkivs sidecar-filer. Før blev de taget for Takeouts albumfil, så albummets titel blev sat til titlen på det sidste billede. Rettet. Filformatet (`builderVersion` 3) er uændret.
 
 **Version 2.2 — oktober 2026.**
 - Præsentation · Bygger (v1.0, `praesentation-bygger.html`) ligger nu i repoet og er gennemgået mod standarden. Den fik de fulde Dublin Core-labels i panelet Om denne fil og kontrollen af `?hjem=` (5.3), som den manglede. Den følger nu 2.1. Resten stemte: temaer, udgivere, felter, billedindstillingerne i afsnit 8 (2560 px, 25 billeder, lille udgave som ikon) og indlæsning.
