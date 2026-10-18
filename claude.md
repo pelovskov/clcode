@@ -42,6 +42,10 @@ Efter en ændring skal du beskrive, hvordan jeg selv kan afprøve den i browsere
 - Hver builder får, når det er relevant, sin egen korte beskrivelse i `README.md`.
 - Dokumentation skrives i Markdown.
 
+## Ting der hænger sammen
+
+- `tools/feltoptager-v1.html` laver lydfortællinger i **Lydfortælling · Byggerens filformat** og skriver selv `builderVersion`. Tælles `BUILDER_VERSION` op i `lydfortaelling-bygger.html`, skal `builderVersion` i Feltoptageren rettes med, ellers afviser byggeren filerne.
+
 ## Sikkerhed
 
 - Repoet er **offentligt**. Læg aldrig adgangskoder, hashes, nøgler, logfiler eller driftsdata fra serveren i det (fx `sbtv/config.php` og `sbtv/data/`). Brug eksempelfiler uden rigtige værdier.
