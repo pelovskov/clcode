@@ -15913,7 +15913,7 @@ lamejs();
    FELTOPTAGER
    Optag i browseren → Lydlabs behandlingskæde → færdig
    lydfortælling som én HTML-fil, der kan åbnes igen i
-   Lydfortælling · Bygger (lyd-fort-gen-dc-v2.html).
+   Lydfortælling · Bygger (lydfortaelling-bygger.html).
 
    Lydbehandlingen og loudness-målingen er Lydlabs kode,
    uændret. Afspillerskabelonen er byggerens buildPlayerHTML,
@@ -16938,11 +16938,14 @@ function buildPlayerHTML(s, includeTaeller){
   const taellerBlock = (includeTaeller && s.taellerBlock) ? '\n' + s.taellerBlock + '\n' : '';
   const sourceData = {
     format: 'lydfortaelling-player',
-    builderVersion: 2,
+    builderVersion: 4,   // samme som BUILDER_VERSION i lydfortaelling-bygger.html, ellers afviser byggeren filen
     eyebrow: s.eyebrow || '', title: s.title || '', location: s.location || '',
+    imageAlt: s.imageAlt || '', imageUrl: s.imageUrl || '',
     description: s.description || '', descLabel: s.descLabel || '',
-    theme: s.theme || 'original', imageUrl: s.imageUrl || '',
+    theme: s.theme || 'original',
     ctaText: s.ctaText || '', ctaUrl: s.ctaUrl || '',
+    homeMode: 'auto', homeLabel: '', homeUrl: '',
+    visGem: true, visOmFil: true,
     dublinCore: dc
   };
   const ogDesc = stripMdToPlain(s.description, 200) || (s.location ? `En lydfortælling · ${s.location}` : 'En lydfortælling');
