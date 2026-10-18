@@ -2,373 +2,332 @@
 <html lang="da">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#211E19">
-<title>Feltoptager</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- Lydlab · version 1 (hed før lydlab-standalone-v-1.html) -->
+<title>Lydlab</title>
 <style>
-:root{
-  --paper:#EDE7D8;
-  --paper-dim:#E2DBC8;
-  --ink:#211E19;
-  --rust:#9A4630;
-  --moss:#47543C;
-  --hint:#5F5A4B;
-  --line:#cbc2a8;
-  --scene:#211E19;
-  --scene-tekst:#E2DBC8;
-  --sans:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  --serif:Georgia, "Times New Roman", serif;
+/* ============================================================
+   Design-tokens — Builder-standard v1.0, afsnit 3
+   ============================================================ */
+:root {
+    --paper:     #EDE7D8;
+    --paper-dim: #E2DBC8;
+    --ink:       #211E19;
+    --rust:      #9A4630;
+    --moss:      #47543C;
+    --hint:      #5F5A4B;
+    --line:      #cbc2a8;
+    --scene:     #211E19;
+    --scene-tekst: #E2DBC8;
 }
-*{ box-sizing:border-box; }
-html,body{ margin:0; padding:0; }
-body{
-  font-family:var(--sans);
-  background:var(--paper);
-  color:var(--ink);
-  font-size:17px;
-  line-height:1.5;
-  -webkit-text-size-adjust:100%;
-  padding:0 0 env(safe-area-inset-bottom);
+* { box-sizing: border-box; }
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 15.5px;
+    background: var(--paper);
+    color: var(--ink);
+    line-height: 1.5;
 }
-.ramme{ max-width:560px; margin:0 auto; padding:18px 16px 40px; }
+:focus-visible { outline: 2px solid var(--rust); outline-offset: 2px; }
 
-.topbar{ text-align:center; padding:14px 0 6px; }
-.topbar h1{
-  font-family:var(--serif); font-size:26px; font-weight:600; margin:0;
-  letter-spacing:0.01em;
-}
-.topbar p{ margin:4px 0 0; color:var(--hint); font-size:14.5px; }
+/* ---- Topbar ---- */
+.topbar { background: var(--paper-dim); border-bottom: 1px solid var(--line); padding: 16px 20px; }
+.topbar-indhold { max-width: 1040px; margin: 0 auto; }
+.topbar h1 { font-family: Georgia, "Times New Roman", serif; font-size: 24px; font-weight: 600; margin: 0 0 3px; }
+.topbar p { margin: 0; font-size: 13.5px; line-height: 1.55; color: var(--hint); }
 
-/* ---------- Skærme ---------- */
-.skaerm{ display:none; }
-.skaerm.aktiv{ display:block; animation:ind .25s ease; }
-@keyframes ind{ from{ opacity:0; transform:translateY(6px);} to{ opacity:1; transform:none; } }
+.ramme { max-width: 1040px; margin: 0 auto; padding: 22px 16px 48px; }
+.kort { background: #F5F1E6; border: 1px solid var(--line); border-radius: 10px; padding: 18px; }
 
-.trin{
-  display:flex; justify-content:center; gap:7px; margin:14px 0 18px;
-}
-.trin i{
-  width:9px; height:9px; border-radius:50%; background:var(--line); display:block;
-}
-.trin i.her{ background:var(--rust); }
-.trin i.klaret{ background:var(--moss); }
+.feltLabel { font-size: 13.5px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--moss); margin: 0 0 5px; }
+.hjælp { font-size: 13.5px; line-height: 1.55; color: var(--hint); margin: 0 0 10px; }
+.afsnit { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--line); }
+.afsnit:first-of-type { margin-top: 0; padding-top: 0; border-top: none; }
 
-h2.overskrift{
-  font-family:var(--serif); font-size:22px; font-weight:600;
-  margin:0 0 4px; text-align:center;
+/* ---- Knapper ---- */
+button { font-family: inherit; }
+.knap {
+    min-height: 44px; padding: 10px 16px;
+    border: 1px solid var(--line); border-radius: 8px;
+    background: var(--paper); color: var(--ink);
+    font-size: 15.5px; cursor: pointer;
 }
-p.under{ margin:0 0 18px; text-align:center; color:var(--hint); font-size:15px; }
+.knap:hover { border-color: var(--rust); }
+.knap.aktivKnap { background: var(--rust); border-color: var(--rust); color: #FFF8EF; }
+.knap:disabled { opacity: .45; cursor: not-allowed; }
+.værktøjsrække { display: flex; justify-content: flex-end; margin-bottom: 10px; }
 
-/* ---------- Kassettebånd ---------- */
-.kassetteboks{ margin:0 auto 4px; max-width:400px; }
-#kassette{ width:100%; height:auto; display:block; }
-.hjul{ transform-box:fill-box; transform-origin:center; }
-.koerer .hjul{ animation:drej 1.6s linear infinite; }
-.koerer.tilbage .hjul{ animation:drejtilbage .5s linear infinite; }
-@keyframes drej{ to{ transform:rotate(360deg); } }
-@keyframes drejtilbage{ to{ transform:rotate(-360deg); } }
-@media (prefers-reduced-motion:reduce){
-  .koerer .hjul, .koerer.tilbage .hjul{ animation:none; }
+/* ---- Upload-zone ---- */
+.dropzone {
+    border: 2px dashed var(--line); border-radius: 10px;
+    padding: 40px 16px; text-align: center; color: var(--hint);
+    cursor: pointer; background: var(--paper);
+    transition: background .15s, border-color .15s;
 }
+.dropzone.over { border-color: var(--rust); background: var(--paper-dim); }
+.dropzone strong { color: var(--rust); font-size: 17px; }
+.dropzone input { display: none; }
+.dropzone .ikon { font-size: 2em; display: block; margin-bottom: 8px; }
+.dropzone .under { display: block; margin-top: 6px; font-size: 13.5px; }
 
-/* ---------- Tælleværk ---------- */
-.taeller{
-  font-family:var(--serif);
-  font-variant-numeric:tabular-nums;
-  font-size:44px; font-weight:600; letter-spacing:0.02em;
-  text-align:center; margin:6px 0 2px; color:var(--ink);
+/* ---- Valg ---- */
+.valgListe { display: flex; flex-direction: column; gap: 10px; }
+.valgListe > label {
+    display: flex; align-items: flex-start; gap: 11px;
+    padding: 11px 14px; border: 2px solid var(--line); border-radius: 8px;
+    background: var(--paper); cursor: pointer;
 }
-.taeller.optager{ color:var(--rust); }
-.taellertekst{ text-align:center; color:var(--hint); font-size:14px; margin:0 0 16px; min-height:20px; }
+.valgListe > label:hover { border-color: var(--rust); }
+.valgListe > label:has(input:checked) { border-color: var(--rust); background: var(--paper-dim); }
+.valgListe input[type="checkbox"] { width: 20px; height: 20px; margin-top: 2px; flex: 0 0 auto; }
+.valgListe .titel { font-weight: 600; display: block; }
+.valgListe .under { font-size: 13.5px; color: var(--hint); display: block; }
 
-/* ---------- Niveaubjælke ---------- */
-.niveau{ margin:0 0 6px; }
-.niveauspor{
-  position:relative; height:22px; border-radius:11px;
-  background:var(--paper-dim); border:1px solid var(--line); overflow:hidden;
+.trinValg { display: flex; gap: 10px; flex-wrap: wrap; }
+.trinValg label {
+    display: inline-flex; align-items: center; min-height: 44px; padding: 8px 16px;
+    border: 2px solid var(--line); border-radius: 8px; background: var(--paper);
+    cursor: pointer; font-size: 15.5px;
 }
-.niveaufyld{
-  position:absolute; left:0; top:0; bottom:0; width:0%;
-  background:var(--moss); border-radius:11px 0 0 11px;
-  transition:width .06s linear, background .15s linear;
-}
-.niveaufyld.hoej{ background:var(--rust); }
-.niveaumaerke{
-  position:absolute; top:0; bottom:0; width:2px; background:rgba(33,30,25,0.25);
-}
-.niveautekst{
-  text-align:center; font-size:15px; font-weight:600; min-height:24px;
-  margin:0 0 16px; color:var(--hint);
-}
-.niveautekst.god{ color:var(--moss); }
-.niveautekst.svag{ color:var(--hint); }
-.niveautekst.kraftig{ color:var(--rust); }
+.trinValg label:hover { border-color: var(--rust); }
+.trinValg label:has(input:checked) { border-color: var(--rust); background: var(--paper-dim); font-weight: 600; }
+.trinValg input { position: absolute; opacity: 0; pointer-events: none; }
 
-/* ---------- Knapper ---------- */
-.knapraekke{ display:flex; flex-direction:column; gap:12px; margin-top:8px; }
-.knapraekke.side{ flex-direction:row; }
-.knapraekke.side > *{ flex:1; }
+.skyderRække { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 12px; }
+.skyderRække input[type="range"] { flex: 1 1 200px; max-width: 320px; min-height: 30px; }
+.skyderVærdi { font-variant-numeric: tabular-nums; font-weight: 600; min-width: 92px; }
 
-button{ font-family:inherit; }
-.knap{
-  display:flex; align-items:center; justify-content:center; gap:10px;
-  width:100%; min-height:62px; padding:12px 18px;
-  font-size:19px; font-weight:600; line-height:1.2;
-  border-radius:12px; border:2px solid var(--ink);
-  background:var(--paper-dim); color:var(--ink);
-  cursor:pointer; -webkit-tap-highlight-color:transparent;
+/* ---- Scene med kurverne ---- */
+.scene { background: var(--scene); border-radius: 8px; padding: 14px; }
+.kurveBlok + .kurveBlok { margin-top: 14px; }
+.kurveLabel {
+    color: var(--scene-tekst); font-size: 13.5px; font-weight: 600;
+    letter-spacing: .06em; text-transform: uppercase; margin-bottom: 6px;
 }
-.knap:active{ transform:translateY(1px); }
-.knap:focus-visible{ outline:3px solid var(--rust); outline-offset:3px; }
-.knap[disabled]{ opacity:.45; cursor:default; }
-.knap.primaer{ background:var(--ink); color:var(--paper); }
-.knap.rec{ background:var(--rust); border-color:var(--rust); color:#fff; min-height:76px; font-size:22px; }
-.knap.stille{
-  min-height:52px; font-size:16px; font-weight:500;
-  background:transparent; border:1px solid var(--line); color:var(--hint);
-}
-.prik{ width:16px; height:16px; border-radius:50%; background:#fff; display:inline-block; flex:none; }
-.reclampe{
-  width:12px; height:12px; border-radius:50%; background:var(--rust);
-  display:inline-block; vertical-align:-1px; margin-right:6px;
-  animation:blink 1.2s steps(1,end) infinite;
-}
-@media (prefers-reduced-motion:reduce){ .reclampe{ animation:none; } }
-@keyframes blink{ 50%{ opacity:.25; } }
-.firkant{ width:15px; height:15px; background:currentColor; display:inline-block; flex:none; border-radius:2px; }
-.trekant{
-  width:0; height:0; flex:none;
-  border-left:16px solid currentColor; border-top:10px solid transparent; border-bottom:10px solid transparent;
-}
-.pauseikon{ display:inline-flex; gap:4px; flex:none; }
-.pauseikon i{ width:5px; height:16px; background:currentColor; display:block; }
+.kurveBlok canvas { display: block; width: 100%; height: 82px; border-radius: 3px; }
 
-/* ---------- Felter ---------- */
-label.felt{ display:block; margin:0 0 16px; }
-label.felt > span{
-  display:block; font-size:15px; font-weight:600; margin:0 0 6px;
+/* ---- Loudness-skala ---- */
+.skala { position: relative; height: 62px; margin-top: 18px; }
+.skalaSpor {
+    position: absolute; left: 0; right: 0; top: 22px; height: 10px;
+    border-radius: 5px; background: linear-gradient(90deg, var(--paper-dim), var(--line));
+    border: 1px solid var(--line);
 }
-label.felt .vink{ display:block; font-weight:400; font-size:13.5px; color:var(--hint); margin-top:2px; }
-input[type=text], select{
-  width:100%; font-family:inherit; font-size:18px; padding:13px 12px;
-  min-height:52px; border:1px solid var(--line); border-radius:10px;
-  background:#fff; color:var(--ink);
+.skalaMærke { position: absolute; top: 8px; width: 2px; height: 38px; background: var(--moss); }
+.skalaMærke.mål { background: var(--moss); }
+.skalaMærke::after {
+    content: attr(data-tekst); position: absolute; top: 40px; left: 50%;
+    transform: translateX(-50%); white-space: nowrap;
+    font-size: 12.5px; color: var(--hint);
 }
-input[type=text]:focus, select:focus{ outline:3px solid var(--rust); outline-offset:1px; }
+.skalaPrik {
+    position: absolute; top: 14px; width: 26px; height: 26px; margin-left: -13px;
+    border-radius: 50%; border: 2px solid #FFF8EF;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; color: #FFF8EF;
+}
+.skalaPrik.før { background: var(--hint); }
+.skalaPrik.efter { background: var(--rust); }
+.skalaEnder { display: flex; justify-content: space-between; font-size: 12.5px; color: var(--hint); margin-top: 2px; }
 
-/* ---------- Fremgang ---------- */
-.bjaelke{
-  height:12px; border-radius:6px; background:var(--paper-dim);
-  border:1px solid var(--line); overflow:hidden; margin:18px 0 10px;
-}
-.bjaelke i{ display:block; height:100%; width:0%; background:var(--moss); transition:width .2s linear; }
-.status{ text-align:center; color:var(--hint); font-size:15px; min-height:24px; margin:0; }
-.status.fejl{ color:var(--rust); font-weight:600; }
+/* ---- Tal ---- */
+.talTabel { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 15px; }
+.talTabel th, .talTabel td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--line); }
+.talTabel th { color: var(--moss); font-weight: 600; font-size: 13.5px; letter-spacing: .05em; text-transform: uppercase; }
+.talTabel td { font-variant-numeric: tabular-nums; }
+.talTabel td:first-child { color: var(--hint); font-variant-numeric: normal; }
 
-/* ---------- Kvittering ---------- */
-.tal{
-  width:100%; border-collapse:collapse; margin:4px 0 18px; font-size:15px;
-}
-.tal td{ padding:8px 2px; border-bottom:1px solid var(--line); }
-.tal td:last-child{ text-align:right; font-variant-numeric:tabular-nums; color:var(--hint); }
+.knapRække { display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; margin: 14px 0 0; }
+.status { text-align: center; color: var(--hint); font-size: 14.5px; margin: 12px 0 0; min-height: 1.4em; }
+.status strong { color: var(--ink); }
+.fejl { color: var(--rust); font-weight: 600; }
 
-.besked{
-  border:1px solid var(--line); border-left:5px solid var(--rust);
-  background:#fff; border-radius:8px; padding:14px 16px; margin:0 0 18px;
-  font-size:15.5px;
-}
-.besked strong{ display:block; margin-bottom:3px; }
-.skjult{ display:none !important; }
+.bjælke { height: 8px; background: var(--paper-dim); border: 1px solid var(--line); border-radius: 5px; overflow: hidden; margin: 10px auto 0; max-width: 420px; }
+.bjælke i { display: block; height: 100%; width: 0; background: var(--rust); transition: width .2s; }
 
-.bund{
-  text-align:center; color:var(--hint); font-size:13px;
-  margin:30px 0 0; padding-top:16px; border-top:1px solid var(--line);
+/* ---- Gem-knap, jf. Builder-standard afsnit 5 ---- */
+.gemBoks { text-align: center; margin-top: 18px; }
+#gemKnap {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 12px 26px; min-height: 48px;
+    border: 2px solid var(--rust); border-radius: 999px;
+    background: transparent; color: var(--rust);
+    font-size: 16.5px; font-weight: 700; cursor: pointer;
+    transition: background .15s, color .15s;
 }
+#gemKnap:hover { background: var(--rust); color: #FFF8EF; }
+#gemKnap:hover svg { stroke: #FFF8EF; }
+#gemKnap:disabled { opacity: .45; cursor: not-allowed; }
+#gemKnap svg { stroke: var(--rust); flex: 0 0 auto; }
+.gemBoks .under { margin: 8px 0 0; font-size: 13.5px; font-style: italic; color: var(--hint); }
+
+.eksportRække { display: flex; align-items: center; justify-content: center; gap: 16px; flex-wrap: wrap; font-size: 15.5px; }
+.eksportRække select { font-family: inherit; font-size: 15.5px; padding: 8px 10px; min-height: 44px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); color: var(--ink); }
+
+.skjult { display: none !important; }
+footer { text-align: center; color: var(--hint); font-size: 13px; margin-top: 26px; line-height: 1.7; }
+
+/* ---- Stor tekst ---- */
+body.tilgængelig { font-size: 17.5px; }
+body.tilgængelig .knap, body.tilgængelig .trinValg label, body.tilgængelig .eksportRække { font-size: 17px; }
+body.tilgængelig .hjælp, body.tilgængelig .valgListe .under, body.tilgængelig .status { font-size: 15.5px; }
+body.tilgængelig .feltLabel { font-size: 15px; }
+body.tilgængelig .talTabel { font-size: 16.5px; }
+
+@media (max-width: 620px) {
+    .kort { padding: 14px; }
+    .trinValg label { flex: 1 1 100%; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
 </head>
 <body>
+
+<div class="topbar">
+    <div class="topbar-indhold">
+        <h1>Lydlab</h1>
+        <p>Her kan du g&oslash;re en lydoptagelse klar til udgivelse: samle den til mono, j&aelig;vne den ud og s&aelig;tte lydstyrken til et fast niveau. Ud kommer en mp3. Alt sker i din egen browser &ndash; lyden sendes ingen steder hen.</p>
+    </div>
+</div>
+
 <div class="ramme">
+    <div class="kort">
 
-  <div class="topbar">
-    <h1>Feltoptager</h1>
-    <p>Optag · ryd op · gem som lydfortælling</p>
-  </div>
+        <div class="dropzone" id="dropzone">
+            <span class="ikon">&#127911;</span>
+            <strong>V&aelig;lg en lydfil</strong>
+            <span class="under">Klik her, eller tr&aelig;k en fil ind i feltet. Mp3, wav, m4a og aac.</span>
+            <input type="file" id="filInput" accept="audio/*">
+        </div>
 
-  <div class="trin" aria-hidden="true">
-    <i id="prik1"></i><i id="prik2"></i><i id="prik3"></i><i id="prik4"></i>
-  </div>
+        <div id="visning" class="skjult">
 
-  <!-- ============ 1 · OPTAG ============ -->
-  <section class="skaerm aktiv" id="skaermOptag">
-    <div class="kassetteboks" id="kassetteboks">
-      <svg id="kassette" viewBox="0 0 340 214" role="img" aria-label="Kassettebånd">
-        <rect x="6" y="6" width="328" height="202" rx="16" fill="#211E19"/>
-        <rect x="14" y="14" width="312" height="186" rx="12" fill="none" stroke="#3b352b" stroke-width="2"/>
+            <div class="værktøjsrække">
+                <button class="knap" id="tilgKnap">Stor tekst</button>
+            </div>
 
-        <!-- etiket -->
-        <rect x="26" y="26" width="288" height="118" rx="7" fill="#E2DBC8"/>
-        <rect x="26" y="26" width="288" height="17" rx="7" fill="#9A4630"/>
-        <rect x="26" y="36" width="288" height="7" fill="#9A4630"/>
-        <text x="36" y="39" font-family="Georgia, serif" font-size="11.5" letter-spacing="2.4" fill="#F1E9D8">FELTOPTAGER</text>
-        <text id="etiketTitel" x="304" y="39" text-anchor="end" font-family="Georgia, serif" font-size="11.5" letter-spacing="1.2" fill="#F1E9D8">SIDE A</text>
+            <!-- FILEN -->
+            <div class="afsnit">
+                <p class="feltLabel">Optagelsen</p>
+                <table class="talTabel" id="filTabel"></table>
+                <p class="status" id="filAdvarsel"></p>
+            </div>
 
-        <!-- båndvindue -->
-        <rect x="60" y="52" width="220" height="84" rx="8" fill="#17150F"/>
+            <!-- HVAD SKAL DER SKE -->
+            <div class="afsnit">
+                <p class="feltLabel">Hvad skal der ske?</p>
+                <div class="valgListe">
+                    <label>
+                        <input type="checkbox" id="valgMono" checked>
+                        <span><span class="titel">G&oslash;r den til mono</span>
+                        <span class="under">Kanalerne l&aelig;gges sammen til &eacute;n. Tale er sj&aelig;ldent i stereo, og filen bliver halvt s&aring; stor.</span></span>
+                    </label>
+                    <label>
+                        <input type="checkbox" id="valgHøjpas" checked>
+                        <span><span class="titel">Fjern dyb brummen</span>
+                        <span class="under">Skru ned for alt under 80 Hz &ndash; trafik, blæsere, trin i gulvet og vind i mikrofonen.</span></span>
+                    </label>
+                    <label>
+                        <input type="checkbox" id="valgTrim">
+                        <span><span class="titel">Klip tavsheden v&aelig;k i begyndelsen og slutningen</span>
+                        <span class="under">Der bliver et kvart sekunds luft tilbage i hver ende.</span></span>
+                    </label>
+                    <label>
+                        <input type="checkbox" id="valgFade" checked>
+                        <span><span class="titel">Bl&oslash;d start og slutning</span>
+                        <span class="under">Et kort ind- og udton, s&aring; der ikke kommer et kn&aelig;k, n&aring;r filen begynder og slutter.</span></span>
+                    </label>
+                </div>
 
-        <!-- bånd på spolerne -->
-        <circle id="baandV" cx="115" cy="94" r="30" fill="#5a4632"/>
-        <circle id="baandH" cx="225" cy="94" r="13" fill="#5a4632"/>
-        <path id="baandVej" fill="none" stroke="#6b543c" stroke-width="4.5"
-              stroke-linejoin="round" stroke-linecap="round" d=""/>
+                <p class="feltLabel" style="margin-top:22px">J&aelig;vn stemmen ud</p>
+                <p class="hjælp">En kompressor d&aelig;mper de kraftigste steder, s&aring; afstanden mellem det h&oslash;jeste og det laveste bliver mindre. Det er det, der g&oslash;r en optagelse til at h&oslash;re i en bil eller med h&oslash;retelefoner i toget.</p>
+                <div class="trinValg" id="kompValg">
+                    <label><input type="radio" name="komp" value="ingen">Ingen</label>
+                    <label><input type="radio" name="komp" value="let">Let</label>
+                    <label><input type="radio" name="komp" value="middel" checked>Middel</label>
+                    <label><input type="radio" name="komp" value="kraftig">Kraftig</label>
+                </div>
 
-        <!-- hjul -->
-        <g class="hjul" id="hjulV">
-          <circle cx="115" cy="94" r="15" fill="#E2DBC8"/>
-          <circle cx="115" cy="94" r="7" fill="#17150F"/>
-          <g fill="#17150F">
-            <rect x="112.5" y="80" width="5" height="7" rx="1"/>
-            <rect x="112.5" y="101" width="5" height="7" rx="1"/>
-            <rect x="101" y="91.5" width="7" height="5" rx="1"/>
-            <rect x="122" y="91.5" width="7" height="5" rx="1"/>
-            <rect x="104" y="83" width="5" height="6" rx="1" transform="rotate(-45 106.5 86)"/>
-            <rect x="121" y="99" width="5" height="6" rx="1" transform="rotate(-45 123.5 102)"/>
-          </g>
-        </g>
-        <g class="hjul" id="hjulH">
-          <circle cx="225" cy="94" r="15" fill="#E2DBC8"/>
-          <circle cx="225" cy="94" r="7" fill="#17150F"/>
-          <g fill="#17150F">
-            <rect x="222.5" y="80" width="5" height="7" rx="1"/>
-            <rect x="222.5" y="101" width="5" height="7" rx="1"/>
-            <rect x="211" y="91.5" width="7" height="5" rx="1"/>
-            <rect x="232" y="91.5" width="7" height="5" rx="1"/>
-            <rect x="214" y="83" width="5" height="6" rx="1" transform="rotate(-45 216.5 86)"/>
-            <rect x="231" y="99" width="5" height="6" rx="1" transform="rotate(-45 233.5 102)"/>
-          </g>
-        </g>
+                <p class="feltLabel" style="margin-top:22px">Lydstyrke</p>
+                <p class="hjælp">Loudness m&aring;les i LUFS efter den europ&aelig;iske standard EBU R128. &minus;16 er det, tale plejer at ligge p&aring;. Bruger I samme tal til alle optagelser, beh&oslash;ver lytteren aldrig r&oslash;re ved lydstyrken undervejs.</p>
+                <div class="skyderRække">
+                    <label for="målSlider">M&aring;l</label>
+                    <input type="range" id="målSlider" min="-24" max="-12" step="0.5" value="-16">
+                    <span class="skyderVærdi" id="målVærdi">&minus;16,0 LUFS</span>
+                    <button class="knap" id="målStandard">Til lydfort&aelig;llinger</button>
+                </div>
 
-        <!-- styreruller -->
-        <circle cx="74" cy="129" r="5" fill="#E2DBC8"/><circle cx="74" cy="129" r="2" fill="#17150F"/>
-        <circle cx="266" cy="129" r="5" fill="#E2DBC8"/><circle cx="266" cy="129" r="2" fill="#17150F"/>
+                <div class="knapRække">
+                    <button class="knap aktivKnap" id="behandlKnap" style="min-width:220px">Behandl lyden</button>
+                </div>
+                <p class="status" id="status"></p>
+                <div class="bjælke skjult" id="bjælke"><i id="bjælkeFyld"></i></div>
+            </div>
 
-        <!-- underkant -->
-        <rect x="26" y="152" width="288" height="42" rx="7" fill="#2c281f"/>
-        <rect x="120" y="164" width="100" height="18" rx="4" fill="#17150F"/>
-        <circle cx="46" cy="173" r="5" fill="#17150F"/>
-        <circle cx="294" cy="173" r="5" fill="#17150F"/>
-        <circle cx="96" cy="173" r="4" fill="#17150F"/>
-        <circle cx="244" cy="173" r="4" fill="#17150F"/>
-      </svg>
+            <!-- RESULTATET -->
+            <div class="afsnit skjult" id="resultatAfsnit">
+                <p class="feltLabel">F&oslash;r og efter</p>
+                <div class="scene">
+                    <div class="kurveBlok">
+                        <div class="kurveLabel">F&oslash;r</div>
+                        <canvas id="kurveFør"></canvas>
+                    </div>
+                    <div class="kurveBlok">
+                        <div class="kurveLabel">Efter</div>
+                        <canvas id="kurveEfter"></canvas>
+                    </div>
+                </div>
+
+                <div class="skala" id="skala">
+                    <div class="skalaSpor"></div>
+                </div>
+                <div class="skalaEnder"><span>&minus;30 LUFS &ndash; meget svag</span><span>&minus;6 LUFS &ndash; meget kraftig</span></div>
+
+                <table class="talTabel" id="resultatTabel"></table>
+
+                <div class="knapRække">
+                    <button class="knap" id="hørFør">H&oslash;r originalen</button>
+                    <button class="knap" id="hørEfter">H&oslash;r resultatet</button>
+                    <button class="knap" id="stopKnap">Stop</button>
+                </div>
+            </div>
+
+            <!-- GEM -->
+            <div class="afsnit skjult" id="gemAfsnit">
+                <p class="feltLabel">Gem som mp3</p>
+                <div class="eksportRække">
+                    <label for="bitrateVælg">Kvalitet:
+                        <select id="bitrateVælg">
+                            <option value="96">96 kbit/s &ndash; tale, mindst plads</option>
+                            <option value="128" selected>128 kbit/s &ndash; almindelig</option>
+                            <option value="192">192 kbit/s &ndash; musik og lydbilleder</option>
+                        </select>
+                    </label>
+                </div>
+                <div class="gemBoks">
+                    <button id="gemKnap">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M12 3v12"/><path d="M7 11l5 5 5-5"/><path d="M4 20h16"/>
+                        </svg>
+                        Gem mp3-filen
+                    </button>
+                    <p class="under" id="gemUnder"></p>
+                </div>
+                <div class="bjælke skjult" id="gemBjælke"><i id="gemBjælkeFyld"></i></div>
+
+                <div class="knapRække">
+                    <button class="knap" id="nyKnap">V&aelig;lg en anden lydfil</button>
+                </div>
+            </div>
+
+        </div>
     </div>
 
-    <div class="taeller" id="taeller">00:00</div>
-    <p class="taellertekst" id="taellertekst">Klar til optagelse</p>
-
-    <div class="niveau" id="niveauboks">
-      <div class="niveauspor">
-        <div class="niveaufyld" id="niveaufyld"></div>
-        <div class="niveaumaerke" style="left:52%"></div>
-        <div class="niveaumaerke" style="left:88%"></div>
-      </div>
-    </div>
-    <p class="niveautekst" id="niveautekst">&nbsp;</p>
-
-    <div class="knapraekke" id="knapperKlar">
-      <button class="knap rec" id="recKnap"><span class="prik blink"></span> Start optagelse</button>
-    </div>
-
-    <div class="knapraekke skjult" id="knapperOptager">
-      <button class="knap primaer" id="stopKnap"><span class="firkant"></span> Stop og gem</button>
-      <button class="knap" id="pauseKnap"><span class="pauseikon"><i></i><i></i></span> Pause</button>
-    </div>
-
-    <div class="besked skjult" id="genopretBesked">
-      <strong>Der ligger en afbrudt optagelse</strong>
-      <span id="genopretTekst"></span>
-      <div class="knapraekke side" style="margin-top:12px">
-        <button class="knap stille" id="genopretJa">Hent den frem</button>
-        <button class="knap stille" id="genopretNej">Slet den</button>
-      </div>
-    </div>
-
-    <p class="status" id="optagStatus"></p>
-  </section>
-
-  <!-- ============ 2 · BEHANDLER ============ -->
-  <section class="skaerm" id="skaermBehandl">
-    <h2 class="overskrift">Retter lyden til</h2>
-    <p class="under">Det tager et øjeblik. Bliv på siden.</p>
-    <div class="kassetteboks" id="kassetteboks2"></div>
-    <div class="bjaelke"><i id="behandlBjaelke"></i></div>
-    <p class="status" id="behandlStatus">Gør klar …</p>
-  </section>
-
-  <!-- ============ 3 · LYT ============ -->
-  <section class="skaerm" id="skaermLyt">
-    <h2 class="overskrift">Hør resultatet</h2>
-    <p class="under">Lyt den igennem, før du gemmer.</p>
-    <div class="kassetteboks" id="kassetteboks3"></div>
-    <div class="taeller" id="lytTaeller">00:00</div>
-    <p class="taellertekst" id="lytTekst">&nbsp;</p>
-
-    <div class="knapraekke">
-      <button class="knap primaer" id="lytKnap"><span class="trekant"></span> Afspil</button>
-      <button class="knap" id="godkendKnap">Den er god — giv den et navn</button>
-      <button class="knap stille" id="omKnap">Optag forfra</button>
-    </div>
-
-    <table class="tal" id="lytTal"></table>
-  </section>
-
-  <!-- ============ 4 · GEM ============ -->
-  <section class="skaerm" id="skaermGem">
-    <h2 class="overskrift">Giv den et navn</h2>
-    <p class="under">Resten kan du sætte på hjemme i Lydfortælling&nbsp;· Bygger.</p>
-
-    <label class="felt">
-      <span>Titel
-        <span class="vink">Fx “Karen fortæller om købmanden på hjørnet”</span>
-      </span>
-      <input type="text" id="titelFelt" autocomplete="off" enterkeyhint="done">
-    </label>
-
-    <label class="felt">
-      <span>Sted <span class="vink">Valgfrit. Fx “Roskilde, Sankt Ols Gade”</span></span>
-      <input type="text" id="stedFelt" autocomplete="off">
-    </label>
-
-    <label class="felt">
-      <span>Lydkvalitet</span>
-      <select id="bitrateFelt">
-        <option value="96" selected>96 kbit/s — tale, mindst plads</option>
-        <option value="128">128 kbit/s — bedre kvalitet, større fil</option>
-      </select>
-    </label>
-
-    <p class="status" id="stoerrelse"></p>
-
-    <div class="knapraekke">
-      <button class="knap primaer" id="gemKnap">Gem lydfortællingen</button>
-      <button class="knap stille" id="gemMp3Knap">Gem kun mp3-filen</button>
-      <button class="knap stille" id="tilbageKnap">Tilbage</button>
-    </div>
-
-    <div class="bjaelke skjult" id="gemBjaelkeBoks"><i id="gemBjaelke"></i></div>
-    <p class="status" id="gemStatus"></p>
-
-    <div class="besked skjult" id="faerdigBesked">
-      <strong>Filen er gemt</strong>
-      Åbn den i Lydfortælling · Bygger på computeren, når du vil sætte billede,
-      beskrivelse og Dublin Core-oplysninger på.
-      <div class="knapraekke" style="margin-top:12px">
-        <button class="knap stille" id="nyOptagelseKnap">Optag en ny</button>
-      </div>
-    </div>
-  </section>
-
-  <p class="bund">Feltoptager · lyden behandles med Lydlabs motor og gemmes som en
-  lydfortælling der kan åbnes igen i Lydfortælling&nbsp;· Bygger.</p>
-
+    <footer>
+        Lydlab arbejder kun i din browser &ndash; lyden bliver aldrig sendt nogen steder hen.<br>
+        Mp3-kodningen sker med lamejs af Alex Zhukov, en JavaScript-udgave af LAME (<span>lame.sourceforge.net</span>), som er omfattet af LGPL 3.0. Kildeteksten ligger u&aelig;ndret i denne fil og kan udskiftes.
+    </footer>
 </div>
 
 <script id="lameKilde">/* lamejs 1.2.1 - Pure JavaScript MP3 Encoder, Alex Zhukov.
@@ -15910,37 +15869,67 @@ lamejs();
 
 <script>
 /* ============================================================
-   FELTOPTAGER
-   Optag i browseren → Lydlabs behandlingskæde → færdig
-   lydfortælling som én HTML-fil, der kan åbnes igen i
-   Lydfortælling · Bygger (lydfortaelling-bygger.html).
-
-   Lydbehandlingen og loudness-målingen er Lydlabs kode,
-   uændret. Afspillerskabelonen er byggerens buildPlayerHTML,
-   uændret bortset fra at Dublin Core kommer med som data
-   i stedet for at blive læst fra en formular.
+   LYDLAB
+   Loudness måles efter ITU-R BS.1770-4 / EBU R128:
+   K-vægtning i to trin, 400 ms blokke med 75 % overlap,
+   absolut gate ved -70 LUFS og relativ gate 10 LU under.
    ============================================================ */
 
-/* ---- Faste indstillinger. Svarer til Lydlab med
-        mono + højpas + klip tavshed + fade, kompressor
-        "middel" og mål −16 LUFS. ---- */
-const MÅL_LUFS        = -16;
-const LOFT_DB         = -1;
-const FADE_MS         = 30;
+const LOFT_DB = -1;                       // højeste tilladte top efter behandling
+const FADE_MS = 30;
 const TRIM_TÆRSKEL_DB = -45;
-const TRIM_LUFT_MS    = 250;
-const KOMPRESSOR      = { threshold:-22, knee:10, ratio:4.0, attack:0.005, release:0.20 };
+const TRIM_LUFT_MS = 250;
 
-const ADVARSEL_SEK    = 15 * 60;   // venlig påmindelse ved et kvarter
-const SPOLE_FULD_SEK  = 10 * 60;   // hvornår spolerne ser "fulde" ud
-const STYKKE_MS       = 5000;      // hvor tit optagelsen sikres undervejs
+const KOMPRESSORER = {
+    ingen:   null,
+    let:     { threshold: -20, knee: 12, ratio: 2.5, attack: 0.010, release: 0.25 },
+    middel:  { threshold: -22, knee: 10, ratio: 4.0, attack: 0.005, release: 0.20 },
+    kraftig: { threshold: -26, knee:  8, ratio: 7.0, attack: 0.003, release: 0.15 }
+};
 
-const $ = id => document.getElementById(id);
-const pause = (ms = 0) => new Promise(r => setTimeout(r, ms));
+/* ---- Elementer ---- */
+const dropzone   = document.getElementById('dropzone');
+const filInput   = document.getElementById('filInput');
+const visning    = document.getElementById('visning');
+const filTabel   = document.getElementById('filTabel');
+const filAdvarsel = document.getElementById('filAdvarsel');
+const valgMono   = document.getElementById('valgMono');
+const valgHøjpas = document.getElementById('valgHøjpas');
+const valgTrim   = document.getElementById('valgTrim');
+const valgFade   = document.getElementById('valgFade');
+const målSlider  = document.getElementById('målSlider');
+const målVærdi   = document.getElementById('målVærdi');
+const målStandard = document.getElementById('målStandard');
+const behandlKnap = document.getElementById('behandlKnap');
+const status      = document.getElementById('status');
+const bjælke      = document.getElementById('bjælke');
+const bjælkeFyld  = document.getElementById('bjælkeFyld');
+const resultatAfsnit = document.getElementById('resultatAfsnit');
+const resultatTabel  = document.getElementById('resultatTabel');
+const skala       = document.getElementById('skala');
+const kurveFør    = document.getElementById('kurveFør');
+const kurveEfter  = document.getElementById('kurveEfter');
+const gemAfsnit   = document.getElementById('gemAfsnit');
+const gemKnap     = document.getElementById('gemKnap');
+const gemUnder    = document.getElementById('gemUnder');
+const gemBjælke   = document.getElementById('gemBjælke');
+const gemBjælkeFyld = document.getElementById('gemBjælkeFyld');
+const bitrateVælg = document.getElementById('bitrateVælg');
+const nyKnap      = document.getElementById('nyKnap');
+const tilgKnap    = document.getElementById('tilgKnap');
+const hørFør      = document.getElementById('hørFør');
+const hørEfter    = document.getElementById('hørEfter');
+const stopKnap    = document.getElementById('stopKnap');
 
-/* ============================================================
-   Loudness efter BS.1770 — Lydlabs motor, uændret
-   ============================================================ */
+let lydCtx        = null;
+let originalBuffer = null;
+let resultatBuffer = null;
+let filnavn       = null;
+let målLufs       = -16;
+let afspiller     = null;
+let tilgængelig   = false;
+let sidsteTal     = null;
+
 /* ============================================================
    Loudness efter BS.1770 — virker ved enhver samplerate
    ============================================================ */
@@ -16055,425 +16044,186 @@ function begræns(kanaler, sr, loft) {
 /* ============================================================
    Små hjælpere
    ============================================================ */
+const pause = (ms = 0) => new Promise(r => setTimeout(r, ms));
+
+function sætStatus(tekst, fejl) {
+    status.innerHTML = tekst;
+    status.classList.toggle('fejl', !!fejl);
+}
+function sætBjælke(el, fyld, pct) {
+    el.classList.toggle('skjult', pct === null);
+    if (pct !== null) fyld.style.width = Math.round(pct * 100) + '%';
+}
 function tid(sekunder) {
-    if (!isFinite(sekunder)) return '00:00';
-    const m = Math.floor(sekunder / 60), s = Math.floor(sekunder % 60);
-    return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+    const s = Math.round(sekunder);
+    return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
 }
-function dbTekst(v, decimaler = 1) {
-    if (v === null || !isFinite(v)) return '–';
-    return v.toFixed(decimaler).replace('.', ',').replace('-', '\u2212') + ' dB';
+function db(v, decimaler) {
+    if (!isFinite(v)) return '–';
+    return v.toFixed(decimaler === undefined ? 1 : decimaler).replace('.', ',');
 }
-function mbTekst(bytes) {
-    const mb = bytes / 1024 / 1024;
-    return mb >= 1 ? mb.toFixed(1).replace('.', ',') + ' MB'
-                   : Math.round(bytes / 1024) + ' kB';
+function tabel(el, rækker) {
+    el.innerHTML = rækker.map(r => '<tr><td>' + r[0] + '</td><td>' + r[1] + '</td></tr>').join('');
 }
-function filnavnAf(titel) {
-    return (titel || 'lydfortaelling').toLowerCase()
-        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-        .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'lydfortaelling';
+function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
-function render(off) {
-    return off.startRendering ? off.startRendering()
-         : new Promise(r => { off.oncomplete = e => r(e.renderedBuffer); off.startRendering(); });
-}
-let lydCtx = null;
 function hentLydCtx() {
     if (!lydCtx) lydCtx = new (window.AudioContext || window.webkitAudioContext)();
     if (lydCtx.state === 'suspended') lydCtx.resume();
     return lydCtx;
 }
-
-/* ============================================================
-   Kassettebåndet
-   ============================================================ */
-const svgKassette = $('kassette');
-const baandV = $('baandV'), baandH = $('baandH'), baandVej = $('baandVej');
-const RULLE_V = [74, 129], RULLE_H = [266, 129];   // styrerullerne i hver side
-
-// Hvor forlader båndet spolen? Det rigtige tangentpunkt, så båndet
-// ser ud til at rulle af kanten og ikke ud fra midten.
-function tangent(cx, cy, r, gx, gy, retning) {
-    const dx = gx - cx, dy = gy - cy, L = Math.hypot(dx, dy);
-    if (L <= r) return [cx, cy];
-    const v = Math.atan2(dy, dx) + retning * Math.acos(Math.min(1, r / L));
-    return [cx + r * Math.cos(v), cy + r * Math.sin(v)];
-}
-
-function flytKassette(vaertId) {
-    const vaert = $(vaertId);
-    if (vaert && svgKassette.parentNode !== vaert) vaert.appendChild(svgKassette);
-}
-function spoler(andel) {
-    const f = Math.max(0, Math.min(1, andel));
-    const rMin = 13, rMax = 30;
-    const rV = rMax - (rMax - rMin) * f;
-    const rH = rMin + (rMax - rMin) * f;
-    baandV.setAttribute('r', rV.toFixed(1));
-    baandH.setAttribute('r', rH.toFixed(1));
-    // ned fra venstre spole, om styrerullen, hen over bunden, op på højre spole
-    const a = tangent(115, 94, rV, RULLE_V[0], RULLE_V[1],  1);
-    const b = tangent(225, 94, rH, RULLE_H[0], RULLE_H[1], -1);
-    baandVej.setAttribute('d',
-        'M' + a[0].toFixed(1) + ' ' + a[1].toFixed(1) +
-        'L' + RULLE_V[0] + ' ' + RULLE_V[1] +
-        'L' + RULLE_H[0] + ' ' + RULLE_H[1] +
-        'L' + b[0].toFixed(1) + ' ' + b[1].toFixed(1));
-}
-function kassetteKører(på, tilbage) {
-    svgKassette.classList.toggle('koerer', !!på);
-    svgKassette.classList.toggle('tilbage', !!tilbage);
-}
-function etiket(tekst) { $('etiketTitel').textContent = tekst; }
-spoler(0);
-
-/* ============================================================
-   Skærmskift
-   ============================================================ */
-const SKÆRME = ['skaermOptag', 'skaermBehandl', 'skaermLyt', 'skaermGem'];
-function visSkærm(id) {
-    SKÆRME.forEach((s, i) => {
-        $(s).classList.toggle('aktiv', s === id);
-        const p = $('prik' + (i + 1));
-        p.classList.remove('her', 'klaret');
-        const nu = SKÆRME.indexOf(id);
-        if (i === nu) p.classList.add('her');
-        else if (i < nu) p.classList.add('klaret');
-    });
-    window.scrollTo(0, 0);
-}
-visSkærm('skaermOptag');
-
-/* ============================================================
-   Sikring undervejs — optagelsen lægges i browserens eget
-   lager hvert 5. sekund, så et afbrudt forløb kan hentes frem.
-   ============================================================ */
-const DB_NAVN = 'feltoptager', DB_VER = 1;
-let dbLoefte = null;
-function db() {
-    if (!dbLoefte) dbLoefte = new Promise((res, rej) => {
-        if (!window.indexedDB) return rej(new Error('intet lager'));
-        const r = indexedDB.open(DB_NAVN, DB_VER);
-        r.onupgradeneeded = () => {
-            const d = r.result;
-            if (!d.objectStoreNames.contains('stykker')) d.createObjectStore('stykker', { autoIncrement:true });
-            if (!d.objectStoreNames.contains('info'))    d.createObjectStore('info');
-        };
-        r.onsuccess = () => res(r.result);
-        r.onerror   = () => rej(r.error);
-    });
-    return dbLoefte;
-}
-async function lagerLæg(butik, værdi, nøgle) {
-    try {
-        const d = await db();
-        await new Promise((res, rej) => {
-            const t = d.transaction(butik, 'readwrite');
-            const s = t.objectStore(butik);
-            nøgle === undefined ? s.add(værdi) : s.put(værdi, nøgle);
-            t.oncomplete = res; t.onerror = () => rej(t.error);
-        });
-    } catch (e) { /* lageret er ikke livsvigtigt */ }
-}
-async function lagerHent(butik, nøgle) {
-    try {
-        const d = await db();
-        return await new Promise((res, rej) => {
-            const t = d.transaction(butik, 'readonly').objectStore(butik);
-            const r = nøgle === undefined ? t.getAll() : t.get(nøgle);
-            r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
-        });
-    } catch (e) { return nøgle === undefined ? [] : undefined; }
-}
-async function lagerRyd() {
-    try {
-        const d = await db();
-        await new Promise((res, rej) => {
-            const t = d.transaction(['stykker', 'info'], 'readwrite');
-            t.objectStore('stykker').clear(); t.objectStore('info').clear();
-            t.oncomplete = res; t.onerror = () => rej(t.error);
-        });
-    } catch (e) { /* ignoreres */ }
+function render(off) {
+    const p = off.startRendering();
+    if (p && p.then) return p;
+    return new Promise(res => { off.oncomplete = e => res(e.renderedBuffer); });
 }
 
 /* ============================================================
-   1 · Optagelse
+   Indlæsning
    ============================================================ */
-let stream = null, optager = null, analyse = null, målerData = null, byteMåler = false;
-let stykkerNu = [];
-let optagStart = 0, optagetTid = 0, tikker = null, målerLøkke = null;
-let vågelås = null, klippet = 0, spidsHold = -100, spidsTid = 0;
-let råBlob = null, råType = '';
-
-const taeller      = $('taeller');
-const taellertekst = $('taellertekst');
-const niveaufyld   = $('niveaufyld');
-const niveautekst  = $('niveautekst');
-const optagStatus  = $('optagStatus');
-
-function forløbet() {
-    return optagetTid + (optager && optager.state === 'recording' ? (performance.now() - optagStart) / 1000 : 0);
-}
-
-async function vågelåsTil() {
-    try { if (navigator.wakeLock) vågelås = await navigator.wakeLock.request('screen'); } catch (e) {}
-}
-function vågelåsFra() {
-    try { if (vågelås) { vågelås.release(); vågelås = null; } } catch (e) {}
-}
-document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible' && optager && optager.state === 'recording' && !vågelås) vågelåsTil();
-});
-
-function tegnNiveau() {
-    if (!analyse) return;
-    let spids = 0;
-    if (byteMåler) {
-        analyse.getByteTimeDomainData(målerData);
-        for (let i = 0; i < målerData.length; i++) { const a = Math.abs(målerData[i] - 128) / 128; if (a > spids) spids = a; }
-    } else {
-        analyse.getFloatTimeDomainData(målerData);
-        for (let i = 0; i < målerData.length; i++) { const a = Math.abs(målerData[i]); if (a > spids) spids = a; }
-    }
-    if (spids >= 0.999) klippet++;
-    const dbV = spids > 0 ? 20 * Math.log10(spids) : -100;
-
-    const pct = Math.max(0, Math.min(100, (dbV + 50) / 50 * 100));
-    niveaufyld.style.width = pct.toFixed(1) + '%';
-    niveaufyld.classList.toggle('hoej', dbV > -3);
-
-    // teksten holdes rolig: den følger den højeste top det seneste sekund
-    const nu = performance.now();
-    if (dbV > spidsHold || nu - spidsTid > 1000) { spidsHold = dbV; spidsTid = nu; }
-    if (optager && optager.state === 'recording') {
-        if (spidsHold < -30)      { niveautekst.textContent = 'For svag — kom tættere på'; niveautekst.className = 'niveautekst svag'; }
-        else if (spidsHold > -3)  { niveautekst.textContent = 'For kraftig — hold telefonen længere væk'; niveautekst.className = 'niveautekst kraftig'; }
-        else                      { niveautekst.textContent = 'Fin styrke'; niveautekst.className = 'niveautekst god'; }
-    }
-    målerLøkke = requestAnimationFrame(tegnNiveau);
-}
-
-function tikTak() {
-    const s = forløbet();
-    taeller.textContent = tid(s);
-    spoler(s / SPOLE_FULD_SEK);
-    if (s > ADVARSEL_SEK && !taellertekst.dataset.advaret) {
-        taellertekst.dataset.advaret = '1';
-        optagStatus.textContent = 'Optagelsen er over et kvarter. Den bliver til en stor fil — overvej at stoppe her.';
-    }
-}
-
-async function startOptagelse() {
-    optagStatus.textContent = '';
-    if (!window.MediaRecorder || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        optagStatus.className = 'status fejl';
-        optagStatus.textContent = 'Denne browser kan ikke optage lyd. Prøv Safari eller Chrome i en nyere udgave.';
-        return;
-    }
-    $('genopretBesked').classList.add('skjult');
+async function indlæsFil(fil) {
+    if (!fil) return;
+    stopAfspilning();
+    sætStatus('L&aelig;ser filen &hellip;');
+    visning.classList.remove('skjult');
+    dropzone.classList.add('skjult');
+    resultatAfsnit.classList.add('skjult');
+    gemAfsnit.classList.add('skjult');
+    filnavn = fil.name;
     try {
-        stream = await navigator.mediaDevices.getUserMedia({
-            audio: { echoCancellation:false, noiseSuppression:false, autoGainControl:false, channelCount:1 }
+        const data = await fil.arrayBuffer();
+        const ctx = hentLydCtx();
+        originalBuffer = await new Promise((res, rej) => {
+            const p = ctx.decodeAudioData(data, res, rej);
+            if (p && p.then) p.then(res, rej);
         });
     } catch (e) {
-        optagStatus.className = 'status fejl';
-        optagStatus.textContent = (location.protocol === 'https:' || location.hostname === 'localhost')
-            ? 'Der er ikke adgang til mikrofonen. Giv siden lov i browserens indstillinger og prøv igen.'
-            : 'Mikrofonen kan kun bruges når siden ligger på en sikker adresse (https).';
+        sætStatus('Filen kunne ikke l&aelig;ses. Pr&oslash;v en mp3, wav eller m4a.', true);
         return;
     }
-    optagStatus.className = 'status';
-
-    // niveaumåler
-    const ctx = hentLydCtx();
-    const kilde = ctx.createMediaStreamSource(stream);
-    analyse = ctx.createAnalyser();
-    analyse.fftSize = 2048;
-    byteMåler = typeof analyse.getFloatTimeDomainData !== 'function';
-    målerData = byteMåler ? new Uint8Array(analyse.fftSize) : new Float32Array(analyse.fftSize);
-    kilde.connect(analyse);
-
-    await lagerRyd();
-    stykkerNu = [];
-    klippet = 0; optagetTid = 0;
-    delete taellertekst.dataset.advaret;
-
-    const typer = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/ogg;codecs=opus', ''];
-    const valgt = typer.find(t => t === '' || (window.MediaRecorder && MediaRecorder.isTypeSupported(t)));
-    optager = valgt ? new MediaRecorder(stream, valgt ? { mimeType: valgt } : undefined) : new MediaRecorder(stream);
-    råType = optager.mimeType || valgt || 'audio/webm';
-    await lagerLæg('info', { type: råType, tid: Date.now() }, 'optagelse');
-
-    optager.ondataavailable = e => {
-        if (!e.data || !e.data.size) return;
-        stykkerNu.push(e.data);          // det er dem vi bruger
-        lagerLæg('stykker', e.data);     // og en kopi i lageret, hvis noget går galt
-    };
-    optager.onstop = afslutOptagelse;
-
-    optager.start(STYKKE_MS);
-    optagStart = performance.now();
-
-    $('knapperKlar').classList.add('skjult');
-    $('knapperOptager').classList.remove('skjult');
-    taeller.classList.add('optager');
-    taellertekst.innerHTML = '<span class="reclampe"></span> Optager';
-    etiket('OPTAGER');
-    kassetteKører(true, false);
-    tikker = setInterval(tikTak, 200);
-    tegnNiveau();
-    vågelåsTil();
-}
-
-function pauseOptagelse() {
-    if (!optager) return;
-    if (optager.state === 'recording') {
-        optager.pause();
-        optagetTid += (performance.now() - optagStart) / 1000;
-        kassetteKører(false, false);
-        taeller.classList.remove('optager');
-        taellertekst.textContent = 'På pause';
-        niveautekst.textContent = '\u00a0'; niveautekst.className = 'niveautekst';
-        etiket('PAUSE');
-        $('pauseKnap').innerHTML = '<span class="trekant"></span> Fortsæt';
-    } else if (optager.state === 'paused') {
-        optager.resume();
-        optagStart = performance.now();
-        kassetteKører(true, false);
-        taeller.classList.add('optager');
-        taellertekst.innerHTML = '<span class="reclampe"></span> Optager';
-        etiket('OPTAGER');
-        $('pauseKnap').innerHTML = '<span class="pauseikon"><i></i><i></i></span> Pause';
-    }
-}
-
-function stopOptagelse() {
-    if (!optager) return;
-    if (optager.state === 'recording') optagetTid += (performance.now() - optagStart) / 1000;
-    optager.stop();
-}
-
-async function afslutOptagelse() {
-    clearInterval(tikker); tikker = null;
-    cancelAnimationFrame(målerLøkke); målerLøkke = null;
-    if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
-    analyse = null;
-    vågelåsFra();
-    taeller.classList.remove('optager');
-    kassetteKører(false, false);
-    $('knapperOptager').classList.add('skjult');
-    $('knapperKlar').classList.remove('skjult');
-    $('pauseKnap').innerHTML = '<span class="pauseikon"><i></i><i></i></span> Pause';
-    niveautekst.textContent = '\u00a0'; niveautekst.className = 'niveautekst';
-
-    if (!stykkerNu.length) {
-        optagStatus.className = 'status fejl';
-        optagStatus.textContent = 'Der kom ingen lyd med. Prøv igen.';
-        return;
-    }
-    råBlob = new Blob(stykkerNu, { type: råType });
-    behandlOptagelse();
+    const b = originalBuffer;
+    tabel(filTabel, [
+        ['Fil', '<strong>' + escapeHtml(fil.name) + '</strong>'],
+        ['L&aelig;ngde', tid(b.duration)],
+        ['Kanaler', b.numberOfChannels === 1 ? 'Mono' : b.numberOfChannels === 2 ? 'Stereo' : b.numberOfChannels + ' kanaler'],
+        ['Samplerate', (b.sampleRate / 1000).toString().replace('.', ',') + ' kHz'],
+        ['Loudness nu', 'm&aring;les n&aring;r du trykker behandl']
+    ]);
+    const minutter = b.duration / 60;
+    filAdvarsel.innerHTML = minutter > 25
+        ? 'Optagelsen er p&aring; ' + tid(b.duration) + '. Lange filer fylder meget i hukommelsen &ndash; g&aring;r maskinen i st&aring;, s&aring; del optagelsen op i mindre stykker f&oslash;rst.'
+        : '';
+    sætStatus('');
+    behandlKnap.disabled = false;
 }
 
 /* ============================================================
-   2 · Lydlabs behandlingskæde — faste indstillinger
+   Behandlingen
    ============================================================ */
-let originalBuffer = null, resultatBuffer = null, sidsteTal = null;
-
-function sætBjælke(el, pct) { el.style.width = Math.round(Math.max(0, Math.min(1, pct)) * 100) + '%'; }
-
-async function behandlOptagelse() {
-    visSkærm('skaermBehandl');
-    flytKassette('kassetteboks2');
-    etiket('SPOLER');
-    kassetteKører(true, true);
-    const bj = $('behandlBjaelke'), st = $('behandlStatus');
-    st.className = 'status';
-    sætBjælke(bj, 0.03);
+async function behandl() {
+    if (!originalBuffer) return;
+    stopAfspilning();
+    behandlKnap.disabled = true;
+    gemAfsnit.classList.add('skjult');
+    const t0 = performance.now();
 
     try {
-        st.textContent = 'Læser optagelsen …';
-        await pause(30);
-        const bytes = await råBlob.arrayBuffer();
-        const ctx = hentLydCtx();
-        originalBuffer = await new Promise((res, rej) =>
-            ctx.decodeAudioData(bytes, res, e => rej(e || new Error('kunne ikke afkodes'))));
-
         const kilde = originalBuffer;
         const udRate = [32000, 44100, 48000].indexOf(kilde.sampleRate) >= 0 ? kilde.sampleRate : 48000;
+        const udKanaler = valgMono.checked ? 1 : kilde.numberOfChannels;
 
-        st.textContent = 'Måler optagelsen …';
-        sætBjælke(bj, 0.12); await pause(20);
+        sætStatus('M&aring;ler originalen &hellip;');
+        sætBjælke(bjælke, bjælkeFyld, 0.05);
+        await pause(20);
         const førKanaler = [];
         for (let c = 0; c < kilde.numberOfChannels; c++) førKanaler.push(kilde.getChannelData(c));
         const førLufs = målLoudness(førKanaler, kilde.sampleRate);
-        const førTop  = topDb(førKanaler);
+        const førTop = topDb(førKanaler);
 
-        st.textContent = 'Filtrerer og jævner ud …';
-        sætBjælke(bj, 0.3); await pause(20);
+        sætStatus('Filtrerer og j&aelig;vner ud &hellip;');
+        sætBjælke(bjælke, bjælkeFyld, 0.25);
+        await pause(20);
+
         const længde = Math.ceil(kilde.duration * udRate);
         const OC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
-        const off = new OC(1, længde, udRate);           // altid mono
+        const off = new OC(udKanaler, længde, udRate);
         const src = off.createBufferSource();
         src.buffer = kilde;
         let node = src;
-        const hp = off.createBiquadFilter();             // højpas 80 Hz
-        hp.type = 'highpass'; hp.frequency.value = 80; hp.Q.value = 0.707;
-        node.connect(hp); node = hp;
-        const k = off.createDynamicsCompressor();        // kompressor "middel"
-        k.threshold.value = KOMPRESSOR.threshold; k.knee.value = KOMPRESSOR.knee;
-        k.ratio.value = KOMPRESSOR.ratio; k.attack.value = KOMPRESSOR.attack; k.release.value = KOMPRESSOR.release;
-        node.connect(k); node = k;
+        if (valgHøjpas.checked) {
+            const hp = off.createBiquadFilter();
+            hp.type = 'highpass'; hp.frequency.value = 80; hp.Q.value = 0.707;
+            node.connect(hp); node = hp;
+        }
+        const kompId = document.querySelector('input[name="komp"]:checked').value;
+        const komp = KOMPRESSORER[kompId];
+        if (komp) {
+            const c = off.createDynamicsCompressor();
+            c.threshold.value = komp.threshold; c.knee.value = komp.knee;
+            c.ratio.value = komp.ratio; c.attack.value = komp.attack; c.release.value = komp.release;
+            node.connect(c); node = c;
+        }
         node.connect(off.destination);
         src.start();
         const rendret = await render(off);
 
-        let kanaler = [Float32Array.from(rendret.getChannelData(0))];
+        // kanalerne hentes ud, så vi kan regne videre på tallene
+        let kanaler = [];
+        for (let c = 0; c < rendret.numberOfChannels; c++) kanaler.push(Float32Array.from(rendret.getChannelData(c)));
 
-        st.textContent = 'Klipper tavsheden væk …';
-        sætBjælke(bj, 0.5); await pause(20);
-        kanaler = klipTavshed(kanaler, udRate);
+        if (valgTrim.checked) {
+            sætStatus('Klipper tavsheden v&aelig;k &hellip;');
+            await pause(10);
+            kanaler = klipTavshed(kanaler, udRate);
+        }
 
-        st.textContent = 'Sætter lydstyrken …';
-        sætBjælke(bj, 0.65); await pause(20);
+        sætStatus('M&aring;ler og s&aelig;tter lydstyrken &hellip;');
+        sætBjælke(bjælke, bjælkeFyld, 0.6);
+        await pause(20);
+
         const mellemLufs = målLoudness(kanaler, udRate);
         let forstærkning = 0;
         if (mellemLufs !== null && isFinite(mellemLufs)) {
-            forstærkning = MÅL_LUFS - mellemLufs;
+            forstærkning = målLufs - mellemLufs;
             const faktor = Math.pow(10, forstærkning / 20);
-            for (const kan of kanaler) for (let i = 0; i < kan.length; i++) kan[i] *= faktor;
+            for (const k of kanaler) for (let i = 0; i < k.length; i++) k[i] *= faktor;
         }
 
-        st.textContent = 'Holder toppene nede …';
-        sætBjælke(bj, 0.82); await pause(20);
+        sætStatus('Holder toppene nede &hellip;');
+        sætBjælke(bjælke, bjælkeFyld, 0.8);
+        await pause(20);
         const loft = Math.pow(10, LOFT_DB / 20);
         let nedregulering = begræns(kanaler, udRate, loft);
+
+        // Har begrænseren arbejdet hårdt, ligger loudness lidt under målet.
+        // Så retter vi op én gang og holder toppene nede igen.
         let efterLufs = målLoudness(kanaler, udRate);
-        if (efterLufs !== null && isFinite(efterLufs) && Math.abs(efterLufs - MÅL_LUFS) > 0.3) {
-            const ekstra = Math.pow(10, (MÅL_LUFS - efterLufs) / 20);
-            for (const kan of kanaler) for (let i = 0; i < kan.length; i++) kan[i] *= ekstra;
+        if (efterLufs !== null && isFinite(efterLufs) && Math.abs(efterLufs - målLufs) > 0.3) {
+            const ekstra = Math.pow(10, (målLufs - efterLufs) / 20);
+            for (const k of kanaler) for (let i = 0; i < k.length; i++) k[i] *= ekstra;
             nedregulering = Math.min(nedregulering, begræns(kanaler, udRate, loft));
             efterLufs = målLoudness(kanaler, udRate);
         }
 
-        lægFade(kanaler, udRate);
+        if (valgFade.checked) lægFade(kanaler, udRate);
         const efterTop = topDb(kanaler);
 
-        resultatBuffer = ctx.createBuffer(1, kanaler[0].length, udRate);
-        resultatBuffer.copyToChannel(kanaler[0], 0);
-        sidsteTal = { førLufs, efterLufs, førTop, efterTop, forstærkning, nedregulering };
+        // læg resultatet i en AudioBuffer, så det kan afspilles
+        const ctx = hentLydCtx();
+        resultatBuffer = ctx.createBuffer(kanaler.length, kanaler[0].length, udRate);
+        for (let c = 0; c < kanaler.length; c++) resultatBuffer.copyToChannel(kanaler[c], c);
 
-        sætBjælke(bj, 1);
-        await pause(200);
-        kassetteKører(false, false);
-        visLytteskærm();
+        sætBjælke(bjælke, bjælkeFyld, null);
+        sætStatus('F&aelig;rdig p&aring; ' + ((performance.now() - t0) / 1000).toFixed(1).replace('.', ',') + ' sekunder.');
+
+        sidsteTal = { førLufs, efterLufs, førTop, efterTop, forstærkning, nedregulering, kompId, udRate, udKanaler: kanaler.length };
+        visResultat(kilde, resultatBuffer, sidsteTal);
     } catch (e) {
-        kassetteKører(false, false);
-        st.className = 'status fejl';
-        st.textContent = 'Lyden kunne ikke behandles: ' + (e && e.message ? e.message : e) +
-            ' — optagelsen ligger stadig gemt, prøv at hente den frem igen.';
+        sætBjælke(bjælke, bjælkeFyld, null);
+        sætStatus('Noget gik galt undervejs: ' + escapeHtml(e && e.message ? e.message : String(e)), true);
     }
+    behandlKnap.disabled = false;
 }
 
 function klipTavshed(kanaler, sr) {
@@ -16491,7 +16241,7 @@ function klipTavshed(kanaler, sr) {
     for (let i = n - vindue; i >= 0; i -= vindue) if (højOver(i)) { slut = Math.min(n, i + vindue); break; }
     const luft = Math.round(sr * TRIM_LUFT_MS / 1000);
     start = Math.max(0, start - luft);
-    slut  = Math.min(n, slut + luft);
+    slut = Math.min(n, slut + luft);
     if (slut - start < sr * 0.2 || (start === 0 && slut === n)) return kanaler;
     return kanaler.map(k => k.slice(start, slut));
 }
@@ -16509,73 +16259,126 @@ function lægFade(kanaler, sr) {
 }
 
 /* ============================================================
-   3 · Lyt
+   Visning af resultatet
    ============================================================ */
-let afspiller = null, afspilStart = 0, afspilLøkke = null;
+function visResultat(før, efter, tal) {
+    resultatAfsnit.classList.remove('skjult');
+    gemAfsnit.classList.remove('skjult');
 
-function visLytteskærm() {
-    visSkærm('skaermLyt');
-    flytKassette('kassetteboks3');
-    etiket('SIDE A');
-    spoler(0);
-    $('lytTaeller').textContent = tid(resultatBuffer.duration);
-    $('lytTekst').textContent = 'Klar til afspilning';
+    tegnKurve(kurveFør, før, '#8a8272');
+    tegnKurve(kurveEfter, efter, '#C87A5E');
 
-    const t = sidsteTal;
-    const rækker = [
-        ['Længde', tid(resultatBuffer.duration)],
-        ['Lydstyrke før', t.førLufs === null ? '–' : dbTekst(t.førLufs).replace(' dB', ' LUFS')],
-        ['Lydstyrke nu', t.efterLufs === null ? '–' : dbTekst(t.efterLufs).replace(' dB', ' LUFS')],
-        ['Justeret med', dbTekst(t.forstærkning)]
-    ];
-    if (klippet > 0) rækker.push(['Bemærk', 'Lyden var overstyret undervejs']);
-    $('lytTal').innerHTML = rækker.map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('');
+    skala.querySelectorAll('.skalaPrik, .skalaMærke').forEach(e => e.remove());
+    const placér = lufs => Math.max(0, Math.min(1, (lufs + 30) / 24)) * 100;
+    const mærke = document.createElement('div');
+    mærke.className = 'skalaMærke mål';
+    mærke.style.left = placér(målLufs) + '%';
+    mærke.dataset.tekst = 'M&aring;l'.replace('&aring;', 'å');
+    skala.appendChild(mærke);
+    [['før', tal.førLufs, 'F&Oslash;R'], ['efter', tal.efterLufs, 'EFTER']].forEach(([klasse, v, txt]) => {
+        if (v === null || !isFinite(v)) return;
+        const p = document.createElement('div');
+        p.className = 'skalaPrik ' + klasse;
+        p.style.left = placér(v) + '%';
+        p.title = txt.replace('&Oslash;', 'Ø') + ': ' + db(v) + ' LUFS';
+        p.textContent = klasse === 'før' ? 'F' : 'E';
+        skala.appendChild(p);
+    });
+
+    const kompNavn = { ingen: 'Ingen', let: 'Let', middel: 'Middel', kraftig: 'Kraftig' }[tal.kompId];
+    tabel(resultatTabel, [
+        ['Loudness f&oslash;r', tal.førLufs === null ? '&ndash;' : db(tal.førLufs) + ' LUFS'],
+        ['Loudness efter', tal.efterLufs === null ? '&ndash;' : '<strong>' + db(tal.efterLufs) + ' LUFS</strong> (m&aring;l ' + db(målLufs) + ')'],
+        ['Skruet op med', db(tal.forstærkning) + ' dB'],
+        ['H&oslash;jeste top f&oslash;r', db(tal.førTop) + ' dBFS'],
+        ['H&oslash;jeste top efter', db(tal.efterTop) + ' dBFS (loft ' + db(LOFT_DB) + ')'],
+        ['Toppe holdt nede med', tal.nedregulering < -0.05 ? 'op til ' + db(-tal.nedregulering) + ' dB' : 'ingenting'],
+        ['Udj&aelig;vning', kompNavn],
+        ['Resultat', (tal.udKanaler === 1 ? 'Mono' : 'Stereo') + ', ' + (tal.udRate / 1000).toString().replace('.', ',') + ' kHz, ' + tid(efter.duration)]
+    ]);
+
+    opdaterGemTekst();
 }
 
-function stopAfspilning() {
-    if (afspiller) { try { afspiller.stop(); } catch (e) {} afspiller = null; }
-    cancelAnimationFrame(afspilLøkke); afspilLøkke = null;
-    kassetteKører(false, false);
-    $('lytKnap').innerHTML = '<span class="trekant"></span> Afspil';
-    $('lytTekst').textContent = 'Klar til afspilning';
-}
+function tegnKurve(canvas, buffer, farve) {
+    const bredde = canvas.clientWidth || 700;
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = Math.round(bredde * dpr);
+    canvas.height = Math.round(82 * dpr);
+    const c = canvas.getContext('2d');
+    c.setTransform(dpr, 0, 0, dpr, 0, 0);
+    c.fillStyle = '#2C2822';
+    c.fillRect(0, 0, bredde, 82);
 
-function afspilResultat() {
-    if (afspiller) { stopAfspilning(); return; }
-    const ctx = hentLydCtx();
-    afspiller = ctx.createBufferSource();
-    afspiller.buffer = resultatBuffer;
-    afspiller.connect(ctx.destination);
-    afspiller.onended = () => { if (afspiller) { afspiller = null; stopAfspilning(); spoler(0); } };
-    afspilStart = ctx.currentTime;
-    afspiller.start();
-    kassetteKører(true, false);
-    etiket('AFSPILLER');
-    $('lytKnap').innerHTML = '<span class="firkant"></span> Stop';
-    $('lytTekst').textContent = 'Afspiller';
-    const følg = () => {
-        if (!afspiller) return;
-        const gået = ctx.currentTime - afspilStart;
-        $('lytTaeller').textContent = tid(Math.min(gået, resultatBuffer.duration));
-        spoler(gået / resultatBuffer.duration);
-        afspilLøkke = requestAnimationFrame(følg);
-    };
-    følg();
+    const midte = 41;
+    const data = buffer.getChannelData(0);
+    const pr = Math.max(1, Math.floor(data.length / bredde));
+    c.strokeStyle = farve;
+    c.lineWidth = 1;
+    c.beginPath();
+    for (let x = 0; x < bredde; x++) {
+        const start = x * pr;
+        let min = 0, max = 0;
+        for (let i = start; i < start + pr && i < data.length; i++) {
+            const v = data[i];
+            if (v < min) min = v; else if (v > max) max = v;
+        }
+        c.moveTo(x + 0.5, midte - max * 38);
+        c.lineTo(x + 0.5, midte - min * 38);
+    }
+    c.stroke();
+    // loftet
+    c.strokeStyle = 'rgba(226,219,200,.35)';
+    c.setLineDash([4, 4]);
+    const loft = Math.pow(10, LOFT_DB / 20) * 38;
+    c.beginPath();
+    c.moveTo(0, midte - loft); c.lineTo(bredde, midte - loft);
+    c.moveTo(0, midte + loft); c.lineTo(bredde, midte + loft);
+    c.stroke();
+    c.setLineDash([]);
 }
 
 /* ============================================================
-   4 · Gem — mp3 og færdig lydfortælling
+   Afspilning
+   ============================================================ */
+function stopAfspilning() {
+    if (afspiller) { try { afspiller.stop(); } catch (e) {} afspiller = null; }
+    hørFør.classList.remove('aktivKnap');
+    hørEfter.classList.remove('aktivKnap');
+}
+function afspil(buffer, knap) {
+    stopAfspilning();
+    if (!buffer) return;
+    const ctx = hentLydCtx();
+    const s = ctx.createBufferSource();
+    s.buffer = buffer;
+    s.connect(ctx.destination);
+    s.onended = () => { if (afspiller === s) stopAfspilning(); };
+    s.start();
+    afspiller = s;
+    knap.classList.add('aktivKnap');
+}
+hørFør.addEventListener('click', () => afspil(originalBuffer, hørFør));
+hørEfter.addEventListener('click', () => afspil(resultatBuffer, hørEfter));
+stopKnap.addEventListener('click', stopAfspilning);
+
+/* ============================================================
+   Mp3-kodning i en baggrundstråd
    ============================================================ */
 async function kodMp3(kanaler, sr, kbps, fremgang) {
     const enc = new lamejs.Mp3Encoder(kanaler.length, sr, kbps);
     const n = kanaler[0].length;
-    const stykke = 1152 * 20;
+    const stykke = 1152 * 20;              // omkring et halvt sekunds lyd ad gangen
     const dele = [];
     let sidstePust = performance.now();
     for (let i = 0; i < n; i += stykke) {
         const slut = Math.min(i + stykke, n);
-        const b = enc.encodeBuffer(kanaler[0].subarray(i, slut));
+        const v = kanaler[0].subarray(i, slut);
+        const b = kanaler.length === 2
+            ? enc.encodeBuffer(v, kanaler[1].subarray(i, slut))
+            : enc.encodeBuffer(v);
         if (b.length) dele.push(b);
+        // giv browseren luft, så siden ikke fryser undervejs
         if (performance.now() - sidstePust > 60) {
             fremgang(i / n);
             await pause(0);
@@ -16597,634 +16400,90 @@ function tilInt16(kanal) {
     return ud;
 }
 
-function blobTilDataUrl(blob) {
-    return new Promise((res, rej) => {
-        const r = new FileReader();
-        r.onload = () => res(r.result);
-        r.onerror = () => rej(new Error('kunne ikke omsætte lydfilen'));
-        r.readAsDataURL(blob);
-    });
+function opdaterGemTekst() {
+    if (!resultatBuffer) { gemUnder.textContent = ''; return; }
+    const kbps = parseInt(bitrateVælg.value, 10);
+    const kB = Math.round(resultatBuffer.duration * kbps * 1000 / 8 / 1024);
+    gemUnder.textContent = 'En mp3 på ' + tid(resultatBuffer.duration) + ' \u2013 omkring ' +
+        (kB > 1024 ? (kB / 1024).toFixed(1).replace('.', ',') + ' MB' : kB + ' kB');
 }
+bitrateVælg.addEventListener('change', opdaterGemTekst);
 
-function hent(blob, navn) {
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = navn;
-    document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(() => URL.revokeObjectURL(a.href), 20000);
-}
-
-function opdaterStørrelse() {
+gemKnap.addEventListener('click', async () => {
     if (!resultatBuffer) return;
-    const kbps = parseInt($('bitrateFelt').value, 10);
-    const lyd = resultatBuffer.duration * kbps * 1000 / 8;
-    $('stoerrelse').textContent =
-        'Lydfortællingen bliver på omkring ' + mbTekst(lyd * 4 / 3 + 40000) +
-        ' (' + tid(resultatBuffer.duration) + ' lyd).';
-}
-
-function samlDublinCore(titel, sted) {
-    const dc = { type:'Sound', format:'text/html', language:'da' };
-    if (titel) dc.title = titel;
-    if (sted)  dc.coverage = sted;
-    dc.date = new Date().toISOString().slice(0, 10);
-    return dc;
-}
-
-async function gemFil(kunMp3) {
-    if (!resultatBuffer) return;
-    const titel = $('titelFelt').value.trim();
-    const sted  = $('stedFelt').value.trim();
-    if (!titel) {
-        $('gemStatus').className = 'status fejl';
-        $('gemStatus').textContent = 'Skriv en titel først.';
-        $('titelFelt').focus();
+    if (typeof lamejs === 'undefined' || !lamejs.Mp3Encoder) {
+        sætStatus('Mp3-koderen kunne ikke indlæses.', true);
         return;
     }
-    const knapper = [$('gemKnap'), $('gemMp3Knap'), $('tilbageKnap')];
-    knapper.forEach(k => k.disabled = true);
-    $('gemBjaelkeBoks').classList.remove('skjult');
-    $('gemStatus').className = 'status';
-    $('gemStatus').textContent = 'Koder mp3 … det er den langsomste del. Bliv på siden imens.';
-    sætBjælke($('gemBjaelke'), 0);
-    await pause(40);
-
+    gemKnap.disabled = true;
+    sætBjælke(gemBjælke, gemBjælkeFyld, 0);
+    sætStatus('Koder mp3 &hellip; det er den langsomste del. Bliv på siden imens.');
+    await pause(30);
     try {
-        const kbps = parseInt($('bitrateFelt').value, 10);
+        const antal = Math.min(2, resultatBuffer.numberOfChannels);
         const kanaler = [tilInt16(resultatBuffer.getChannelData(0))];
-        const dele = await kodMp3(kanaler, resultatBuffer.sampleRate, kbps, p => sætBjælke($('gemBjaelke'), p));
-        const mp3 = new Blob(dele, { type:'audio/mpeg' });
-        sætBjælke($('gemBjaelke'), 1);
-        const navn = filnavnAf(titel);
+        if (antal === 2) kanaler.push(tilInt16(resultatBuffer.getChannelData(1)));
+        const kbps = parseInt(bitrateVælg.value, 10);
 
-        if (kunMp3) {
-            hent(mp3, navn + '.mp3');
-            $('gemStatus').textContent = 'Mp3-filen er gemt — ' + mbTekst(mp3.size) + '.';
-        } else {
-            $('gemStatus').textContent = 'Bygger lydfortællingen …';
-            await pause(30);
-            const dataUrl = await blobTilDataUrl(mp3);
-            const s = {
-                eyebrow:'', title:titel, location:sted, description:'', descLabel:'',
-                imageDataUrl:null, audioDataUrl:dataUrl, theme:'original', imageUrl:'',
-                ctaText:'', ctaUrl:'', taellerBlock:'', dublinCore:samlDublinCore(titel, sted)
-            };
-            const html = buildPlayerHTML(s, false);
-            hent(new Blob([html], { type:'text/html' }), navn + '.html');
-            $('gemStatus').textContent = 'Lydfortællingen er gemt — ' + mbTekst(html.length) + '.';
-            $('faerdigBesked').classList.remove('skjult');
-            await lagerRyd();
-        }
+        const dele = await kodMp3(kanaler, resultatBuffer.sampleRate, kbps,
+                                  p => sætBjælke(gemBjælke, gemBjælkeFyld, p));
+
+        const blob = new Blob(dele, { type: 'audio/mpeg' });
+        const grund = (filnavn || 'lyd').replace(/\.[^.]+$/, '').replace(/[^\w\u00e6\u00f8\u00e5\u00c6\u00d8\u00c5\- ]/g, '').trim();
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = (grund || 'lyd') + '_' + Math.round(Math.abs(målLufs)) + 'LUFS.mp3';
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(a.href), 8000);
+        sætBjælke(gemBjælke, gemBjælkeFyld, null);
+        sætStatus('Mp3-filen er gemt \u2013 ' + (blob.size / 1024 / 1024).toFixed(1).replace('.', ',') + ' MB.');
     } catch (e) {
-        $('gemStatus').className = 'status fejl';
-        $('gemStatus').textContent = 'Det gik galt: ' + (e && e.message ? e.message : e);
+        sætBjælke(gemBjælke, gemBjælkeFyld, null);
+        sætStatus('Mp3-kodningen gik galt: ' + escapeHtml(e && e.message ? e.message : String(e)), true);
     }
-    $('gemBjaelkeBoks').classList.add('skjult');
-    knapper.forEach(k => k.disabled = false);
-}
+    gemKnap.disabled = false;
+});
 
 /* ============================================================
    Betjening
    ============================================================ */
-$('recKnap').addEventListener('click', startOptagelse);
-$('pauseKnap').addEventListener('click', pauseOptagelse);
-$('stopKnap').addEventListener('click', stopOptagelse);
-
-$('lytKnap').addEventListener('click', afspilResultat);
-$('omKnap').addEventListener('click', async () => {
+målSlider.addEventListener('input', () => {
+    målLufs = parseFloat(målSlider.value);
+    målVærdi.innerHTML = '&minus;' + Math.abs(målLufs).toFixed(1).replace('.', ',') + ' LUFS';
+});
+målStandard.addEventListener('click', () => {
+    målSlider.value = -16;
+    målSlider.dispatchEvent(new Event('input'));
+});
+behandlKnap.addEventListener('click', behandl);
+nyKnap.addEventListener('click', () => {
     stopAfspilning();
-    await lagerRyd();
-    resultatBuffer = null; originalBuffer = null; råBlob = null; stykkerNu = [];
-    taeller.textContent = '00:00';
-    taellertekst.textContent = 'Klar til optagelse';
-    optagStatus.textContent = '';
-    spoler(0); etiket('SIDE A');
-    flytKassette('kassetteboks');
-    visSkærm('skaermOptag');
+    originalBuffer = null; resultatBuffer = null;
+    visning.classList.add('skjult');
+    dropzone.classList.remove('skjult');
+    filInput.value = '';
+    sætStatus('');
 });
-$('godkendKnap').addEventListener('click', () => {
-    stopAfspilning();
-    visSkærm('skaermGem');
-    opdaterStørrelse();
-    $('titelFelt').focus();
+tilgKnap.addEventListener('click', () => {
+    tilgængelig = !tilgængelig;
+    document.body.classList.toggle('tilgængelig', tilgængelig);
+    tilgKnap.classList.toggle('aktivKnap', tilgængelig);
+    if (resultatBuffer && sidsteTal) { tegnKurve(kurveFør, originalBuffer, '#8a8272'); tegnKurve(kurveEfter, resultatBuffer, '#C87A5E'); }
 });
 
-$('bitrateFelt').addEventListener('change', opdaterStørrelse);
-$('gemKnap').addEventListener('click', () => gemFil(false));
-$('gemMp3Knap').addEventListener('click', () => gemFil(true));
-$('tilbageKnap').addEventListener('click', () => { $('faerdigBesked').classList.add('skjult'); visLytteskærm(); });
-$('nyOptagelseKnap').addEventListener('click', () => {
-    $('faerdigBesked').classList.add('skjult');
-    $('gemStatus').textContent = '';
-    $('titelFelt').value = ''; $('stedFelt').value = '';
-    $('omKnap').click();
-});
-$('titelFelt').addEventListener('keydown', e => { if (e.key === 'Enter') $('stedFelt').focus(); });
+dropzone.addEventListener('click', () => filInput.click());
+filInput.addEventListener('change', e => indlæsFil(e.target.files[0]));
+['dragenter', 'dragover'].forEach(evt =>
+    dropzone.addEventListener(evt, e => { e.preventDefault(); dropzone.classList.add('over'); }));
+['dragleave', 'drop'].forEach(evt =>
+    dropzone.addEventListener(evt, e => { e.preventDefault(); dropzone.classList.remove('over'); }));
+dropzone.addEventListener('drop', e => indlæsFil(e.dataTransfer.files[0]));
 
-/* Advarsel hvis man forlader siden midt i det hele */
-window.addEventListener('beforeunload', e => {
-    const optagerNu = optager && optager.state !== 'inactive';
-    const uGemt = resultatBuffer && $('faerdigBesked').classList.contains('skjult');
-    if (optagerNu || uGemt) { e.preventDefault(); e.returnValue = ''; }
+window.addEventListener('resize', () => {
+    if (resultatBuffer) { tegnKurve(kurveFør, originalBuffer, '#8a8272'); tegnKurve(kurveEfter, resultatBuffer, '#C87A5E'); }
 });
 
-/* ============================================================
-   Er der en afbrudt optagelse fra sidst?
-   ============================================================ */
-(async function kigEfterAfbrudt() {
-    const info = await lagerHent('info', 'optagelse');
-    const stykker = await lagerHent('stykker');
-    if (!info || !stykker || !stykker.length) return;
-    const samlet = stykker.reduce((n, b) => n + b.size, 0);
-    if (samlet < 20000) { await lagerRyd(); return; }
-    const dato = new Date(info.tid);
-    $('genopretTekst').textContent =
-        'Fra ' + dato.toLocaleString('da-DK', { day:'numeric', month:'long', hour:'2-digit', minute:'2-digit' }) +
-        ' — omkring ' + mbTekst(samlet) + ' lyd blev gemt undervejs.';
-    $('genopretBesked').classList.remove('skjult');
-    $('genopretJa').onclick = () => {
-        $('genopretBesked').classList.add('skjult');
-        råType = info.type || 'audio/webm';
-        råBlob = new Blob(stykker, { type: råType });
-        behandlOptagelse();
-    };
-    $('genopretNej').onclick = async () => {
-        $('genopretBesked').classList.add('skjult');
-        await lagerRyd();
-    };
-})();
-
-/* ============================================================
-   Afspillerskabelonen fra Lydfortælling · Bygger
-   ============================================================ */
-const DC_FIELDS = ['title','creator','subject','description','publisher','contributor',
-  'date','type','format','identifier','source','language','relation','coverage','rights'];
-
-const DC_LABELS = {
-  title:'Titel', creator:'Ophav', subject:'Emne', description:'Beskrivelse',
-  publisher:'Udgiver', contributor:'Bidragyder', date:'Dato', type:'Type',
-  format:'Format', identifier:'Identifikator', source:'Kilde', language:'Sprog',
-  relation:'Relation', coverage:'Dækning', rights:'Rettigheder'
-};
-
-function dcInputId(key){ return 'dc' + key.charAt(0).toUpperCase() + key.slice(1); }
-
-// Felter der spejler formularen ovenfor, indtil man selv skriver i dem.
-const dcTouched = { title:false, description:false, coverage:false };
-
-const THEMES = {
-  original: {
-    label:'Oprindeligt',
-    paper:'#EDE7D8', card:'#1B1A16', cardText:'#F2ECDD', cardBg:'#fbf8ef',
-    ink:'#211E19', rust:'#9A4630', moss:'#5C6B4F', line:'#d8d0ba',
-    timesColor:'#d8d2c4', footerColor:'#6B6455', muted:'#6B6455', footerStrong:'#4A463C',
-    tickBg:'#5a564a', tickPlayed:'#E7A488',
-    bodyText:'#3a362e', quoteText:'#5a5646', codeBg:'#efe9d8'
-  },
-  rodekors: {
-    label:'Røde Kors',
-    paper:'#FFFFFF', card:'#E30A0B', cardText:'#FFFFFF', cardBg:'#FFFFFF',
-    ink:'#1A1A1A', rust:'#E30A0B', moss:'#B00A0B', line:'#EAEAEA',
-    timesColor:'rgba(255,255,255,0.9)', footerColor:'#5A5A5A', muted:'#5A5A5A', footerStrong:'#333333',
-    tickBg:'rgba(255,255,255,0.28)', tickPlayed:'#FFFFFF',
-    bodyText:'#262626', quoteText:'#5a5a5a', codeBg:'#F4F4F4'
-  },
-  lokalhistorisk2: {
-    label:'Lokalhistorisk (bordeaux)',
-    paper:'#FAF9F5', card:'#9E2453', cardText:'#FAF9F5', cardBg:'#FFFFFF',
-    ink:'#2A1620', rust:'#9E2453', moss:'#7A1B40', line:'#EAE2E5',
-    timesColor:'rgba(250,249,245,0.9)', footerColor:'#6B5560', muted:'#6B5560', footerStrong:'#3A2630',
-    tickBg:'rgba(250,249,245,0.28)', tickPlayed:'#FAF9F5',
-    bodyText:'#332028', quoteText:'#5c3b48', codeBg:'#F3E9ED'
-  }
-};
-
-function escapeHtml(str){
-  return (str || '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
-
-function stripMdToPlain(md, maxLen){
-  let t = (md || '')
-    .replace(/```[\s\S]*?```/g, ' ')
-    .replace(/[#>*_`~-]/g, ' ')
-    .replace(/\[(.+?)\]\((https?:\/\/[^\s)]+)\)/g, '$1')
-    .replace(/\s+/g, ' ')
-    .trim();
-  if (maxLen && t.length > maxLen) t = t.slice(0, maxLen - 1).trim() + '…';
-  return t;
-}
-
-function inlineMd(s){
-  return s
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(/__(.+?)__/g, '<strong>$1</strong>')
-    .replace(/\*(.+?)\*/g, '<em>$1</em>')
-    .replace(/(^|[^_])_(.+?)_([^_]|$)/g, '$1<em>$2</em>$3')
-    .replace(/`(.+?)`/g, '<code>$1</code>')
-    .replace(/\[(.+?)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
-}
-
-function mdToHtml(md){
-  if (!md) return '';
-  const escaped = escapeHtml(md);
-  const lines = escaped.split('\n');
-  let html = '', inUl = false, inOl = false, para = [];
-
-  function flushPara(){
-    if (para.length){ html += '<p>' + inlineMd(para.join('<br>')) + '</p>'; para = []; }
-  }
-  function closeLists(){
-    if (inUl){ html += '</ul>'; inUl = false; }
-    if (inOl){ html += '</ol>'; inOl = false; }
-  }
-
-  for (const line of lines){
-    if (/^\s*$/.test(line)){ flushPara(); closeLists(); continue; }
-    let m;
-    if (/^\s*(-{3,}|\*{3,}|_{3,})\s*$/.test(line)){
-      flushPara(); closeLists();
-      html += '<hr>';
-      continue;
-    }
-    if ((m = line.match(/^(#{1,4})\s+(.*)$/))){
-      flushPara(); closeLists();
-      const level = Math.min(Math.max(m[1].length, 2), 5);
-      html += `<h${level}>${inlineMd(m[2])}</h${level}>`;
-      continue;
-    }
-    if ((m = line.match(/^[-*]\s+(.*)$/))){
-      flushPara();
-      if (inOl){ html += '</ol>'; inOl = false; }
-      if (!inUl){ html += '<ul>'; inUl = true; }
-      html += `<li>${inlineMd(m[1])}</li>`;
-      continue;
-    }
-    if ((m = line.match(/^\d+\.\s+(.*)$/))){
-      flushPara();
-      if (inUl){ html += '</ul>'; inUl = false; }
-      if (!inOl){ html += '<ol>'; inOl = true; }
-      html += `<li>${inlineMd(m[1])}</li>`;
-      continue;
-    }
-    if ((m = line.match(/^>\s?(.*)$/))){
-      flushPara(); closeLists();
-      html += `<blockquote>${inlineMd(m[1])}</blockquote>`;
-      continue;
-    }
-    closeLists();
-    para.push(line);
-  }
-  flushPara(); closeLists();
-  return html;
-}
-
-function buildDcMetaTags(dc){
-  const lines = [];
-  DC_FIELDS.forEach(key => {
-    if (!dc[key]) return;
-    if (key === 'subject'){
-      dc[key].split(';').forEach(part => {
-        const v = part.trim();
-        if (v) lines.push(`<meta name="DC.subject" content="${escapeHtml(v)}">`);
-      });
-    } else {
-      lines.push(`<meta name="DC.${key}" content="${escapeHtml(dc[key])}">`);
-    }
-  });
-  if (!lines.length) return '';
-  return '<link rel="schema.DC" href="http://purl.org/dc/elements/1.1/">\n' + lines.join('\n');
-}
-
-// Den synlige oversigt nederst i afspilleren. Skrives som færdig HTML,
-// så den også kan læses hvis JavaScript en dag ikke virker.
-function buildDcSection(dc){
-  const rows = DC_FIELDS
-    .filter(key => dc[key])
-    .map(key => `<div class="meta-row"><dt>${DC_LABELS[key]} <span class="dc-tag">dc.${key}</span></dt><dd>${escapeHtml(dc[key])}</dd></div>`);
-  if (!rows.length) return '';
-  return `<details class="meta">
-      <summary><span class="desc-label">Om denne fil</span><span class="chevron" aria-hidden="true">&#9662;</span></summary>
-      <dl class="meta-list">${rows.join('')}</dl>
-    </details>`;
-}
-
-function buildPlayerHTML(s, includeTaeller){
-  const theme = THEMES[s.theme] || THEMES.original;
-  const eyebrowBlock = s.eyebrow ? `<div class="eyebrow">&#10084; ${escapeHtml(s.eyebrow)}</div>` : '';
-  const locationBlock = s.location ? `<div class="location">${escapeHtml(s.location)}</div>` : '';
-  const imageBlock = s.imageDataUrl ? `<div class="cover"><img src="${s.imageDataUrl}" alt=""></div>` : '';
-  const descLabel = (s.descLabel && s.descLabel.trim()) ? s.descLabel.trim() : 'Om historien';
-  const descBlock = s.description ? `<details class="desc">
-      <summary><span class="desc-label">${escapeHtml(descLabel)}</span><span class="chevron" aria-hidden="true">&#9662;</span></summary>
-      <div class="desc-body">${mdToHtml(s.description)}</div>
-    </details>` : '';
-  const ctaBlock = (s.ctaText && s.ctaText.trim() && s.ctaUrl && s.ctaUrl.trim())
-    ? `<div class="cta-wrap"><a class="cta-btn" href="${escapeHtml(s.ctaUrl.trim())}" target="_blank" rel="noopener">${escapeHtml(s.ctaText.trim())}</a></div>`
-    : '';
-  const audioSrc = s.audioDataUrl || '';
-  const pageTitle = s.title || 'Lydfortælling';
-  const safeName = (s.title || 'lydfortaelling').toLowerCase()
-    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
-    .replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'') || 'lydfortaelling';
-  const dc = s.dublinCore || {};
-  const dcMeta = buildDcMetaTags(dc);
-  const dcBlock = buildDcSection(dc);
-  const pageLang = (dc.language || 'da').trim() || 'da';
-  const taellerBlock = (includeTaeller && s.taellerBlock) ? '\n' + s.taellerBlock + '\n' : '';
-  const sourceData = {
-    format: 'lydfortaelling-player',
-    builderVersion: 4,   // samme som BUILDER_VERSION i lydfortaelling-bygger.html, ellers afviser byggeren filen
-    eyebrow: s.eyebrow || '', title: s.title || '', location: s.location || '',
-    imageAlt: s.imageAlt || '', imageUrl: s.imageUrl || '',
-    description: s.description || '', descLabel: s.descLabel || '',
-    theme: s.theme || 'original',
-    ctaText: s.ctaText || '', ctaUrl: s.ctaUrl || '',
-    homeMode: 'auto', homeLabel: '', homeUrl: '',
-    visGem: true, visOmFil: true,
-    dublinCore: dc
-  };
-  const ogDesc = stripMdToPlain(s.description, 200) || (s.location ? `En lydfortælling · ${s.location}` : 'En lydfortælling');
-  const faviconTag = s.imageDataUrl ? `<link rel="icon" href="${s.imageDataUrl}">` : '';
-  const ogImageTags = s.imageUrl ? `<meta property="og:image" content="${escapeHtml(s.imageUrl)}">
-<meta name="twitter:card" content="summary_large_image">` : '';
-  const socialMeta = `<meta property="og:type" content="website">
-<meta property="og:title" content="${escapeHtml(pageTitle)}">
-<meta property="og:description" content="${escapeHtml(ogDesc)}">
-${ogImageTags}
-${s.location ? `<meta name="story:location" content="${escapeHtml(s.location)}">` : ''}`;
-
-  return `<!DOCTYPE html>
-<html lang="${escapeHtml(pageLang)}">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>${escapeHtml(pageTitle)}</title>
-${socialMeta}
-${dcMeta}
-${faviconTag}
-<script type="application/json" id="builder-source-data">${JSON.stringify(sourceData)}<\/script>
-<style>
-  :root{
-    --paper:${theme.paper}; --card:${theme.card}; --card-text:${theme.cardText}; --card-bg:${theme.cardBg};
-    --ink:${theme.ink}; --rust:${theme.rust}; --moss:${theme.moss}; --line:${theme.line};
-    --times-color:${theme.timesColor}; --footer-color:${theme.footerColor};
-    --muted:${theme.muted}; --footer-strong:${theme.footerStrong};
-    --tick-bg:${theme.tickBg}; --tick-played:${theme.tickPlayed};
-    --body-text:${theme.bodyText}; --quote-text:${theme.quoteText}; --code-bg:${theme.codeBg};
-    --serif: Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif;
-    --sans: Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif;
-  }
-  *{box-sizing:border-box;}
-  body{
-    margin:0; background:var(--paper); color:var(--ink);
-    font-family:var(--sans); display:flex; justify-content:center; padding:28px 14px;
-  }
-  .card{
-    width:100%; max-width:420px; background:var(--card-bg); border:1px solid var(--line);
-    border-radius:16px; overflow:hidden; box-shadow:0 10px 30px rgba(30,25,15,0.12);
-  }
-  .eyebrow{
-    text-align:center; font-size:13.5px; letter-spacing:0.1em; font-weight:700;
-    color:var(--moss); text-transform:uppercase; padding:16px 16px 4px;
-  }
-  .cover{ margin:14px 16px 0; border-radius:10px; overflow:hidden; }
-  .cover img{ width:100%; display:block; aspect-ratio:16/10.5; object-fit:cover; }
-  .title{
-    font-family:var(--serif); font-size:26px; line-height:1.3; text-align:center;
-    padding:18px 20px 6px; font-weight:700; margin:0;
-  }
-  .location{
-    text-align:center; font-size:16px; color:var(--muted); padding-bottom:14px;
-  }
-  .player{
-    margin:6px 16px 18px; background:var(--card); color:var(--card-text);
-    border-radius:12px; padding:14px 16px 16px;
-  }
-  .player-row{ display:flex; align-items:center; gap:12px; }
-  .playbtn{
-    width:44px; height:44px; min-width:44px; border-radius:50%; background:var(--card-text);
-    border:none; display:flex; align-items:center; justify-content:center; cursor:pointer;
-  }
-  .playbtn svg{ width:16px; height:16px; }
-  .scrubwrap{ flex:1; }
-  .ticks{
-    display:flex; align-items:flex-end; gap:2px; height:22px; cursor:pointer; position:relative;
-  }
-  .tick{ flex:1; background:var(--tick-bg); border-radius:1px; min-width:2px; }
-  .tick.played{ background:var(--tick-played); }
-  .times{ display:flex; justify-content:space-between; font-size:13.5px; color:var(--times-color); margin-top:6px; font-variant-numeric:tabular-nums; }
-  .desc{
-    margin:2px 16px 18px; border-top:1px solid var(--line); padding-top:12px;
-  }
-  .desc summary{
-    display:flex; align-items:center; justify-content:space-between;
-    cursor:pointer; list-style:none; padding:6px 6px 6px 20px;
-    font-family:var(--serif); font-size:18px; font-weight:700; color:var(--ink);
-  }
-  .desc summary::-webkit-details-marker{ display:none; }
-  .desc summary::marker{ content:''; }
-  .desc .chevron{
-    color:var(--rust); font-size:17px; transition: transform .2s ease; flex-shrink:0; margin-left:10px;
-  }
-  .desc[open] .chevron{ transform:rotate(180deg); }
-  .desc-body{
-    padding:10px 6px 4px 20px; font-size:16.5px; line-height:1.75; color:var(--body-text);
-  }
-  .desc-body p{ margin:0 0 12px; }
-  .desc-body p:last-child{ margin-bottom:0; }
-  .desc-body h2, .desc-body h3, .desc-body h4, .desc-body h5{
-    font-family:var(--serif); color:var(--ink); margin:20px 0 8px; line-height:1.3;
-  }
-  .desc-body h2{ font-size:21px; }
-  .desc-body h3{ font-size:18px; }
-  .desc-body h4, .desc-body h5{ font-size:17px; }
-  .desc-body h2:first-child, .desc-body h3:first-child{ margin-top:2px; }
-  .desc-body hr{
-    border:none; border-top:1px solid var(--line); margin:20px 0;
-  }
-  .desc-body ul, .desc-body ol{ margin:0 0 12px; padding-left:22px; }
-  .desc-body li{ margin-bottom:6px; }
-  .desc-body blockquote{
-    margin:0 0 12px; padding-left:12px; border-left:3px solid var(--rust); color:var(--quote-text); font-style:italic;
-  }
-  .desc-body a{ color:var(--rust); }
-  .desc-body code{
-    background:var(--code-bg); padding:1px 5px; border-radius:3px; font-size:15px;
-  }
-  .meta{
-    margin:2px 16px 16px; border-top:1px solid var(--line); padding-top:10px;
-  }
-  .meta summary{
-    display:flex; align-items:center; justify-content:space-between;
-    cursor:pointer; list-style:none; padding:6px 6px 6px 20px;
-    font-size:15px; font-weight:700; color:var(--footer-strong);
-  }
-  .meta summary::-webkit-details-marker{ display:none; }
-  .meta summary::marker{ content:''; }
-  .meta .chevron{
-    color:var(--rust); font-size:14px; transition: transform .2s ease; flex-shrink:0; margin-left:10px;
-  }
-  .meta[open] .chevron{ transform:rotate(180deg); }
-  .meta-list{ margin:8px 0 4px; padding:0 6px 0 20px; font-size:14.5px; }
-  .meta-row{
-    padding:6px 0; border-bottom:1px solid var(--line);
-  }
-  .meta-row:last-child{ border-bottom:none; }
-  .meta dt{ color:var(--muted); font-size:13.5px; }
-  .meta dd{ margin:2px 0 0; color:var(--body-text); line-height:1.5; }
-  .meta .dc-tag{ opacity:0.7; font-size:12.5px; }
-  .cta-wrap{
-    padding:0 16px 18px; text-align:center;
-  }
-  .cta-btn{
-    display:block; width:100%;
-    background:var(--rust); color:var(--card-text);
-    text-decoration:none; text-align:center;
-    font-size:16px; font-weight:700; letter-spacing:0.02em;
-    padding:14px 18px; border-radius:12px;
-    box-shadow:0 3px 10px rgba(30,25,15,0.15);
-    transition: filter .15s ease, transform .1s ease;
-  }
-  .cta-btn:hover{ filter:brightness(0.92); }
-  .cta-btn:active{ transform:translateY(1px); }
-  .footer{
-    display:flex; flex-direction:column; align-items:center; gap:12px;
-    text-align:center; padding:4px 20px 22px;
-  }
-  .dl-btn{
-    display:inline-flex; align-items:center; justify-content:center; gap:10px;
-    padding:12px 22px; border-radius:999px;
-    border:2px solid var(--rust); background:transparent;
-    color:var(--body-text); font-family:var(--sans);
-    font-size:16.5px; font-weight:700; cursor:pointer;
-    transition: background .15s ease, color .15s ease;
-  }
-  .dl-btn svg{ width:20px; height:20px; color:var(--rust); flex-shrink:0; }
-  .dl-btn:hover{ background:var(--rust); color:var(--card-text); }
-  .dl-btn:hover svg{ color:var(--card-text); }
-  .dl-btn:focus-visible{ outline:3px solid var(--rust); outline-offset:3px; }
-  .footer-note{
-    font-size:14px; color:var(--footer-strong); font-style:italic;
-  }
-</style>
-</head>
-<body>
-  <div class="card">
-    ${eyebrowBlock}
-    ${imageBlock}
-    <h1 class="title">${escapeHtml(s.title) || 'Uden titel'}</h1>
-    ${locationBlock}
-    <div class="player">
-      <div class="player-row">
-        <button class="playbtn" id="playBtn" aria-label="Afspil">
-          <svg id="playIcon" viewBox="0 0 24 24" fill="${theme.card}"><path d="M8 5v14l11-7z"/></svg>
-          <svg id="pauseIcon" viewBox="0 0 24 24" fill="${theme.card}" style="display:none"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>
-        </button>
-        <div class="scrubwrap">
-          <div class="ticks" id="ticks"></div>
-          <div class="times"><span id="curTime">0:00</span><span id="durTime">0:00</span></div>
-        </div>
-      </div>
-    </div>
-    ${descBlock}
-    ${ctaBlock}
-    ${dcBlock}
-    <div class="footer">
-      <button class="dl-btn" id="dlBtn" type="button" title="Gem denne side som en fil på din computer">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M6 9.5l6 6 6-6"/><path d="M5 20.5h14"/></svg>
-        <span>Gem filen</span>
-      </button>
-      <div class="footer-note">En lydfortælling</div>
-    </div>
-  </div>
-
-  <audio id="audio" preload="metadata" src="${audioSrc}"></audio>
-
-  <script>
-    const audio = document.getElementById('audio');
-    const playBtn = document.getElementById('playBtn');
-    const playIcon = document.getElementById('playIcon');
-    const pauseIcon = document.getElementById('pauseIcon');
-    const ticksEl = document.getElementById('ticks');
-    const curTimeEl = document.getElementById('curTime');
-    const durTimeEl = document.getElementById('durTime');
-    const TICK_COUNT = 56;
-    let ticks = [];
-
-    for (let i = 0; i < TICK_COUNT; i++){
-      const t = document.createElement('div');
-      t.className = 'tick';
-      t.style.height = (6 + Math.round(Math.abs(Math.sin(i * 0.7)) * 16)) + 'px';
-      ticksEl.appendChild(t);
-      ticks.push(t);
-    }
-
-    function fmt(sec){
-      if (!isFinite(sec)) return '0:00';
-      const m = Math.floor(sec / 60);
-      const s = Math.floor(sec % 60).toString().padStart(2,'0');
-      return m + ':' + s;
-    }
-
-    function updateTicks(){
-      const dur = audio.duration || 0;
-      const cur = audio.currentTime || 0;
-      const ratio = dur ? cur / dur : 0;
-      const activeCount = Math.floor(ratio * TICK_COUNT);
-      ticks.forEach((t, i) => t.classList.toggle('played', i < activeCount));
-    }
-
-    audio.addEventListener('loadedmetadata', () => { durTimeEl.textContent = fmt(audio.duration); });
-    audio.addEventListener('timeupdate', () => {
-      curTimeEl.textContent = fmt(audio.currentTime);
-      updateTicks();
-    });
-    audio.addEventListener('ended', () => {
-      playIcon.style.display = 'block'; pauseIcon.style.display = 'none';
-    });
-
-    playBtn.addEventListener('click', () => {
-      if (audio.paused){
-        audio.play();
-        playIcon.style.display = 'none'; pauseIcon.style.display = 'block';
-      } else {
-        audio.pause();
-        playIcon.style.display = 'block'; pauseIcon.style.display = 'none';
-      }
-    });
-
-    ticksEl.addEventListener('click', (e) => {
-      const rect = ticksEl.getBoundingClientRect();
-      const ratio = (e.clientX - rect.left) / rect.width;
-      if (audio.duration) audio.currentTime = ratio * audio.duration;
-    });
-
-    const dlBtn = document.getElementById('dlBtn');
-    dlBtn.addEventListener('click', () => {
-      try {
-        const fullHtml = '<!DOCTYPE html>\\n' + document.documentElement.outerHTML;
-        const blob = new Blob([fullHtml], {type:'text/html'});
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = '${safeName}.html';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-      } catch(e){
-        alert('Kunne ikke downloade filen: ' + e.message);
-      }
-    });
-  <\/script>
-${taellerBlock}</body>
-</html>`;
-}
+målSlider.dispatchEvent(new Event('input'));
 </script>
 </body>
 </html>

@@ -1,7 +1,7 @@
 # Builder-standard
 
 **Fælles specifikation for værktøjskassen**
-Version 2.1 · oktober 2026
+Version 2.2 · oktober 2026
 
 Referenceimplementering: **Sidebygger** (`side-bygger.html`, version 1.5).
 Når noget er i tvivl, er det referencefilen der gælder.
@@ -29,7 +29,7 @@ Værktøjskassen består af flere små, uafhængige builder-apps:
 | PWA · Bygger | samler færdige filer til en app til hjemmeskærmen | afklares |
 | Metadata-hjælper | ingen fil; laver en AI-prompt til Dublin Core og kontrollerer svaret (se afsnit 11) | - |
 
-Bragt i overensstemmelse med standarden: Sidebygger (v1.5, `side-bygger.html`), Album · Bygger (v3.0, `album-bygger.html`, følger 1.2), Enkeltbillede · Bygger (v3.0, `enkeltbillede-bygger.html`, følger 1.9), Præsentation · Bygger (v1.0, `praesentation-bygger.html`, følger 1.4), Samling · Bygger (v2.0, `samling-bygger.html`, følger 1.5), Mediekort · Bygger (v1.2, `mediekort-bygger.html`, følger 1.6), Piwigo Albumbygger (v2.0, `piwigo-album-bygger.html`, følger 1.6), Henvisning · Bygger (v2.0, `henvisning-bygger.html`, følger 1.8), Bogbygger (v4.0, `bog-bygger.html`, følger 1.9) og Lydfortælling · Bygger (v4.0, `lydfortaelling-bygger.html`, følger 1.9).
+Bragt i overensstemmelse med standarden: Sidebygger (v1.5, `side-bygger.html`), Album · Bygger (v3.0, `album-bygger.html`, følger 1.2), Enkeltbillede · Bygger (v3.0, `enkeltbillede-bygger.html`, følger 1.9), Præsentation · Bygger (v1.0, `praesentation-bygger.html`, følger 2.1), Samling · Bygger (v2.0, `samling-bygger.html`, følger 1.5), Mediekort · Bygger (v1.2, `mediekort-bygger.html`, følger 1.6), Piwigo Albumbygger (v2.0, `piwigo-album-bygger.html`, følger 1.6), Henvisning · Bygger (v2.0, `henvisning-bygger.html`, følger 1.8), Bogbygger (v4.0, `bog-bygger.html`, følger 1.9) og Lydfortælling · Bygger (v4.0, `lydfortaelling-bygger.html`, følger 1.9).
 
 Den Talende Booklet er udgået. Dens opgave, ét billede med lyd og tekst, løses nu af Mediekort · Bygger med typen **Talende billede**. Lydfortælling · Bygger består dog som den enkle udgave til dem, der kun skal bruge ét billede, lyd og tekst.
 
@@ -595,6 +595,10 @@ Udgiverlisten i prompten skal altid svare til `PUBLISHERS` i 4.1. Kommer der en 
 ---
 
 ## 12. Ændringslog
+
+**Version 2.2 — oktober 2026.**
+- Præsentation · Bygger (v1.0, `praesentation-bygger.html`) ligger nu i repoet og er gennemgået mod standarden. Den fik de fulde Dublin Core-labels i panelet Om denne fil og kontrollen af `?hjem=` (5.3), som den manglede. Den følger nu 2.1. Resten stemte: temaer, udgivere, felter, billedindstillingerne i afsnit 8 (2560 px, 25 billeder, lille udgave som ikon) og indlæsning.
+- Kontrollen af `?hjem=` fra 2.1 gælder nu alle ti byggere.
 
 **Version 2.1 — oktober 2026.**
 - Afsnit 5.3 og tjeklisten: `?hjem=` skal kontrolleres. Kun relative adresser og `http(s)` er tilladt; `javascript:`, `data:` og lignende ignoreres. Før blev adressen sat direkte på Hjem-knappen. Rettet i alle ni byggere. Allerede færdige filer har den gamle kode og skal laves om for at få rettelsen.

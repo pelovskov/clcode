@@ -44,7 +44,7 @@ Efter en ændring skal du beskrive, hvordan jeg selv kan afprøve den i browsere
 
 ## Ting der hænger sammen
 
-- `tools/feltoptager-v1.html` laver lydfortællinger i **Lydfortælling · Byggerens filformat** og skriver selv `builderVersion`. Tælles `BUILDER_VERSION` op i `lydfortaelling-bygger.html`, skal `builderVersion` i Feltoptageren rettes med, ellers afviser byggeren filerne.
+- `tools/feltoptager.html` laver lydfortællinger i **Lydfortælling · Byggerens filformat** og skriver selv `builderVersion`. Tælles `BUILDER_VERSION` op i `lydfortaelling-bygger.html`, skal `builderVersion` i Feltoptageren rettes med, ellers afviser byggeren filerne.
 
 ## Sikkerhed
 
