@@ -46,6 +46,8 @@ Efter en ændring skal du beskrive, hvordan jeg selv kan afprøve den i browsere
 
 - `tools/feltoptager.html` laver lydfortællinger i **Lydfortælling · Byggerens filformat** og skriver selv `builderVersion`. Tælles `BUILDER_VERSION` op i `lydfortaelling-bygger.html`, skal `builderVersion` i Feltoptageren rettes med, ellers afviser byggeren filerne.
 
+- `billedarkiv/billedarkiv.html` eksporterer albums med en `.json`-fil ved hvert billede, som **Album · Bygger** læser (kendes på `exportedFilename`). Ændres feltnavnene i eksporten, skal `album-bygger.html` og standardens afsnit 8.1 rettes med.
+
 ## Sikkerhed
 
 - Repoet er **offentligt**. Læg aldrig adgangskoder, hashes, nøgler, logfiler eller driftsdata fra serveren i det (fx `sbtv/config.php` og `sbtv/data/`). Brug eksempelfiler uden rigtige værdier.

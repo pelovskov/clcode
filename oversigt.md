@@ -37,6 +37,12 @@ Værktøjerne ligger i mappen `tools/`. De følger ikke Builder-standarden, men 
 | Musikpakke · Bygger | `tools/musikpakke-bygger.html` | 1 | laver en offline musik-app (PWA) med 3–5 samlinger som zip-fil |
 | Skyggeramme | `tools/skyggeramme.html` | – | sætter en blød skygge om et skærmbillede til wikien |
 
+**Billedarkiv** ligger i sin egen mappe, fordi det er et helt system med sin egen datafil og vejledning:
+
+| Navn | Fil | Version | Gør |
+|---|---|---|---|
+| Billedarkiv | `billedarkiv/billedarkiv.html` | 1.1 | ordner billeder i albums med titel, beskrivelse, fotograf, årstal og rækkefølge, og eksporterer et album som zip-fil til Album · Bygger. Kræver Chrome eller Edge. Se `billedarkiv/README.md` |
+
 `–` betyder, at der ikke står noget versionsnummer i filen. Adgangskode-hashes til `sbtv/config.php` laver du med `sbtv/lav-hash.php` på serveren.
 
 Byggere og værktøjer er hver én fil og henter ikke kode eller skrifttyper fra fremmede steder. De kan bruges uden internet. Undtagelserne er det, de selv skal hente eller vise: Piwigo Albumbygger henter fra galleriet, og Mediekort viser YouTube-videoer.
@@ -47,7 +53,7 @@ Byggere og værktøjer er hver én fil og henter ikke kode eller skrifttyper fra
 |---|---|---|
 | Dashboard | `bygger-dash.html` | forside med links til byggere og værktøjer |
 | Søgeindeks · Online | `sbtv/` | den samme søgeside som Søgeside · Bygger, men med login, upload og administration på et webhotel med PHP. Se `sbtv/LAES-MIG.md` |
-| Builder-standarden | `builder-standard.md` | fælles regler for byggerne, version 2.1 |
+| Builder-standarden | `builder-standard.md` | fælles regler for byggerne, version 2.3 |
 | Husregler | `claude.md` | regler for samarbejdet med Claude |
 
 ## Det hænger sammen
@@ -55,7 +61,7 @@ Byggere og værktøjer er hver én fil og henter ikke kode eller skrifttyper fra
 - **Feltoptager → Lydfortælling · Bygger.** Feltoptageren gemmer lydfortællinger i Lydfortælling · Byggerens filformat (nu 4). Tælles filformatet op i byggeren, skal Feltoptageren rettes med, ellers kan byggeren ikke indlæse filerne.
 - **Byggerne → Søgeside · Bygger og Søgeindeks · Online.** Søgesiderne læser Dublin Core-oplysningerne i de færdige filer.
 - **Samling · Bygger** samler færdige filer fra de andre byggere.
-- **Billedarkiv, Google Takeout og Fotosafari → Album · Bygger.** Album · Bygger læser deres sidecar-filer, når man vælger billederne og sidecar-filerne på én gang (standardens afsnit 8.1). Billedarkiv og Fotosafari er dine egne værktøjer og ligger ikke i repoet.
+- **Billedarkiv, Google Takeout og Fotosafari → Album · Bygger.** Album · Bygger læser deres sidecar-filer, når man vælger billederne og sidecar-filerne på én gang (standardens afsnit 8.1). Billedarkiv ligger i `billedarkiv/`. Fotosafari er dit eget værktøj og ligger ikke i repoet.
 
 ## Nævnt i standarden, men ikke i repoet endnu
 
