@@ -51,11 +51,11 @@
             "noegle": "rmu",
             "navn": "Roskilde Musik",
             "udgiver": "Roskilde Musik",
-            "slags": "",
+            "slags": "Vi samler, billeder, historier og artikler om roskildemusikken.",
             "forkortelse": "RM",
             "beskrivelse": "Billeder, interviews og artikler om musiklivet i Roskilde.",
             "hjemmeside": "",
-            "logo": ""
+            "logo": "grafik/rmu.png"
         }
     ]
 }
