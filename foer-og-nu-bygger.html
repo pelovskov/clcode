@@ -582,10 +582,19 @@ var THEMES = {
     muted:'#555555', line:'#E2E2E2', quote:'#333333',
     dPaper:'#141414', dSurface:'#1E1E1E', dInk:'#F2F2F2', dBody:'#DEDEDE',
     dMuted:'#A8A8A8', dLine:'#363636', dQuote:'#C2C2C2'
+  },
+  roskildemusik: {
+    label:'Roskilde Musik',
+    accent:'#C2410C', accentDark:'#9A3412', onAccent:'#FFFFFF',
+    paper:'#F6F5F3', surface:'#FFFFFF', ink:'#1C1C1F', body:'#2A2A2E',
+    muted:'#55555C', line:'#E4E2DE', quote:'#3F3F46',
+    dPaper:'#141416', dSurface:'#1E1E21', dInk:'#F4F4F5', dBody:'#E0E0E3',
+    dMuted:'#A6A6AD', dLine:'#36363B', dQuote:'#C4C4CA'
   }
 };
 // Vælgeren viser det korte navn (Builder-standard 3).
-var THEME_NAMES = { original:'Oprindeligt', historisk:'Historisk Samfund', lokalhistorisk2:'Lokalhistorisk', roedekors:'Røde Kors', roskildetv:'Roskilde TV' };
+var THEME_NAMES = { original:'Oprindeligt', historisk:'Historisk Samfund', lokalhistorisk2:'Lokalhistorisk', roedekors:'Røde Kors', roskildetv:'Roskilde TV', roskildemusik:'Roskilde Musik' };
+var RMU_DOT = 'radial-gradient(circle, #FF5500 0 30%, #1C1C1F 33% 100%)';
 var RTV_DOT = 'conic-gradient(#4DB0E8 0% 17%, #3576BA 17% 33%, #8E2D62 33% 50%, #B03035 50% 67%, #E8803A 67% 83%, #EFAF45 83% 100%)';
 
 /* ---------- Dublin Core: de 15 felter, fast rækkefølge ---------- */
@@ -1018,7 +1027,7 @@ function buildThemeChooser(){
     });
     var dot = document.createElement('span');
     dot.className = 'dot';
-    dot.style.background = key === 'roskildetv' ? RTV_DOT : t.accent;
+    dot.style.background = key === 'roskildetv' ? RTV_DOT : key === 'roskildemusik' ? RMU_DOT : t.accent;
     var txt = document.createElement('span');
     txt.textContent = THEME_NAMES[key] || t.label;
     lab.appendChild(r); lab.appendChild(dot); lab.appendChild(txt);

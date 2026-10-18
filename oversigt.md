@@ -1,6 +1,6 @@
 # Oversigt over byggere og værktøjer
 
-Status: 18. oktober 2026 · Builder-standard version 2.5 (`builder-standard.md`)
+Status: 18. oktober 2026 · Builder-standard version 2.6 (`builder-standard.md`)
 
 Versionsnummeret står i byggerens eller værktøjets topbar (eller, hvor der ikke er en topbar, i en kommentar øverst i filen). **Filformat** er det tal, en bygger skriver i sine færdige filer som `builderVersion`. Det tælles op, når formatet ændres, og en bygger afviser filer med et lavere tal end sit eget.
 
@@ -55,7 +55,7 @@ Byggere og værktøjer er hver én fil og henter ikke kode eller skrifttyper fra
 |---|---|---|
 | Dashboard | `bygger-dash.html` | forside med links til byggere og værktøjer |
 | Søgeindeks · Online | `sbtv/` | den samme søgeside som Søgeside · Bygger, men med login, upload og administration på et webhotel med PHP. Se `sbtv/LAES-MIG.md` |
-| Builder-standarden | `builder-standard.md` | fælles regler for byggerne, version 2.5 |
+| Builder-standarden | `builder-standard.md` | fælles regler for byggerne, version 2.6 |
 | Husregler | `claude.md` | regler for samarbejdet med Claude |
 
 ## Det hænger sammen
