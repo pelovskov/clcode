@@ -36,6 +36,7 @@ Værktøjerne ligger i mappen `tools/`. De følger ikke Builder-standarden, men 
 | Fotolab | `tools/fotolab.html` | 4 | farve-effekter, billedformat og Polaroid med håndskrevet tekst |
 | Musikpakke · Bygger | `tools/musikpakke-bygger.html` | 1 | laver en offline musik-app (PWA) med 3–5 samlinger som zip-fil |
 | Skyggeramme | `tools/skyggeramme.html` | – | sætter en blød skygge om et skærmbillede til wikien |
+| Kodeord og hash | `tools/password-hash.html` | 2.0 | laver et sikkert kodeord og den linje med bcrypt-hash, der skal i `config.php` |
 
 **Billedarkiv** ligger i sin egen mappe, fordi det er et helt system med sin egen datafil og vejledning:
 
@@ -43,7 +44,7 @@ Værktøjerne ligger i mappen `tools/`. De følger ikke Builder-standarden, men 
 |---|---|---|---|
 | Billedarkiv | `billedarkiv/billedarkiv.html` | 1.1 | ordner billeder i albums med titel, beskrivelse, fotograf, årstal og rækkefølge, og eksporterer et album som zip-fil til Album · Bygger. Kræver Chrome eller Edge. Se `billedarkiv/README.md` |
 
-`–` betyder, at der ikke står noget versionsnummer i filen. Adgangskode-hashes til `sbtv/config.php` laver du med `sbtv/lav-hash.php` på serveren.
+`–` betyder, at der ikke står noget versionsnummer i filen. Adgangskode-hashes til `sbtv/config.php` laver du med **Kodeord og hash** (`tools/password-hash.html`) på din egen computer eller med `sbtv/lav-hash.php` på serveren. De giver den samme slags hash.
 
 Byggere og værktøjer er hver én fil og henter ikke kode eller skrifttyper fra fremmede steder. De kan bruges uden internet. Undtagelserne er det, de selv skal hente eller vise: Piwigo Albumbygger henter fra galleriet, og Mediekort viser YouTube-videoer.
 

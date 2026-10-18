@@ -12,7 +12,7 @@ singlefile-HTML fra Byggerne, henvisninger og videokort.
 | `upload.php` | Læg filer op (kræver login). |
 | `admin.php` | Slet filer, byg søgesiden forfra, ret overskrift, se hvem der har gjort hvad. |
 | `login.php`, `logout.php` | Log ind og ud. |
-| `lav-hash.php` | Laver adgangskode-linjer til `config.php`. Gemmer intet. |
+| `lav-hash.php` | Laver adgangskode-linjer til `config.php`. Gemmer intet. Det samme kan gøres uden server med `tools/password-hash.html`. |
 | `config.php` | Brugere og indstillinger. Den eneste fil, du normalt retter i. |
 | `faelles.php` | Fælles kode, herunder skabelonen til søgesiden. |
 | `filer/` | Alle de filer, der er lagt op, plus en færdig `soegeside.html`. |
