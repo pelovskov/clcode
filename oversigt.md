@@ -1,6 +1,6 @@
 # Oversigt over byggere og værktøjer
 
-Status: 18. oktober 2026 · Builder-standard version 2.3 (`builder-standard.md`)
+Status: 18. oktober 2026 · Builder-standard version 2.4 (`builder-standard.md`)
 
 Versionsnummeret står i byggerens eller værktøjets topbar (eller, hvor der ikke er en topbar, i en kommentar øverst i filen). **Filformat** er det tal, en bygger skriver i sine færdige filer som `builderVersion`. Det tælles op, når formatet ændres, og en bygger afviser filer med et lavere tal end sit eget.
 
@@ -13,6 +13,7 @@ Byggerne laver en færdig fil, som kan gemmes, deles og åbnes uden internet. De
 | Sidebygger | `side-bygger.html` | 1.5 | 1 | artikelside om gader, steder og mennesker | Text |
 | Album · Bygger | `album-bygger.html` | 3.1 | 3 | billedalbum med grid og lightbox | Image |
 | Enkeltbillede · Bygger | `enkeltbillede-bygger.html` | 3.0 | 3 | ét billede i høj kvalitet med tekst og Exif | Image |
+| Før og Nu · Bygger | `foer-og-nu-bygger.html` | 2.0 | 2 | to billeder fra samme sted, rettet ind oven på hinanden, med skyder eller overtoning | Image |
 | Bogbygger | `bog-bygger.html` | 4.0 | 4 | e-bog med forside og kapitler | Text |
 | Lydfortælling · Bygger | `lydfortaelling-bygger.html` | 4.0 | 4 | lydafspiller med billede og tekst | Sound |
 | Mediekort · Bygger | `mediekort-bygger.html` | 1.2 | 1 | kort til en video, en podcast eller et talende billede | MovingImage eller Sound |
@@ -54,7 +55,7 @@ Byggere og værktøjer er hver én fil og henter ikke kode eller skrifttyper fra
 |---|---|---|
 | Dashboard | `bygger-dash.html` | forside med links til byggere og værktøjer |
 | Søgeindeks · Online | `sbtv/` | den samme søgeside som Søgeside · Bygger, men med login, upload og administration på et webhotel med PHP. Se `sbtv/LAES-MIG.md` |
-| Builder-standarden | `builder-standard.md` | fælles regler for byggerne, version 2.3 |
+| Builder-standarden | `builder-standard.md` | fælles regler for byggerne, version 2.4 |
 | Husregler | `claude.md` | regler for samarbejdet med Claude |
 
 ## Det hænger sammen
@@ -66,7 +67,7 @@ Byggere og værktøjer er hver én fil og henter ikke kode eller skrifttyper fra
 
 ## Nævnt i standarden, men ikke i repoet endnu
 
-Før og Nu · Bygger, Vejledningsbygger og PWA · Bygger. Standarden beskriver dem, men filerne ligger ikke her.
+Vejledningsbygger og PWA · Bygger. Standarden beskriver dem, men filerne ligger ikke her.
 
 ## Filnavne
 

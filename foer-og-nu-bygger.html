@@ -42,14 +42,14 @@
   /* ---------- Layout ---------- */
   .wrap{
     display: grid;
-    grid-template-columns: 1fr 380px;
+    grid-template-columns: 1fr 420px;
     gap: 28px;
     align-items: start;
     padding: 24px;
   }
-  .formpane{ max-width: 640px; }
+  .formpane{ max-width: 660px; }
   .previewpane{ position: sticky; top: 24px; }
-  @media (max-width: 860px){
+  @media (max-width: 900px){
     .wrap{ grid-template-columns: 1fr; }
     .previewpane{ position: static; }
   }
@@ -252,7 +252,7 @@
 
 <div class="topbar">
   <h1>Før og Nu · Bygger</h1>
-  <p>To billeder fra samme sted, taget med mange år imellem, lagt oven på hinanden med en skyder — samlet i én HTML-fil, der kan åbnes uden internet. Begge billeder kan hentes ud igen som JPEG.</p>
+  <p>To billeder fra samme sted, taget med mange år imellem, lagt oven på hinanden med en skyder — samlet i én HTML-fil, der kan åbnes uden internet. Begge billeder kan hentes ud igen som JPEG · kører lokalt, ingen server · version 2.0</p>
 </div>
 
 <div class="wrap">
@@ -477,7 +477,37 @@
       </div>
     </div>
 
-    <!-- 5. Dublin Core -->
+    <!-- 5. Hjem-knap og bunden af siden -->
+    <div class="block">
+      <h2>Hjem-knap og bunden af siden</h2>
+      <div class="field">
+        <label for="fHomeMode">Hjem-knap øverst (valgfri)</label>
+        <select id="fHomeMode">
+          <option value="auto" selected>Automatisk — vises kun når filen er del af en app eller samling</option>
+          <option value="always">Altid vist</option>
+          <option value="never">Aldrig vist</option>
+        </select>
+        <div class="pair" style="margin-top:10px">
+          <input type="text" id="fHomeLabel" placeholder="Knaptekst — fx Hjem" aria-label="Tekst på hjem-knappen">
+          <input type="text" id="fHomeUrl" placeholder="index.html" aria-label="Adresse for hjem-knappen">
+        </div>
+        <p class="help"><strong>Automatisk</strong> er det normale valg: filen finder selv ud af, om den ligger sammen med en forside, og viser først da knappen. Åbnes den alene, bliver knappen væk af sig selv. I forhåndsvisningen vises den altid, så du kan se, hvor den sidder.</p>
+      </div>
+      <div class="field">
+        <label>Nederst på den færdige side</label>
+        <div class="checkrow">
+          <input type="checkbox" id="fVisGem" checked>
+          <label for="fVisGem" style="margin:0; text-transform:none; letter-spacing:0; font-size:14.5px; font-weight:400; color:var(--ink);">Vis knappen <strong>Gem filen</strong></label>
+        </div>
+        <div class="checkrow">
+          <input type="checkbox" id="fVisOmFil" checked>
+          <label for="fVisOmFil" style="margin:0; text-transform:none; letter-spacing:0; font-size:14.5px; font-weight:400; color:var(--ink);">Vis den foldede liste <strong>Om denne fil</strong></label>
+        </div>
+        <p class="help">Slår du dem fra, forsvinder de kun fra den synlige side. Dublin Core-oplysningerne følger stadig med som skjulte meta-felter i toppen af filen. Brug det, når siden vises inde på et website.</p>
+      </div>
+    </div>
+
+    <!-- 6. Dublin Core -->
     <div class="block" style="border-top:none; padding-top:0;">
       <details class="dc" id="dcPanel">
         <summary>Dublin Core-metadata</summary>
@@ -487,7 +517,7 @@
       </details>
     </div>
 
-    <!-- 6. Generér -->
+    <!-- 7. Generér -->
     <div class="genbar">
       <button type="button" class="btn filled" id="btnGenerate">Generér før og nu-fil (.html)</button>
       <div class="msg" id="msg"></div>
@@ -503,39 +533,60 @@
 
 <script>
 /* =======================================================================
-   Før og Nu · Bygger  —  version 1
-   Bygget efter Builder-standard 1.0 (august 2026).
-   Format i outputfilen: "foer-og-nu", builderVersion 1.
+   Før og Nu · Bygger  —  version 2.0
+   Følger Builder-standard 2.4 (oktober 2026). Reference: Sidebygger 1.5.
+   Format i outputfilen: "foer-og-nu", builderVersion 2.
+   Bevidst afvigelse: brugeren vælger opløsning (1400, 1800 eller 2200 px), se standardens afsnit 8.
    Søstersystem til Enkeltbillede · Bygger.
    ======================================================================= */
 
 /* ---------- Temaer (samme hex-værdier i hele værktøjskassen) ---------- */
+// Kopieret uændret fra Builder-standard, afsnit 3.
 var THEMES = {
   original: {
-    label: 'Oprindeligt',
-    accent: '#9A4630', paper: '#EDE7D8', cardBg: '#1B1A16', cardText: '#F2ECDD',
-    ink: '#211E19', moss: '#47543C', line: '#cbc2a8',
-    timesColor: '#6B6455', footerColor: '#4A463C',
-    muted: '#6B6455', footerStrong: '#4A463C',
-    bodyText: '#211E19', quoteText: '#3A362E', codeBg: '#E2DBC8'
+    label:'Oprindeligt',
+    accent:'#9A4630', accentDark:'#82392A', onAccent:'#FDF8EE',
+    paper:'#EDE7D8', surface:'#FBF8EF', ink:'#211E19', body:'#3A362E',
+    muted:'#6B6455', line:'#D8D0BA', quote:'#5A5646',
+    dPaper:'#171613', dSurface:'#201E1A', dInk:'#EDE7D8', dBody:'#DDD5C4',
+    dMuted:'#A79E8B', dLine:'#3A3630', dQuote:'#BDB5A3'
   },
-  rodekors: {
-    label: 'Røde Kors',
-    accent: '#E30A0B', paper: '#FFFFFF', cardBg: '#E30A0B', cardText: '#FFFFFF',
-    ink: '#1A1A1A', moss: '#5A5A5A', line: '#DCDCDC',
-    timesColor: '#5A5A5A', footerColor: '#333333',
-    muted: '#5A5A5A', footerStrong: '#333333',
-    bodyText: '#1A1A1A', quoteText: '#333333', codeBg: '#F1F1F1'
+  historisk: {
+    label:'Historisk Samfund',
+    accent:'#385261', accentDark:'#2A3D49', onAccent:'#FFFFFF',
+    paper:'#F2F5F6', surface:'#FFFFFF', ink:'#16232A', body:'#2A3A42',
+    muted:'#5F707A', line:'#DDE3E6', quote:'#4A5C66',
+    dPaper:'#151D22', dSurface:'#1D272D', dInk:'#E9EEF1', dBody:'#DBE3E8',
+    dMuted:'#A5B5BE', dLine:'#32414B', dQuote:'#B8C6CD'
   },
-  bordeaux: {
-    label: 'Lokalhistorisk',
-    accent: '#9E2453', paper: '#FAF9F5', cardBg: '#9E2453', cardText: '#FAF9F5',
-    ink: '#211E19', moss: '#6B5560', line: '#E0D8D3',
-    timesColor: '#6B5560', footerColor: '#3A2630',
-    muted: '#6B5560', footerStrong: '#3A2630',
-    bodyText: '#211E19', quoteText: '#3A2630', codeBg: '#F0EAE6'
+  lokalhistorisk2: {
+    label:'Lokalhistorisk (bordeaux)',
+    accent:'#9E2453', accentDark:'#7A1B40', onAccent:'#FAF9F5',
+    paper:'#F3EFEF', surface:'#FFFFFF', ink:'#2A1620', body:'#332028',
+    muted:'#6B5560', line:'#E4DADE', quote:'#5C3B48',
+    dPaper:'#1A1116', dSurface:'#241820', dInk:'#F7EFF2', dBody:'#E9DDE2',
+    dMuted:'#B9A4AD', dLine:'#3D2C34', dQuote:'#C7AEB8'
+  },
+  roedekors: {
+    label:'Røde Kors',
+    accent:'#E30A0B', accentDark:'#B80809', onAccent:'#FFFFFF',
+    paper:'#F5F5F5', surface:'#FFFFFF', ink:'#1A1A1A', body:'#2B2B2B',
+    muted:'#5A5A5A', line:'#E2E2E2', quote:'#333333',
+    dPaper:'#161616', dSurface:'#1F1F1F', dInk:'#F2F2F2', dBody:'#E0E0E0',
+    dMuted:'#AAAAAA', dLine:'#383838', dQuote:'#C4C4C4'
+  },
+  roskildetv: {
+    label:'Roskilde TV',
+    accent:'#B03035', accentDark:'#8A2429', onAccent:'#FFFFFF',
+    paper:'#F4F4F4', surface:'#FFFFFF', ink:'#141414', body:'#222222',
+    muted:'#555555', line:'#E2E2E2', quote:'#333333',
+    dPaper:'#141414', dSurface:'#1E1E1E', dInk:'#F2F2F2', dBody:'#DEDEDE',
+    dMuted:'#A8A8A8', dLine:'#363636', dQuote:'#C2C2C2'
   }
 };
+// Vælgeren viser det korte navn (Builder-standard 3).
+var THEME_NAMES = { original:'Oprindeligt', historisk:'Historisk Samfund', lokalhistorisk2:'Lokalhistorisk', roedekors:'Røde Kors', roskildetv:'Roskilde TV' };
+var RTV_DOT = 'conic-gradient(#4DB0E8 0% 17%, #3576BA 17% 33%, #8E2D62 33% 50%, #B03035 50% 67%, #E8803A 67% 83%, #EFAF45 83% 100%)';
 
 /* ---------- Dublin Core: de 15 felter, fast rækkefølge ---------- */
 var DC_FIELDS = [
@@ -543,19 +594,38 @@ var DC_FIELDS = [
   ['creator',     'Ophav / skaber',     'fotograf, optager eller den der har skabt materialet', ''],
   ['subject',     'Emne / nøgleord',    'adskil med semikolon', ''],
   ['description', 'Beskrivelse',        'udfyldes automatisk fra teksten', ''],
-  ['publisher',   'Udgiver',            'foreningen eller arkivet', ''],
+  ['publisher',   'Udgiver / område',   'vælg område, så filen kan filtreres i søgeindekset', ''],
   ['contributor', 'Bidragyder',         'den der har scannet, redigeret eller registreret', ''],
   ['date',        'Dato',               'helst ÅÅÅÅ-MM-DD, men fx "ca. 1955" er også i orden', ''],
   ['type',        'Type',               'DCMI-typeordforråd', 'Image'],
   ['format',      'Format',             'filens tekniske format', 'text/html'],
-  ['identifier',  'Identifikator',      'arkivnummer, URL eller lignende', ''],
+  ['identifier',  'Identifikator',      'foreslås automatisk ud fra område og titel', ''],
   ['source',      'Kilde',              'hvor materialet stammer fra', ''],
   ['language',    'Sprog',              'sprogkode, fx da', 'da'],
   ['relation',    'Relation',           'beslægtet materiale, fx et billedalbum', ''],
   ['coverage',    'Dækning',            'sted og/eller periode, udfyldes automatisk fra Sted og de to årstal', ''],
   ['rights',      'Rettigheder',        'ophavsret og vilkår for brug', '']
 ];
-var DC_TYPES = ['Image','StillImage','InteractiveResource','Text','Collection','Event',''];
+var DC_TYPES = ['Text','Image','Sound','MovingImage','InteractiveResource','Collection','Event'];
+
+// Kopieret uændret fra Builder-standard, afsnit 4.1.
+var PUBLISHERS = [
+  { name:'Historisk Samfund for Roskilde Amt',      prefix:'HSR'  },
+  { name:'Privat',                                  prefix:'PRIV' },
+  { name:'Roskilde TV',                             prefix:'RTV'  },
+  { name:'Røde Kors',                               prefix:'RKR'  },
+  { name:'Syd for Banen - Lokalhistorisk Forening', prefix:'SFB'  }
+];
+// Ældre navne, der rettes til det gældende navn, når en fil indlæses.
+var LEGACY_PUBLISHERS = { 'Røde Kors Roskilde':'Røde Kors' };
+var AREA_PREFIX = {};
+PUBLISHERS.forEach(function(p){ AREA_PREFIX[p.name] = p.prefix; });
+function normalizePublisher(v){
+  var s = String(v || '').replace(/\s*[—–]\s*/g, ' - ').trim();
+  return LEGACY_PUBLISHERS[s] || s;
+}
+
+var BUILDER_VERSION = 2;   // tælles op ved formatændringer. 2 = første udgave efter Builder-standard 2.
 
 /* ---------- Tilstand ---------- */
 var state = {
@@ -587,12 +657,20 @@ function fmtBytes(b){
   return (b/(1024*1024)).toFixed(1).replace('.', ',') + ' MB';
 }
 
-function slug(s){
-  var t = (s || '').toLowerCase()
+// Kopieret uændret fra Builder-standard, afsnit 5.6.
+function slugify(s, fallback){
+  const out = (s || '').toLowerCase()
     .replace(/æ/g,'ae').replace(/ø/g,'oe').replace(/å/g,'aa')
-    .replace(/[^a-z0-9]+/g,'-')
-    .replace(/^-+|-+$/g,'');
-  return t || 'foer-og-nu';
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
+  return out || fallback || '';
+}
+function slug(s){ return slugify(s, 'foer-og-nu'); }
+
+function hexToRgba(hex, a){
+  var h = hex.replace('#','');
+  var n = parseInt(h.length === 3 ? h.split('').map(function(c){ return c + c; }).join('') : h, 16);
+  return 'rgba(' + ((n>>16)&255) + ',' + ((n>>8)&255) + ',' + (n&255) + ',' + a + ')';
 }
 
 function dataUrlBytes(dataUrl){
@@ -876,9 +954,18 @@ function makePair(maxDim, quality){
 
   var a = c1.toDataURL('image/jpeg', quality);
   var b = c2.toDataURL('image/jpeg', quality);
+  // Lille, firkantet ikon (64 px) af det nye billede til <link rel="icon"> (Builder-standard 5.2).
+  var nuCanvas = state.base === 'foer' ? c2 : c1;
+  var side = Math.min(d.w, d.h);
+  var ci = document.createElement('canvas');
+  ci.width = 64; ci.height = 64;
+  var ki = ci.getContext('2d');
+  ki.imageSmoothingQuality = 'high';
+  ki.drawImage(nuCanvas, Math.round((d.w - side) / 2), Math.round((d.h - side) / 2), side, side, 0, 0, 64, 64);
+  var icon = ci.toDataURL('image/jpeg', 0.8);
   return state.base === 'foer'
-    ? { foer: a, nu: b, w: d.w, h: d.h }
-    : { foer: b, nu: a, w: d.w, h: d.h };
+    ? { foer: a, nu: b, w: d.w, h: d.h, icon: icon }
+    : { foer: b, nu: a, w: d.w, h: d.h, icon: icon };
 }
 
 function alignKey(){
@@ -930,9 +1017,9 @@ function buildThemeChooser(){
     });
     var dot = document.createElement('span');
     dot.className = 'dot';
-    dot.style.background = t.accent;
+    dot.style.background = key === 'roskildetv' ? RTV_DOT : t.accent;
     var txt = document.createElement('span');
-    txt.textContent = t.label;
+    txt.textContent = THEME_NAMES[key] || t.label;
     lab.appendChild(r); lab.appendChild(dot); lab.appendChild(txt);
     box.appendChild(lab);
   });
@@ -955,8 +1042,19 @@ function buildDcFields(){
       input = document.createElement('select');
       DC_TYPES.forEach(function(v){
         var o = document.createElement('option');
-        o.value = v; o.textContent = v || '(ingen)';
+        o.value = v; o.textContent = v;
         if(v === def) o.selected = true;
+        input.appendChild(o);
+      });
+    }else if(key === 'publisher'){
+      // Udgiveren vælges fra den faste liste (Builder-standard 4.1), aldrig som fri tekst.
+      input = document.createElement('select');
+      var none = document.createElement('option');
+      none.value = ''; none.textContent = '(ikke valgt)';
+      input.appendChild(none);
+      PUBLISHERS.forEach(function(pb){
+        var o = document.createElement('option');
+        o.value = pb.name; o.textContent = pb.name;
         input.appendChild(o);
       });
     }else{
@@ -965,8 +1063,12 @@ function buildDcFields(){
       input.value = def || '';
     }
     input.id = 'dc_' + key;
-    input.addEventListener('input', function(){ dcTouched[key] = true; invalidate(); });
-    input.addEventListener('change', function(){ dcTouched[key] = true; invalidate(); });
+    if(key === 'publisher'){
+      input.addEventListener('change', invalidate);   // udgiveren styrer identifikatoren, men "rører" den ikke
+    }else{
+      input.addEventListener('input', function(){ dcTouched[key] = true; invalidate(); });
+      input.addEventListener('change', function(){ dcTouched[key] = true; invalidate(); });
+    }
     wrap.appendChild(lab); wrap.appendChild(hint); wrap.appendChild(input);
     box.appendChild(wrap);
   });
@@ -979,7 +1081,25 @@ function collectDc(){
     var v = el ? String(el.value).trim() : '';
     if(v) dc[f[0]] = v;
   });
+  // Udgiveren står som første emneord (Builder-standard 4.1).
+  if(dc.publisher){
+    var parts = (dc.subject || '').split(';').map(function(x){
+      var s = x.trim(), n = normalizePublisher(s);
+      return AREA_PREFIX[n] ? n : s;
+    }).filter(Boolean);
+    var rest = parts.filter(function(x){ return x !== dc.publisher; });
+    dc.subject = [dc.publisher].concat(rest).join('; ');
+  }
   return dc;
+}
+
+// Viser en ukendt udgiver fra en indlæst fil som ekstra valg, så den ikke går tabt.
+function ensurePublisherOption(v){
+  var sel = $('dc_publisher');
+  if(!v || Array.prototype.some.call(sel.options, function(o){ return o.value === v; })) return;
+  var o = document.createElement('option');
+  o.value = v; o.textContent = v + ' (ikke på listen — vælg en udgiver)';
+  sel.appendChild(o);
 }
 
 // Titel, beskrivelse og dækning spejler formularen, indtil du selv skriver i dem.
@@ -991,6 +1111,12 @@ function syncAutoDc(){
     var a = $('fFoerYear').value.trim(), b = $('fNuYear').value.trim();
     var span = (a && b) ? a + '/' + b : (a || b || '');
     $('dc_coverage').value = [place, span].filter(Boolean).join('; ');
+  }
+  // Identifikatoren foreslås som PRÆFIKS-foernu-titelslug-år (Builder-standard 4.1).
+  if(!dcTouched.identifier){
+    var prefix = AREA_PREFIX[$('dc_publisher').value];
+    var name = slugify($('fTitle').value, '');
+    $('dc_identifier').value = (prefix && name) ? (prefix + '-foernu-' + name + '-' + new Date().getFullYear()) : '';
   }
 }
 
@@ -1019,6 +1145,11 @@ function gatherState(){
     shareImage: $('fShare').value.trim(),
     ctaText: $('fCtaText').value.trim(),
     ctaUrl: $('fCtaUrl').value.trim(),
+    homeMode: $('fHomeMode').value,
+    homeLabel: $('fHomeLabel').value.trim(),
+    homeUrl: $('fHomeUrl').value.trim(),
+    visGem: $('fVisGem').checked,
+    visOmFil: $('fVisOmFil').checked,
     dc: collectDc(),
     counterCode: state.counterCode
   };
@@ -1111,7 +1242,7 @@ function buildOutput(st, opts){
 
   var sourceData = {
     format: 'foer-og-nu',
-    builderVersion: 1,
+    builderVersion: BUILDER_VERSION,
     theme: st.theme,
     base: st.base,
     kicker: st.kicker,
@@ -1129,6 +1260,8 @@ function buildOutput(st, opts){
     shareImage: st.shareImage,
     ctaText: st.ctaText,
     ctaUrl: st.ctaUrl,
+    homeMode: homeMode, homeLabel: st.homeLabel, homeUrl: st.homeUrl,
+    visGem: st.visGem !== false, visOmFil: st.visOmFil !== false,
     imageWidth: pair ? pair.w : 0,
     imageHeight: pair ? pair.h : 0,
     images: 'i dokumentet',
@@ -1147,25 +1280,36 @@ function buildOutput(st, opts){
     '<link rel="schema.DC" href="http://purl.org/dc/elements/1.1/">',
     dcMetaTags(dc),
     og.join('\n'),
-    pair ? '<link rel="icon" href="' + pair.nu + '">' : ''
+    pair ? '<link rel="icon" href="' + pair.icon + '">' : ''
   ].filter(Boolean).join('\n');
 
   var css = [
 '<style>',
 ':root{',
 '  --accent: ' + t.accent + ';',
+'  --on-accent: ' + t.onAccent + ';',
 '  --paper: ' + t.paper + ';',
-'  --card-bg: ' + t.cardBg + ';',
-'  --card-text: ' + t.cardText + ';',
+'  --card-bg: ' + t.dPaper + ';',
 '  --ink: ' + t.ink + ';',
-'  --moss: ' + t.moss + ';',
+'  --moss: ' + t.muted + ';',
 '  --line: ' + t.line + ';',
 '  --muted: ' + t.muted + ';',
-'  --footer-strong: ' + t.footerStrong + ';',
-'  --body-text: ' + t.bodyText + ';',
-'  --quote-text: ' + t.quoteText + ';',
-'  --code-bg: ' + t.codeBg + ';',
+'  --footer-strong: ' + t.body + ';',
+'  --body-text: ' + t.body + ';',
+'  --quote-text: ' + t.quote + ';',
+'  --code-bg: ' + hexToRgba(t.accent, 0.08) + ';',
 stampVars,
+'}',
+'body.dark{',
+'  --paper: ' + t.dPaper + ';',
+'  --ink: ' + t.dInk + ';',
+'  --moss: ' + t.dMuted + ';',
+'  --line: ' + t.dLine + ';',
+'  --muted: ' + t.dMuted + ';',
+'  --footer-strong: ' + t.dBody + ';',
+'  --body-text: ' + t.dBody + ';',
+'  --quote-text: ' + t.dQuote + ';',
+'  --code-bg: ' + hexToRgba(t.accent, 0.22) + ';',
 '}',
 '*{ box-sizing: border-box; }',
 'body{ margin:0; background: var(--paper); color: var(--body-text);',
@@ -1209,7 +1353,7 @@ stampVars,
 '.tools button{ font: inherit; font-size: 16px; font-weight: 600; min-height: 48px;',
 '  padding: 12px 20px; border: 2px solid var(--accent); border-radius: 999px;',
 '  background: transparent; color: var(--accent); cursor: pointer; }',
-'.tools button:hover{ background: var(--accent); color: var(--paper); }',
+'.tools button:hover{ background: var(--accent); color: var(--on-accent); }',
 '.tools button:focus-visible{ outline: 3px solid var(--accent); outline-offset: 3px; }',
 '.tools .tip{ font-size: 14.5px; color: var(--muted); }',
 'article{ font-size: 18px; }',
@@ -1224,7 +1368,7 @@ stampVars,
 'article hr{ border: none; border-top: 1px solid var(--line); margin: 26px 0; }',
 '.cta{ margin: 30px 0 0; }',
 '.cta a{ display:inline-block; min-height: 48px; padding: 13px 24px; border-radius: 999px;',
-'  background: var(--accent); color: var(--paper); text-decoration: none; font-weight: 700; font-size: 16.5px; }',
+'  background: var(--accent); color: var(--on-accent); text-decoration: none; font-weight: 700; font-size: 16.5px; }',
 '.cta a:focus-visible{ outline: 3px solid var(--accent); outline-offset: 3px; }',
 'details.fold{ margin-top: 26px; border-top: 1px solid var(--line); }',
 'details.fold summary{ cursor: pointer; font-weight: 600; font-size: 16px; color: var(--ink);',
@@ -1240,17 +1384,30 @@ stampVars,
 'details.fold .copy{ font: inherit; font-size: 14px; font-weight: 600; min-height: 40px;',
 '  padding: 7px 15px; margin-left: 10px; border: 2px solid var(--accent); border-radius: 999px;',
 '  background: transparent; color: var(--accent); cursor: pointer; }',
-'details.fold .copy:hover{ background: var(--accent); color: var(--paper); }',
+'details.fold .copy:hover{ background: var(--accent); color: var(--on-accent); }',
 'details.fold .posnote{ display: block; font-size: 14px; color: var(--muted); margin-top: 4px; }',
 'footer.save{ margin-top: 36px; padding-top: 26px; border-top: 1px solid var(--line); }',
 'button.savefile{ display:inline-flex; align-items:center; gap: 10px; font: inherit;',
 '  font-size: 16.5px; font-weight: 700; min-height: 48px; padding: 12px 24px;',
 '  border: 2px solid var(--accent); border-radius: 999px; background: transparent;',
 '  color: var(--accent); cursor: pointer; }',
-'button.savefile:hover{ background: var(--accent); color: var(--paper); }',
+'button.savefile:hover{ background: var(--accent); color: var(--on-accent); }',
 'button.savefile:focus-visible{ outline: 3px solid var(--accent); outline-offset: 3px; }',
 'button.savefile svg{ width: 20px; height: 20px; }',
 'footer.save .what{ margin: 12px 0 0; font-style: italic; font-size: 15px; color: var(--footer-strong); }',
+'.topline{ display:flex; align-items:center; gap: 10px; margin: 0 0 22px; min-height: 48px; }',
+'.topline .tool{ margin-left: auto; font: inherit; font-size: 15px; font-weight: 600; min-height: 48px; min-width: 48px;',
+'  padding: 10px 16px; border: 2px solid var(--accent); border-radius: 999px; background: transparent;',
+'  color: var(--accent); cursor: pointer; display:inline-flex; align-items:center; gap: 8px; }',
+'.topline .tool svg{ width: 20px; height: 20px; }',
+'.topline .tool:hover{ background: var(--accent); color: var(--on-accent); }',
+'.topline .tool:focus-visible, .home-btn:focus-visible{ outline: 3px solid var(--accent); outline-offset: 3px; }',
+'.homewrap{ display: none; }',
+'.homewrap.show{ display: block; }',
+'.home-btn{ display:inline-flex; align-items:center; gap: 8px; min-height: 48px; padding: 10px 18px 10px 14px;',
+'  border-radius: 999px; background: var(--accent); color: var(--on-accent); text-decoration: none;',
+'  font-weight: 700; font-size: 15.5px; }',
+'.home-btn svg{ width: 18px; height: 18px; }',
 '@media (max-width: 620px){',
 '  .sheet{ padding: 26px 16px 48px; }',
 '  h1{ font-size: 27px; }',
@@ -1259,15 +1416,33 @@ stampVars,
 '}',
 '@media (prefers-reduced-motion: reduce){ *{ transition: none !important; } }',
 '@media print{',
-'  .tools, footer.save, .slider, .handle{ display: none !important; }',
+'  .tools, .topline, footer.save, .slider, .handle{ display: none !important; }',
 '  figure.compare .after{ clip-path: none !important; opacity: 1 !important; }',
 '  body{ background: #fff; }',
 '}',
 '</style>'
   ].join('\n');
 
+  var homeMode = (st.homeMode === 'always' || st.homeMode === 'never') ? st.homeMode : 'auto';
+  var homeLabel = st.homeLabel || 'Hjem';
+  var homeUrl = st.homeUrl || 'index.html';
+  var homeVisible = homeMode === 'always' || (preview && homeMode !== 'never');
+
   var body = [];
   body.push('<div class="sheet">');
+  body.push('<div class="topline">');
+  if(homeMode !== 'never'){
+    body.push('<div class="homewrap' + (homeVisible ? ' show' : '') + '" id="topbar" data-mode="' + homeMode + '">' +
+      '<a class="home-btn" id="homeBtn" href="' + esc(homeUrl) + '">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+      '<path d="M3 10.5L12 3l9 7.5"/><path d="M5.5 9.5V20h13V9.5"/><path d="M10 20v-6h4v6"/></svg>' +
+      '<span>' + esc(homeLabel) + '</span></a></div>');
+  }
+  body.push('<button class="tool" id="darkBtn" type="button" aria-label="Skift mellem lys og mørk baggrund">' +
+    '<svg id="iconMoon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.4 15.4A8.6 8.6 0 0 1 8.6 3.6a8.6 8.6 0 1 0 11.8 11.8z"/></svg>' +
+    '<svg id="iconSun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="display:none"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.2 5.2l1.4 1.4M17.4 17.4l1.4 1.4M18.8 5.2l-1.4 1.4M6.6 17.4l-1.4 1.4"/></svg>' +
+    '<span>Mørk</span></button>');
+  body.push('</div>');
   body.push('<header>');
   if(st.kicker) body.push('<p class="kicker">' + esc(st.kicker) + '</p>');
   body.push('<h1>' + esc(title) + '</h1>');
@@ -1315,17 +1490,19 @@ stampVars,
 
   var ip = infoPanel(st, pair);
   if(ip) body.push(ip);
-  var ap = dcAboutPanel(dc);
+  var ap = st.visOmFil === false ? '' : dcAboutPanel(dc);
   if(ap) body.push(ap);
 
+  if(st.visGem !== false){
   body.push('<footer class="save">');
   body.push('<button class="savefile" id="saveBtn" type="button">' +
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" ' +
     'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
     '<path d="M12 3v12"></path><path d="M7 11l5 5 5-5"></path><path d="M4 20h16"></path></svg>' +
     '<span>Gem filen</span></button>');
-  body.push('<p class="what">To billeder fra samme sted med mange år imellem.</p>');
+  body.push('<p class="what">To billeder fra samme sted med mange år imellem. Gemmer det hele som én fil på din egen computer.</p>');
   body.push('</footer>');
+  }
   body.push('</div>');
 
   var script = [
@@ -1400,13 +1577,69 @@ stampVars,
 '    }else{ window.prompt("Kopiér positionen:", txt); }',
 '  }); }',
 '',
+'  var darkBtn = document.getElementById("darkBtn");',
+'  function setDark(on){',
+'    document.body.classList.toggle("dark", on);',
+'    document.getElementById("iconMoon").style.display = on ? "none" : "block";',
+'    document.getElementById("iconSun").style.display = on ? "block" : "none";',
+'  }',
+'  if(darkBtn){ darkBtn.addEventListener("click", function(){ setDark(!document.body.classList.contains("dark")); }); }',
+'',
 '  var saveBtn = document.getElementById("saveBtn");',
 '  if(saveBtn){',
 '    saveBtn.addEventListener("click", function(){',
+'      /* En ren kopi: mørk tilstand og en automatisk vist Hjem-knap nulstilles før gem. */',
+'      var bar2 = document.getElementById("topbar");',
+'      if(bar2 && bar2.getAttribute("data-mode") !== "auto") bar2 = null;',
+'      var barWasShown = bar2 && bar2.classList.contains("show");',
+'      var wasDark = document.body.classList.contains("dark");',
+'      if(bar2) bar2.classList.remove("show");',
+'      setDark(false);',
 '      var html = "<!DOCTYPE html>\\n" + document.documentElement.outerHTML;',
+'      if(bar2 && barWasShown) bar2.classList.add("show");',
+'      if(wasDark) setDark(true);',
 '      save(new Blob([html], {type: "text/html;charset=utf-8"}), ' +
       JSON.stringify(slug(title) + '.html') + ');',
 '    });',
+'  }',
+'',
+'  /* --- Hjem-knappen: i "automatisk" vises den kun, hvis filen er del af noget større --- */',
+'  var bar = document.getElementById("topbar");',
+'  if (bar){',
+'    var link = document.getElementById("homeBtn");',
+'    var mode = ' + JSON.stringify(homeMode) + ';',
+'    var target = ' + JSON.stringify(homeUrl) + ';',
+'    function show(){ bar.classList.add("show"); }',
+'    var fromUrl = null;',
+'    try { var p = new URLSearchParams(location.search); fromUrl = p.get("hjem") || p.get("home"); } catch(e){}',
+'    if (fromUrl){ var _c = ""; for (var _i = 0; _i < fromUrl.length; _i++){ if (fromUrl.charCodeAt(_i) > 32) _c += fromUrl.charAt(_i); } if (/^[a-z][a-z0-9+.-]*:/i.test(_c) && !/^https?:/i.test(_c)) fromUrl = null; }',
+'    if (fromUrl){ target = fromUrl; }',
+'    link.setAttribute("href", target);',
+'    if (mode === "always" || fromUrl){ show(); }',
+'    else if (mode === "auto"){',
+'      var path = (location.pathname || "").toLowerCase();',
+'      var isIndex = path.charAt(path.length-1) === "/" || path.indexOf("/index.html") === path.length - 11;',
+'      if (!isIndex){',
+'        var shown = false;',
+'        try {',
+'          if (window.matchMedia && (matchMedia("(display-mode: standalone)").matches || matchMedia("(display-mode: fullscreen)").matches || matchMedia("(display-mode: minimal-ui)").matches)){ show(); shown = true; }',
+'        } catch(e){}',
+'        if (!shown && navigator.standalone === true){ show(); shown = true; }',
+'        if (!shown){',
+'          try {',
+'            if (document.referrer){',
+'              var ref = new URL(document.referrer), here = new URL(location.href);',
+'              var refDir = ref.pathname.slice(0, ref.pathname.lastIndexOf("/"));',
+'              var hereDir = here.pathname.slice(0, here.pathname.lastIndexOf("/"));',
+'              if (ref.origin === here.origin && refDir === hereDir && ref.href !== here.href){ show(); shown = true; }',
+'            }',
+'          } catch(e){}',
+'        }',
+'        if (!shown && (location.protocol === "http:" || location.protocol === "https:")){',
+'          try { fetch(target, {method:"HEAD"}).then(function(r){ if (r && r.ok) show(); }).catch(function(){}); } catch(e){}',
+'        }',
+'      }',
+'    }',
 '  }',
 '})();',
 '<\/script>'
@@ -1460,12 +1693,13 @@ function loadExisting(file){
   file.text().then(function(text){
     var doc = new DOMParser().parseFromString(text, 'text/html');
     var holder = doc.getElementById('builder-source-data');
-    if(!holder){
-      st.textContent = 'Filen kan ikke indlæses — den er ikke lavet med dette værktøj.';
-      st.className = 'status warn';
-      return;
-    }
-    var d = JSON.parse(holder.textContent);
+    var ikkeDenne = 'Filen kan ikke indlæses — den er ikke lavet med denne udgave af værktøjet.';
+    function afvis(tekst){ st.textContent = tekst; st.className = 'status warn'; $('loadInput').value = ''; }
+    if(!holder){ afvis(ikkeDenne); return; }
+    var d;
+    try { d = JSON.parse(holder.textContent); } catch(e){ afvis(ikkeDenne); return; }
+    if(d.format !== 'foer-og-nu'){ afvis('Filen er lavet med et andet værktøj i serien og kan ikke indlæses her.'); return; }
+    if(!d.builderVersion || d.builderVersion < BUILDER_VERSION){ afvis(ikkeDenne); return; }
 
     state.theme = THEMES[d.theme] ? d.theme : 'original';
     Array.prototype.forEach.call($('themes').children, function(lab){
@@ -1491,15 +1725,28 @@ function loadExisting(file){
     $('fCtaText').value = d.ctaText || '';
     $('fCtaUrl').value = d.ctaUrl || '';
     $('fShowInfo').checked = d.showInfo !== false;
+    $('fHomeMode').value = (d.homeMode === 'always' || d.homeMode === 'never') ? d.homeMode : 'auto';
+    $('fHomeLabel').value = d.homeLabel || '';
+    $('fHomeUrl').value = d.homeUrl || '';
+    $('fVisGem').checked = d.visGem !== false;
+    $('fVisOmFil').checked = d.visOmFil !== false;
     setRadio('transChoice', d.transition || 'wipe');
     setRadio('stampChoice', d.stampStyle || 'dark');
     setRadio('sizeChoice', String(d.maxDim || 1800));
 
+    var publisherFixed = '';
     DC_FIELDS.forEach(function(f){
       var key = f[0], el = $('dc_' + key);
       var v = (d.dublinCore && d.dublinCore[key]) ? d.dublinCore[key] : (f[3] || '');
+      if(key === 'publisher'){
+        // Gamle stavemåder rettes til den gældende (Builder-standard 4.1).
+        var n = normalizePublisher(v);
+        if(n !== v) publisherFixed = v + '" er rettet til "' + n;
+        v = n;
+        ensurePublisherOption(v);
+      }
       el.value = v;
-      dcTouched[key] = String(v).trim() !== '' && !!(d.dublinCore && d.dublinCore[key]);
+      dcTouched[key] = key !== 'publisher' && String(v).trim() !== '' && !!(d.dublinCore && d.dublinCore[key]);
     });
 
     var m = text.match(/<!-- TÆLLER -->([\s\S]*?)<!-- TÆLLER SLUT -->/);
@@ -1517,7 +1764,8 @@ function loadExisting(file){
       refreshAlign();
       pairCache.key = ''; previewCache.key = '';
       st.textContent = 'Indlæst: ' + file.name +
-        (state.counterCode.trim() ? ' · tællerkoden blev fundet og følger med over.' : '');
+        (state.counterCode.trim() ? ' · tællerkoden blev fundet og følger med over.' : '') +
+        (publisherFixed ? ' · udgiveren "' + publisherFixed + '".' : '');
       st.className = 'status ok';
       invalidate();
     }
@@ -1574,7 +1822,7 @@ function wireRadioGroup(id, onPick){
 }
 
 ['fKicker','fTitle','fPlace','fFoerYear','fFoerBy','fFoerSource','fNuYear','fNuBy','fNuSource',
- 'fAltFoer','fAltNu','fText','fShare','fCtaText','fCtaUrl'].forEach(function(id){
+ 'fAltFoer','fAltNu','fText','fShare','fCtaText','fCtaUrl','fHomeLabel','fHomeUrl'].forEach(function(id){
   $(id).addEventListener('input', invalidate);
 });
 
@@ -1589,6 +1837,7 @@ $('fPos').addEventListener('input', function(){
 });
 
 $('fShowInfo').addEventListener('change', invalidate);
+['fHomeMode','fVisGem','fVisOmFil'].forEach(function(id){ $(id).addEventListener('change', invalidate); });
 $('fGrid').addEventListener('change', drawCanvas);
 
 $('sBlend').addEventListener('input', function(){ showSliderValues(); drawCanvas(); });
@@ -1676,7 +1925,7 @@ $('btnGenerate').addEventListener('click', function(){
       var html = buildOutput(st, { preview: false });
       var blob = new Blob([html], { type: 'text/html;charset=utf-8' });
       var url = URL.createObjectURL(blob), a = document.createElement('a');
-      a.href = url; a.download = slug(st.title) + '-foer-og-nu.html';
+      a.href = url; a.download = slug(st.title) + '.html';
       document.body.appendChild(a); a.click(); document.body.removeChild(a);
       setTimeout(function(){ URL.revokeObjectURL(url); }, 2000);
       box.textContent = 'Filen er gemt — ' + fmtBytes(html.length) +
