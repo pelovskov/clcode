@@ -46,6 +46,16 @@
             "beskrivelse": "Lydfortællinger og billeder fra frivilligt arbejde og fællesskaber i Roskilde.",
             "hjemmeside": "https://rkroskilde.dk",
             "logo": "grafik/rk.png"
+        },
+        {
+            "noegle": "rmu",
+            "navn": "Roskilde Musik",
+            "udgiver": "Roskilde Musik",
+            "slags": "",
+            "forkortelse": "RM",
+            "beskrivelse": "Billeder, interviews og artikler om musiklivet i Roskilde.",
+            "hjemmeside": "",
+            "logo": ""
         }
     ]
 }

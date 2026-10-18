@@ -1,7 +1,7 @@
 # Builder-standard
 
 **Fælles specifikation for værktøjskassen**
-Version 2.4 · oktober 2026
+Version 2.5 · oktober 2026
 
 Referenceimplementering: **Sidebygger** (`side-bygger.html`, version 1.5).
 Når noget er i tvivl, er det referencefilen der gælder.
@@ -266,6 +266,7 @@ dc.publisher vises som en rulleliste, aldrig som frit tekstfelt, med standardval
 const PUBLISHERS = [
   { name:'Historisk Samfund for Roskilde Amt',      prefix:'HSR'  },
   { name:'Privat',                                  prefix:'PRIV' },
+  { name:'Roskilde Musik',                          prefix:'RMU'  },
   { name:'Roskilde TV',                             prefix:'RTV'  },
   { name:'Røde Kors',                               prefix:'RKR'  },
   { name:'Syd for Banen - Lokalhistorisk Forening', prefix:'SFB'  }
@@ -558,6 +559,7 @@ REGLER
 - Udgiver: KUN én af disse, stavet præcis sådan:
   Historisk Samfund for Roskilde Amt
   Privat
+  Roskilde Musik
   Roskilde TV
   Røde Kors
   Syd for Banen - Lokalhistorisk Forening
@@ -599,6 +601,10 @@ Udgiverlisten i prompten skal altid svare til `PUBLISHERS` i 4.1. Kommer der en 
 ---
 
 ## 12. Ændringslog
+
+**Version 2.5 — oktober 2026.**
+- Ny udgiver i afsnit 4.1: **Roskilde Musik** med præfikset `RMU`, fx `RMU-lyd-interview-med-…-2026`. Den er tilføjet i `PUBLISHERS` i alle byggere og i Metadata-hjælper og i prompten i afsnit 11.
+- Søgeindeks · Online: Roskilde Musik står i `foreninger.json` med nøglen `rmu`, så `?forening=rmu` viser deres materiale. Logo, hjemmeside og rettighedstekst udfyldes, når foreningen har bestemt dem.
 
 **Version 2.4 — oktober 2026.**
 - Før og Nu · Bygger (v2.0, `foer-og-nu-bygger.html`, tidligere `foer-og-nubygger.html`) ligger nu i repoet og er bragt i overensstemmelse med standarden. Den var bygget efter 1.0 og fik: de fem temaer, udgiverlisten med første emneord og automatisk identifikator (`PRÆFIKS-foernu-titelslug-år`), Dublin Core-labels og typer som i afsnit 4, Hjem-knap med kontrol af `?hjem=`, valg af "Gem filen" og "Om denne fil", mørk tilstand, et lille ikon og standardens slug. Filformatet er nu `builderVersion` 2; filer fra den gamle udgave laves om.
