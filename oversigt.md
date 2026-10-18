@@ -25,7 +25,7 @@ Byggerne laver en færdig fil, som kan gemmes, deles og åbnes uden internet. De
 
 ## Værktøjer
 
-Værktøjerne ligger i mappen `tools/`. De følger ikke Builder-standarden, men er hver især én fil, der virker uden internet (undtagen ét, se nedenfor).
+Værktøjerne ligger i mappen `tools/`. De følger ikke Builder-standarden, men er hver især én fil, der virker uden internet.
 
 | Navn | Fil | Version | Gør |
 |---|---|---|---|
@@ -36,11 +36,10 @@ Værktøjerne ligger i mappen `tools/`. De følger ikke Builder-standarden, men 
 | Fotolab | `tools/fotolab.html` | 4 | farve-effekter, billedformat og Polaroid med håndskrevet tekst |
 | Musikpakke · Bygger | `tools/musikpakke-bygger.html` | 1 | laver en offline musik-app (PWA) med 3–5 samlinger som zip-fil |
 | Skyggeramme | `tools/skyggeramme.html` | – | sætter en blød skygge om et skærmbillede til wikien |
-| Kodeords- og hash-generator | `tools/password-hash.html` | – | laver kodeord og bcrypt-hashes til PHP, SQL, `.htpasswd` og `.env` |
 
-`–` betyder, at der ikke står noget versionsnummer i filen.
+`–` betyder, at der ikke står noget versionsnummer i filen. Adgangskode-hashes til `sbtv/config.php` laver du med `sbtv/lav-hash.php` på serveren.
 
-**Kodeords- og hash-generatoren kræver internet.** Den henter kode og skrifttyper fra `cdn.tailwindcss.com`, `cdn.jsdelivr.net` og Google Fonts. Den virker derfor ikke uden forbindelse, og de tre steder kan se, at den bliver åbnet. De øvrige syv værktøjer og alle byggere henter ikke noget udefra.
+Byggere og værktøjer er hver én fil og henter ikke kode eller skrifttyper fra fremmede steder. De kan bruges uden internet. Undtagelserne er det, de selv skal hente eller vise: Piwigo Albumbygger henter fra galleriet, og Mediekort viser YouTube-videoer.
 
 ## Andet
 
