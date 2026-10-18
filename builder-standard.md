@@ -1,7 +1,7 @@
 # Builder-standard
 
 **Fælles specifikation for værktøjskassen**
-Version 2.3 · oktober 2026
+Version 2.4 · oktober 2026
 
 Referenceimplementering: **Sidebygger** (`side-bygger.html`, version 1.5).
 Når noget er i tvivl, er det referencefilen der gælder.
@@ -20,7 +20,7 @@ Værktøjskassen består af flere små, uafhængige builder-apps:
 | Piwigo Albumbygger | billedalbum hentet fra et album i et Piwigo-galleri, ellers som Album · Bygger | Image |
 | Bogbygger | e-bog / lydbog | Text |
 | Enkeltbillede · Bygger | ét billede i høj kvalitet med tekst og Exif | Image |
-| Før og Nu · Bygger | to billeder fra samme sted med slider | Image |
+| Før og Nu · Bygger | to billeder fra samme sted, rettet ind oven på hinanden, med skyder eller overtoning | Image |
 | Mediekort · Bygger | kort til en video (YouTube eller videofil), en podcast eller et talende billede, med kapitler og evt. transskription | MovingImage (video), Sound (podcast og talende billede) |
 | Præsentation · Bygger | billedshow til foredrag og oplæg, med pile, fuld skærm og automatisk visning | Image |
 | Samling · Bygger | forside der binder 2-6 færdige filer sammen til en kurateret samling | Collection |
@@ -29,7 +29,7 @@ Værktøjskassen består af flere små, uafhængige builder-apps:
 | PWA · Bygger | samler færdige filer til en app til hjemmeskærmen | afklares |
 | Metadata-hjælper | ingen fil; laver en AI-prompt til Dublin Core og kontrollerer svaret (se afsnit 11) | - |
 
-Bragt i overensstemmelse med standarden: Sidebygger (v1.5, `side-bygger.html`), Album · Bygger (v3.1, `album-bygger.html`, følger 2.3), Enkeltbillede · Bygger (v3.0, `enkeltbillede-bygger.html`, følger 1.9), Præsentation · Bygger (v1.0, `praesentation-bygger.html`, følger 2.1), Samling · Bygger (v2.0, `samling-bygger.html`, følger 1.5), Mediekort · Bygger (v1.2, `mediekort-bygger.html`, følger 1.6), Piwigo Albumbygger (v2.0, `piwigo-album-bygger.html`, følger 1.6), Henvisning · Bygger (v2.0, `henvisning-bygger.html`, følger 1.8), Bogbygger (v4.0, `bog-bygger.html`, følger 1.9) og Lydfortælling · Bygger (v4.0, `lydfortaelling-bygger.html`, følger 1.9).
+Bragt i overensstemmelse med standarden: Sidebygger (v1.5, `side-bygger.html`), Album · Bygger (v3.1, `album-bygger.html`, følger 2.3), Enkeltbillede · Bygger (v3.0, `enkeltbillede-bygger.html`, følger 1.9), Præsentation · Bygger (v1.0, `praesentation-bygger.html`, følger 2.1), Samling · Bygger (v2.0, `samling-bygger.html`, følger 1.5), Mediekort · Bygger (v1.2, `mediekort-bygger.html`, følger 1.6), Piwigo Albumbygger (v2.0, `piwigo-album-bygger.html`, følger 1.6), Henvisning · Bygger (v2.0, `henvisning-bygger.html`, følger 1.8), Bogbygger (v4.0, `bog-bygger.html`, følger 1.9), Før og Nu · Bygger (v2.0, `foer-og-nu-bygger.html`, følger 2.4) og Lydfortælling · Bygger (v4.0, `lydfortaelling-bygger.html`, følger 1.9).
 
 Den Talende Booklet er udgået. Dens opgave, ét billede med lyd og tekst, løses nu af Mediekort · Bygger med typen **Talende billede**. Lydfortælling · Bygger består dog som den enkle udgave til dem, der kun skal bruge ét billede, lyd og tekst.
 
@@ -415,6 +415,8 @@ Skaleres til maks. **1600 px** på den længste led og gemmes som JPEG, kvalitet
 
 Undtagelse: Enkeltbillede · Bygger gemmer i høj opløsning (3000-4000 px eller originalen) og bevarer Exif, fordi det er appens formål.
 
+Undtagelse: Før og Nu · Bygger lader brugeren vælge **1400, 1800 eller 2200 px** på den længste led (kvalitet 0,85), fordi de to billeder tegnes om i samme pixelmål og skal flugte præcist. 1800 px er forvalgt. Billederne kan derfor ikke gemmes urørt, og Exif følger ikke med.
+
 Undtagelse: Præsentation · Bygger gemmer billederne i **2560 px** og kvalitet **0,85**, fordi de skal vises på storskærm eller projektor. Der kan højst være **25 billeder**, så filen holder sig omkring 15-25 MB. Hvert billede får desuden en lille udgave (480 px, 0,78), som bruges i oversigten, i forhåndsvisningen og som `<link rel="icon">`. Den store udgave ligger i `data-full` på billedet og hentes først, når billedet vises.
 
 Undtagelse: Samling · Bygger gemmer miniaturerne på kortene i **800 px** og kvalitet **0,82**, fordi de kun vises i lille størrelse. Forsidebilledet følger 1600 px / 0,82.
@@ -597,6 +599,10 @@ Udgiverlisten i prompten skal altid svare til `PUBLISHERS` i 4.1. Kommer der en 
 ---
 
 ## 12. Ændringslog
+
+**Version 2.4 — oktober 2026.**
+- Før og Nu · Bygger (v2.0, `foer-og-nu-bygger.html`, tidligere `foer-og-nubygger.html`) ligger nu i repoet og er bragt i overensstemmelse med standarden. Den var bygget efter 1.0 og fik: de fem temaer, udgiverlisten med første emneord og automatisk identifikator (`PRÆFIKS-foernu-titelslug-år`), Dublin Core-labels og typer som i afsnit 4, Hjem-knap med kontrol af `?hjem=`, valg af "Gem filen" og "Om denne fil", mørk tilstand, et lille ikon og standardens slug. Filformatet er nu `builderVersion` 2; filer fra den gamle udgave laves om.
+- Afsnit 8: undtagelse for Før og Nu · Bygger, som lader brugeren vælge 1400, 1800 eller 2200 px.
 
 **Version 2.3 — oktober 2026.**
 - Afsnit 8.1: Billedarkiv er kommet til som kilde. Hver sidecar pr. billede (`.json` med `exportedFilename`) giver titel, beskrivelse, fotograf, årstal, rækkefølge og albummets titel. Oversigtsfilerne `_album-oversigt.*` springes over.
