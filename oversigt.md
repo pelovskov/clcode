@@ -16,6 +16,7 @@ Byggerne laver en færdig fil, som kan gemmes, deles og åbnes uden internet. De
 | Bogbygger | `bog-bygger.html` | 4.0 | 4 | e-bog med forside og kapitler | Text |
 | Lydfortælling · Bygger | `lydfortaelling-bygger.html` | 4.0 | 4 | lydafspiller med billede og tekst | Sound |
 | Mediekort · Bygger | `mediekort-bygger.html` | 1.2 | 1 | kort til en video, en podcast eller et talende billede | MovingImage eller Sound |
+| Præsentation · Bygger | `praesentation-bygger.html` | 1.0 | 1 | billedshow til foredrag og oplæg, med pile, fuld skærm og automatisk visning | Image |
 | Henvisning · Bygger | `henvisning-bygger.html` | 2.0 | 2 | "skilt" der sender videre til en side på nettet | Text (kan ændres) |
 | Samling · Bygger | `samling-bygger.html` | 2.0 | 2 | forside der binder 2–6 færdige filer sammen | Collection |
 | Piwigo Albumbygger | `piwigo-album-bygger.html` | 2.0 | 1 | billedalbum hentet fra et album i et Piwigo-galleri | Image |
@@ -58,7 +59,7 @@ Værktøjerne ligger i mappen `tools/`. De følger ikke Builder-standarden, men 
 
 ## Nævnt i standarden, men ikke i repoet endnu
 
-Præsentation · Bygger (v1.0), Før og Nu · Bygger, Vejledningsbygger og PWA · Bygger. Standarden beskriver dem, men filerne ligger ikke her.
+Før og Nu · Bygger, Vejledningsbygger og PWA · Bygger. Standarden beskriver dem, men filerne ligger ikke her.
 
 ## Filnavne
 
