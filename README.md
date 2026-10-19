@@ -27,9 +27,9 @@ Det er en fornuftig plan. Et nyt repo ved siden af dit gamle setup betyder, at d
 Første runde med trin 1 til 4 kan nok klares på en rolig aften. Resten kan tages i det tempo, der passer dig, og det kan være en god anledning til at få Bertram forbi og se over skulderen.
 
 ----
-Om claude.md
+Om CLAUDE.md
 
-Her er udkastet til `CLAUDE.md`. Filen hedder med småt "md", fordi det er skrivemåden, Claude Code leder efter, og den skal ligge i repoets rod (øverst i mappen).
+Her er udkastet til `CLAUDE.md`. Navnet skrives med store bogstaver og småt ".md", fordi det er skrivemåden, Claude Code leder efter, og den skal ligge i repoets rod (øverst i mappen).
 
 Jeg har bygget den på det, du har fortalt om dine værktøjer: singlefile-HTML, ingen eksterne afhængigheder, langtidsholdbarhed, tilgængelighed og dansk sprog. Jeg har ikke set selve Builder-standarden, så filen henviser bare til `BUILDER-STANDARD.md` i stedet for at gentage dens indhold. Det er også bedst, for så har du kun ét sted at rette.
 
