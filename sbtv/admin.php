@@ -63,7 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $t = trim(mb_substr((string)($_POST['titel'] ?? ''), 0, 150));
             $u = trim(mb_substr((string)($_POST['undertitel'] ?? ''), 0, 200));
             med_laas(function () use ($t, $u) {
-                skriv_json(INDSTILLINGER, ['titel' => $t !== '' ? $t : 'Lokalhistorisk søgeindeks', 'undertitel' => $u]);
+                skriv_json(INDSTILLINGER, ['titel' => $t !== '' ? $t : 'Søg i lokalhistorier', 'undertitel' => $u]);
                 skriv_statisk_soegeside(hent_indeks());
             });
             log_haendelse($bruger, 'ændrede overskriften');

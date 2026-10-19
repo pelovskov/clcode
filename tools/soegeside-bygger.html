@@ -6,7 +6,8 @@
 <title>Søgeside · Bygger</title>
 <style>
 /* ---------------------------------------------------------------
-   Søgeside · Bygger — version 1.2 (okt. 2026)
+   Søgeside · Bygger — version 1.3 (okt. 2026)
+   1.3: standardtitlen er nu "Søg i lokalhistorier".
    1.2: henvisninger får altid 🔗-ikonet, kun http(s)-adresser bliver til links,
         og "Uden område" hedder som i Builder-standard 4.1.
    1.1: links til egne filer får ?hjem=soegeside.html med og åbnes i
@@ -169,7 +170,7 @@ footer p{max-width:70ch}
     <div class="trin">
       <h3>2. Giv siden en titel</h3>
       <label class="felt" for="titel">Overskrift på søgesiden</label>
-      <input class="felt" id="titel" type="text" value="Lokalhistorisk søgeindeks">
+      <input class="felt" id="titel" type="text" value="Søg i lokalhistorier">
       <label class="felt" for="undertitel">Linje under overskriften (kan stå tom)</label>
       <input class="felt" id="undertitel" type="text" placeholder="fx dit navn eller foreningens navn">
     </div>
@@ -746,7 +747,7 @@ function escapeHtml(s){
 }
 
 function byg(){
-  const titel = document.getElementById("titel").value.trim() || "Lokalhistorisk søgeindeks";
+  const titel = document.getElementById("titel").value.trim() || "Søg i lokalhistorier";
   const under = document.getElementById("undertitel").value.trim();
 
   const nu = new Date();

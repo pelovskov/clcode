@@ -218,7 +218,7 @@ function portal_indstillinger(): array
     $mail = trim((string)($p['kontakt_email'] ?? ''));
     $pakke = trim((string)($p['startpakke'] ?? ''));
     return [
-        'titel'         => trim((string)($p['titel'] ?? '')) ?: 'Lokalhistorisk Søgeportal',
+        'titel'         => trim((string)($p['titel'] ?? '')) ?: 'Lokalhistorier',
         'undertitel'    => trim((string)($p['undertitel'] ?? '')),
         'kontakt_navn'  => trim((string)($p['kontakt_navn'] ?? '')),
         'kontakt_email' => filter_var($mail, FILTER_VALIDATE_EMAIL) ? $mail : '',
@@ -574,7 +574,7 @@ function byg_soegeside(array $poster, string $titel, string $under, string $sti,
     $jsonFlag = JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP;
     return strtr(SKABELON, [
         '__MARKER__'     => MARKER,
-        '__TITEL__'      => h($titel !== '' ? $titel : 'Lokalhistorisk søgeindeks'),
+        '__TITEL__'      => h($titel !== '' ? $titel : 'Søg i lokalhistorier'),
         '__UNDERTITEL__' => $under !== '' ? h($under) . ' · ' : '',
         '__ANTAL__'      => (string)count($rene),
         '__GENERERET__'  => $tid ? dansk_tid($tid) : 'endnu ikke',
