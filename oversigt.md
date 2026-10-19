@@ -57,7 +57,7 @@ Byggere og værktøjer er hver én fil og henter ikke kode eller skrifttyper fra
 | Søgeindeks · Online | `sbtv/` | den samme søgeside som Søgeside · Bygger, men med login, upload og administration på et webhotel med PHP. Se `sbtv/LAES-MIG.md` |
 | Builder-standarden | `builder-standard.md` | fælles regler for byggerne, version 2.7 |
 | Fælles emneord | `emneord.md` | emneord, som alle foreninger staver ens, fx Musik og Arkitektur, så man kan finde et emne på tværs af foreningerne |
-| Husregler | `claude.md` | regler for samarbejdet med Claude |
+| Husregler | `CLAUDE.md` | regler for samarbejdet med Claude |
 
 ## Det hænger sammen
 
