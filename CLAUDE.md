@@ -44,6 +44,7 @@ Værktøjerne bruges af frivillige og ældre brugere, så de skal være enkle, r
 - **En bygger eller et værktøj ændres:** tæl versionsnummeret op, og ret `oversigt.md` og `bygger-dash.html`.
 - **Filformatet ændres:** tæl `builderVersion` op (byggeren afviser filer med et lavere tal), og tjek "Ting der hænger sammen" nedenfor.
 - **Standarden ændres:** tæl versionen i `builder-standard.md` op, skriv i ændringsloggen, og ret versionsnummeret i `oversigt.md`.
+- **Noget større kommer til eller bliver afsluttet** (en ny bygger, en ny forening, et åbent spørgsmål der bliver afklaret): ret `projekt-resume.md`.
 - **Nyt tema eller ny udgiver:** skrives først i standarden og kopieres derefter uændret til alle byggere. En ny udgiver skal også i Metadata-hjælper og i `sbtv/data/foreninger.json`.
 
 ## Test

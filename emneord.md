@@ -1,6 +1,6 @@
 # Fælles emneord
 
-Her står foreningernes fælles emneord. Bruger alle foreninger den samme stavemåde, kan man finde alt om et emne på én gang, uanset hvem der har lavet historien. En søgning på `…/sbtv/?q=arkitektur` viser fx arkitekturhistorier fra Syd for Banen og fra Historisk Selskab for Roskilde Amt i samme liste.
+Her står foreningernes fælles emneord. Bruger alle foreninger den samme stavemåde, kan man finde alt om et emne på én gang, uanset hvem der har lavet historien. En søgning på `…/sbtv/?q=arkitektur` viser fx arkitekturhistorier fra Syd for Banen og fra Historisk Samfund for Roskilde Amt i samme liste.
 
 ## Sådan bruges listen
 
