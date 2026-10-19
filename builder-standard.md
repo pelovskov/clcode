@@ -1,7 +1,7 @@
 # Builder-standard
 
 **Fælles specifikation for værktøjskassen**
-Version 2.6 · oktober 2026
+Version 2.7 · oktober 2026
 
 Referenceimplementering: **Sidebygger** (`side-bygger.html`, version 1.5).
 Når noget er i tvivl, er det referencefilen der gælder.
@@ -290,7 +290,7 @@ Indlæses en fil med en gammel værdi, rettes den til den gældende: tankestreg 
 
 **dc.identifier** foreslås automatisk som `PRÆFIKS-type-titelslug-år`, fx `SFB-side-astersvej-2026` eller `SFB-album-skomagervaerkstedet-paa-algade-2026`. Titelslug laves efter reglen i 5.6. `type` er et kort, fast ord for appen (side, lyd, album, bog, billede, foernu, video, podcast, talende, praesentation, samling, henvisning). Mediekort · Bygger bruger `video` til video og videofil, `podcast` til podcast og `talende` til et talende billede, fx `SFB-talende-bager-hansens-butik-2026`. Forslaget kan overskrives.
 
-**dc.subject:** udgiveren står som første emneord. En app med faste serier (fx Sidebyggerens "Gader og veje" og "Steder, institutioner og mennesker") indsætter serien som andet emneord.
+**dc.subject:** udgiveren står som første emneord. En app med faste serier (fx Sidebyggerens "Gader og veje" og "Steder, institutioner og mennesker") indsætter serien som andet emneord. Derefter kommer de fælles emneord fra `emneord.md`, som alle foreninger staver ens, og til sidst de mere præcise emneord.
 
 `Syd for Banen - Lokalhistorisk Forening; Gader og veje; Astersvej; velfærdsbyggeri`
 
@@ -612,6 +612,9 @@ Udgiverlisten i prompten skal altid svare til `PUBLISHERS` i 4.1. Kommer der en 
 ---
 
 ## 12. Ændringslog
+
+**Version 2.7 — oktober 2026.**
+- Ny fil `emneord.md` med foreningernes fælles emneord, fx Musik og Arkitektur. Afsnit 4 henviser til den under dc.subject. Udgiveren siger, hvem der har lavet en historie, og de fælles emneord siger, hvad den handler om, så man kan finde alt om et emne på tværs af foreningerne.
 
 **Version 2.6 — oktober 2026.**
 - Nyt tema i afsnit 3: **Roskilde Musik** (`roskildemusik`) med farver fra foreningens logo. Accenten er en brændt orange (`#C2410C`), så hvid tekst på den er let at læse. Farveprikken i vælgeren er en lille plade i logoets klare orange og sort. Temaet er tilføjet i alle 11 byggere.
