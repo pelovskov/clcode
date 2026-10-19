@@ -1,4 +1,4 @@
-# Projektresumé: Lokalhistoriens værktøjskasse
+# Projektresumé: Lokalhistorier, værktøjskassen
 
 Status: oktober 2026
 
@@ -8,7 +8,11 @@ Resuméet er skrevet til idéudvikling og sparring med mennesker og med Claude. 
 
 ## Idéen i én sætning
 
-Frivillige i lokalhistoriske foreninger skal kunne lave flotte, holdbare formidlingsfiler (artikler, fotoalbums, lydfortællinger, e-bøger og præsentationer) uden at kunne programmere, og filerne skal kunne findes på tværs af foreningerne.
+Frivillige i foreninger og grupper med historier fra Roskilde og omegn skal kunne lave flotte, holdbare formidlingsfiler (artikler, fotoalbums, lydfortællinger, e-bøger og præsentationer) uden at kunne programmere, og filerne skal kunne findes på tværs af foreningerne.
+
+## Baggrund
+
+Projektet startede som "Lokalhistorie på tværs af generationer" i Syd for Banen. Det lykkedes ikke så godt, så projektet er åbnet for andre aktører. Derfor handler det nu om **lokalhistorier** og ikke kun om lokalhistorie. Som Syd for Banen siger: Lokalhistorie er ikke kun vikinger, men det, der foregår lige uden for døren. Med den drejning passer Røde Kors og Roskilde Musik lige så godt ind som de historiske foreninger.
 
 ## Hvem er det til?
 
@@ -52,7 +56,7 @@ Frivillige i lokalhistoriske foreninger skal kunne lave flotte, holdbare formidl
 
 **Værktøjer:** Feltoptager (optag lyd i marken), Lydlab og Fotolab (gør lyd og billeder klar), Metadata-hjælper (lader en AI foreslå metadata og kontrollerer svaret), Musikpakke, Skyggeramme, Billedarkiv (ordner billeder i albums) og et værktøj til sikre adgangskoder.
 
-**Fælles regler:** Builder-standarden (version 2.7) sørger for, at alle byggere ser ens ud, har de samme seks farvetemaer og de samme udgivere og håndterer metadata ens.
+**Fælles regler:** Builder-standarden (version 2.8) sørger for, at alle byggere ser ens ud, har de samme seks farvetemaer og de samme udgivere og håndterer metadata ens.
 
 ## Det, projektet holder fast i
 

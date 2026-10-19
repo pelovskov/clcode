@@ -21,7 +21,7 @@ $BRUGERE = [
 $ADMINS = [];
 
 /* Overskrift og undertekst, indtil de bliver ændret på admin-siden. */
-$STANDARD_TITEL      = 'Lokalhistorisk søgeindeks';
+$STANDARD_TITEL      = 'Søg i lokalhistorier';
 $STANDARD_UNDERTITEL = '';
 
 /* Siden lav-hash.php laver hashes til brugerlisten. Den gemmer intet.

@@ -1,7 +1,7 @@
 # Builder-standard
 
 **Fælles specifikation for værktøjskassen**
-Version 2.7 · oktober 2026
+Version 2.8 · oktober 2026
 
 Referenceimplementering: **Sidebygger** (`side-bygger.html`, version 1.5).
 Når noget er i tvivl, er det referencefilen der gælder.
@@ -41,7 +41,7 @@ Vejledningsbygger og PWA · Bygger afviger bevidst på enkelte punkter, fordi de
 
 Metadata-hjælper laver ingen outputfil og har derfor hverken temaer, forhåndsvisning af en side, indlæsning eller afsnit 5. Den følger standarden for builderens udseende (afsnit 2 og 3), `PUBLISHERS`, dc.type-listen og de 15 felter i afsnit 4.
 
-Søgeside · Bygger (`tools/soegeside-bygger.html`, v1.2) og Søgeindeks · Online (`sbtv/`, den samme søgeside med login, upload og administration på et webhotel med PHP) er værktøjer, ikke byggere. De læser metadata fra byggernes filer (`builder-source-data` med de 15 Dublin Core-felter), men laver ikke selv en fil efter afsnit 5 og har derfor hverken temaer, Dublin Core-panel eller byggernes udseende. De følger standarden på disse punkter: `?hjem=` sendes med til filerne (5.3), `dc.publisher` vises som *Område* med valget **Uden område** (4.1), og en henvisning kendes på sin `link` og vises med 🔗, uanset `dc.type`. Kun `http(s)`-adresser bliver til links.
+Søgeside · Bygger (`tools/soegeside-bygger.html`, v1.3) og Søgeindeks · Online (`sbtv/`, den samme søgeside med login, upload og administration på et webhotel med PHP) er værktøjer, ikke byggere. De læser metadata fra byggernes filer (`builder-source-data` med de 15 Dublin Core-felter), men laver ikke selv en fil efter afsnit 5 og har derfor hverken temaer, Dublin Core-panel eller byggernes udseende. De følger standarden på disse punkter: `?hjem=` sendes med til filerne (5.3), `dc.publisher` vises som *Område* med valget **Uden område** (4.1), og en henvisning kendes på sin `link` og vises med 🔗, uanset `dc.type`. Kun `http(s)`-adresser bliver til links.
 
 Søgeindeks · Online lægger aldrig `config.php` og `data/` i repoet. Repoet er offentligt, og de to dele indeholder adgangskoder og driftsdata. Brug `sbtv/config-eksempel.php` som skabelon.
 
@@ -612,6 +612,9 @@ Udgiverlisten i prompten skal altid svare til `PUBLISHERS` i 4.1. Kommer der en 
 ---
 
 ## 12. Ændringslog
+
+**Version 2.8 — oktober 2026.**
+- Projektet handler nu om **lokalhistorier**: det, der foregår lige uden for døren, så alle slags foreninger passer ind. Søgeside · Bygger er nu v1.3 med standardtitlen "Søg i lokalhistorier", og søgeportalens forside og titler er rettet til. Byggerne er ikke ændret, ud over to eksempeltekster i Bogbygger (4.1) og Enkeltbillede (3.1).
 
 **Version 2.7 — oktober 2026.**
 - Ny fil `emneord.md` med foreningernes fælles emneord, fx Musik og Arkitektur. Afsnit 4 henviser til den under dc.subject. Udgiveren siger, hvem der har lavet en historie, og de fælles emneord siger, hvad den handler om, så man kan finde alt om et emne på tværs af foreningerne.

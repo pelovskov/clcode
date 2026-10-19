@@ -1,6 +1,6 @@
 <?php
 /* =========================================================================
-   Lokalhistorisk Søgeportal — forsiden
+   Lokalhistorier · søgeportalens forside
    Præsenterer de deltagende foreninger og sender videre til søgesiden.
    Alt hentes fra de samme filer som søgesiden:
      data/indeks.json      poster (opdateres ved upload)
@@ -118,7 +118,7 @@ header('Referrer-Policy: same-origin');
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title><?= h($portal['titel']) ?></title>
-<meta name="description" content="Søg i lokalhistorisk materiale fra foreninger i Roskilde og omegn.">
+<meta name="description" content="Søg i lokalhistorier fra foreninger i Roskilde og omegn.">
 <style>
 /* Samme farver og skrift som søgesiden. Alle størrelser i rem, så A/A+/A++ virker. */
 html{font-size:100%}
@@ -304,7 +304,7 @@ a:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(-
 
 <section class="indgang">
 <div class="bredde">
-  <h1>Find lokalhistorien fra Roskilde og omegn</h1>
+  <h1>Find lokalhistorier fra Roskilde og omegn</h1>
   <p class="intro">Billeder, lydfortællinger, videoer og artikler fra lokale foreninger, samlet i én søgning.</p>
 
   <form class="soeg" action="<?= h(SOEGESIDE) ?>" method="get" role="search">
@@ -376,7 +376,7 @@ a:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(-
     <div class="ny-deltager">
       <div>
         <h3>Jeres forening her?</h3>
-        <p>Portalen er åben for flere lokalhistoriske foreninger, arkiver og grupper i området.</p>
+        <p>Portalen er åben for flere foreninger, arkiver og grupper med historier fra området.</p>
       </div>
       <a class="knap-kant" href="#bliv">Sådan kommer I med</a>
     </div>
@@ -425,7 +425,7 @@ a:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(-
 <section class="sektion hvid" aria-labelledby="om-titel">
 <div class="bredde">
   <h2 id="om-titel">Om portalen</h2>
-  <p class="forklaring">Portalen samler lokalhistorisk materiale fra flere foreninger ét sted.</p>
+  <p class="forklaring">Portalen samler lokalhistorier fra flere foreninger ét sted. Lokalhistorie er ikke kun vikinger, men det, der foregår lige uden for døren.</p>
   <div class="om">
     <div>
       <h3>Søg på tværs</h3>
