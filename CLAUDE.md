@@ -11,7 +11,7 @@ Værktøjerne bruges af frivillige og ældre brugere, så de skal være enkle, r
 ## Grundregler
 
 - **Én fil pr. builder.** HTML, CSS og JavaScript ligger i samme fil.
-- **Ingen eksterne afhængigheder.** Ingen CDN-links, ingen frameworks, ingen byggeprocesser, ingen internetforbindelse nødvendig. Alt skal virke offline.
+- **Ingen eksterne afhængigheder.** Ingen CDN-links, ingen frameworks, ingen byggeprocesser, ingen internetforbindelse nødvendig. Alt skal virke offline. Undtagelserne er det, et værktøj selv skal hente eller vise: Piwigo Albumbygger henter fra galleriet og skal ligge på dets adresse, Mediekort viser YouTube-videoer, og Søgeindeks · Online (`sbtv/`) kører med PHP på webhotellet.
 - **Langtidsholdbarhed først.** Brug almindelig, standardiseret HTML, CSS og JavaScript. Undgå nye eller eksperimentelle funktioner, som måske forsvinder. Filerne skal kunne åbnes om mange år.
 - **Tilgængelighed.** Stor og letlæselig skrift, høj kontrast, tydelige knapper, god tastaturnavigation, meningsfulde alt-tekster og semantisk HTML. Sigt mod WCAG 2.2 AA.
 - **Følg `builder-standard.md`.** Den er den fælles specifikation. Hvis en opgave strider mod standarden, så sig det, før du ændrer noget.
@@ -32,6 +32,20 @@ Værktøjerne bruges af frivillige og ældre brugere, så de skal være enkle, r
 - **Ingen sletning uden at spørge.** Slet eller omdøb aldrig filer uden min godkendelse.
 - **Commits** skrives på dansk med en kort, beskrivende besked (fx "Ret kontrast på knapper i Album-bygger").
 
+## Fast arbejdsgang
+
+1. Arbejdet laves på arbejdsgrenen og afprøves i en browser.
+2. Ændringen gemmes (commit) og skubbes op (push).
+3. Spørg: "Skal jeg lave pull request og flette?" Først når jeg siger ja, laves pull request til `main`, som flettes. Tjek bagefter, at ændringen er kommet med på `main`.
+4. Mind mig om at hente med Fetch og Pull i GitHub Desktop og **aldrig bruge Force push**. Force push har én gang overskrevet arbejde på `main`.
+
+## Det skal følge med, når noget ændres
+
+- **En bygger eller et værktøj ændres:** tæl versionsnummeret op, og ret `oversigt.md` og `bygger-dash.html`.
+- **Filformatet ændres:** tæl `builderVersion` op (byggeren afviser filer med et lavere tal), og tjek "Ting der hænger sammen" nedenfor.
+- **Standarden ændres:** tæl versionen i `builder-standard.md` op, skriv i ændringsloggen, og ret versionsnummeret i `oversigt.md`.
+- **Nyt tema eller ny udgiver:** skrives først i standarden og kopieres derefter uændret til alle byggere. En ny udgiver skal også i Metadata-hjælper og i `sbtv/data/foreninger.json`.
+
 ## Test
 
 Efter en ændring skal du beskrive, hvordan jeg selv kan afprøve den i browseren: hvilken fil jeg åbner, og hvad jeg skal klikke på for at se, at det virker.
@@ -39,8 +53,10 @@ Efter en ændring skal du beskrive, hvordan jeg selv kan afprøve den i browsere
 ## Filnavne og struktur
 
 - Filnavne med små bogstaver og bindestreger, uden æ, ø og å (fx `album-bygger.html`).
-- Hver builder får, når det er relevant, sin egen korte beskrivelse i `README.md`.
+- Byggere hedder `navn-bygger.html` og ligger øverst i repoet. Værktøjer ligger i `tools/`. Der står ikke versionsnummer i filnavnene, så adressen er den samme fra version til version.
+- `oversigt.md` er overblikket over alle byggere og værktøjer med versioner og filformater.
 - Dokumentation skrives i Markdown.
+- Min Mac skelner ikke mellem store og små bogstaver i filnavne. En omdøbning, der kun ændrer store og små bogstaver (fx `claude.md` til `CLAUDE.md`), kan derfor ikke ses i GitHub Desktop og skal laves af Claude.
 
 ## Ting der hænger sammen
 
@@ -48,10 +64,15 @@ Efter en ændring skal du beskrive, hvordan jeg selv kan afprøve den i browsere
 
 - `billedarkiv/billedarkiv.html` eksporterer albums med en `.json`-fil ved hvert billede, som **Album · Bygger** læser (kendes på `exportedFilename`). Ændres feltnavnene i eksporten, skal `album-bygger.html` og standardens afsnit 8.1 rettes med.
 
+- `emneord.md` er foreningernes fælles emneord. Udgiveren siger, hvem der har lavet en historie, og de fælles emneord siger, hvad den handler om. Nye emneord skrives på listen, før de tages i brug.
+
+- I søgeindekset (`sbtv/`) hører nøglen i `data/foreninger.json` (fx `rmu`) sammen med udgiveren i `PUBLISHERS`. Logoerne skal ligge i `sbtv/grafik/`, ikke i `data/`, som er spærret for besøgende.
+
 ## Sikkerhed
 
 - Repoet er **offentligt**. Læg aldrig adgangskoder, hashes, nøgler, logfiler eller driftsdata fra serveren i det (fx `sbtv/config.php` og `sbtv/data/`). Brug eksempelfiler uden rigtige værdier.
 - Tag imod adresser fra brugere (fx `?hjem=`) med forsigtighed: kun relative adresser og `http(s)` er tilladt, aldrig `javascript:` eller `data:`.
+- Adgangskoder til `sbtv/config.php` gemmes kun som bcrypt-hash. Hashen laves med `tools/password-hash.html` på min egen computer eller med `sbtv/lav-hash.php` på serveren.
 
 ## Ting jeg er særligt optaget af
 
