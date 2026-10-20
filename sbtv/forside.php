@@ -119,6 +119,7 @@ header('Referrer-Policy: same-origin');
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title><?= h($portal['titel']) ?></title>
 <meta name="description" content="Søg i lokalhistorier fra foreninger i Roskilde og omegn.">
+<?php if (is_file(__DIR__ . '/grafik/logo-spir.svg')): ?><link rel="icon" href="grafik/logo-spir.svg" type="image/svg+xml"><?php endif; ?>
 <style>
 /* Samme farver og skrift som søgesiden. Alle størrelser i rem, så A/A+/A++ virker. */
 html{font-size:100%}
@@ -149,6 +150,7 @@ a:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(-
 .maerke{display:flex;align-items:center;gap:.8rem}
 .maerke .ls{width:3rem;height:3rem;flex:0 0 3rem;border-radius:8px;background:var(--accent);color:#fff;
   display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:1.15rem}
+img.ls{background:none;display:block}
 .maerke .navn{display:block;font-size:1.35rem;font-weight:bold;line-height:1.2;color:var(--footer-strong)}
 .maerke .sted{display:block;font-size:1rem;color:var(--muted)}
 .tekststr{display:flex;align-items:center;gap:.5rem}
@@ -285,7 +287,11 @@ a:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(-
 <header class="top">
 <div class="bredde">
   <div class="maerke">
+    <?php if (is_file(__DIR__ . '/grafik/logo-spir.svg')): ?>
+    <img class="ls" src="grafik/logo-spir.svg" alt="" width="48" height="48">
+    <?php else: ?>
     <span class="ls" aria-hidden="true">LS</span>
+    <?php endif; ?>
     <span>
       <span class="navn"><?= h($portal['titel']) ?></span>
       <?php if ($portal['undertitel'] !== ''): ?><span class="sted"><?= h($portal['undertitel']) ?></span><?php endif; ?>
