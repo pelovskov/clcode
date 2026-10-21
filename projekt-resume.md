@@ -12,6 +12,10 @@ Frivillige i foreninger og grupper med historier fra Roskilde og omegn skal kunn
 
 ## Baggrund
 
+**Inspirationen** kom fra oplæg og foredrag. De fleste, der har stået foran et publikum, kender det: Ingen havde tænkt på, at der skulle være internet, eller PowerPoint-præsentationen ville ikke køre på en forældet computer. Derfor er værktøjerne lavet, så albums, lydfortællinger og præsentationer kører direkte fra et USB-stik, helt uden netforbindelse og uden at installere noget. Det har imponeret mange tilhørere og er grunden til, at hele systemet bygger på singlefile og offline.
+
+Det handler også om fremtiden. Så længe der er gode og stabile netforbindelser, bruger vi dem selvfølgelig, men intet må *afhænge* af dem. En fil, der virker i dag uden net og uden installation, har gode chancer for også at virke om mange år.
+
 Projektet startede som "Lokalhistorie på tværs af generationer" i Syd for Banen. Det lykkedes ikke så godt, så projektet er åbnet for andre aktører. Derfor handler det nu om **lokalhistorier** og ikke kun om lokalhistorie. Som Syd for Banen siger: Lokalhistorie er ikke kun vikinger, men det, der foregår lige uden for døren. Med den drejning passer Røde Kors og Roskilde Musik lige så godt ind som de historiske foreninger.
 
 ## Hvem er det til?
