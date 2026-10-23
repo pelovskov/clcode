@@ -21,12 +21,13 @@ Projektet startede som "Lokalhistorie på tværs af generationer" i Syd for Bane
 ## Hvem er det til?
 
 - **Brugerne** er frivillige, mange af dem ældre og ikke vant til it. Alt skal være enkelt, tydeligt og let at læse.
-- **Foreningerne** er i dag:
+- **Foreningerne og fællesskaberne** er i dag:
   - Syd for Banen - Lokalhistorisk Forening;
   - Historisk Samfund for Roskilde Amt;
   - Roskilde TV;
   - Røde Kors;
-  - Roskilde Musik, den nyeste.
+  - Roskilde Musik;
+  - cirkler, et fællesskab for dem, der gerne vil lære nye mennesker at kende, og det nyeste.
   - Desuden kan man vælge *Privat* som udgiver.
 - **Publikum** er alle med interesse for Roskildes historie.
 
@@ -60,7 +61,7 @@ Projektet startede som "Lokalhistorie på tværs af generationer" i Syd for Bane
 
 **Værktøjer:** Feltoptager (optag lyd i marken), Lydlab og Fotolab (gør lyd og billeder klar), Metadata-hjælper (lader en AI foreslå metadata og kontrollerer svaret), Musikpakke, Skyggeramme, Billedarkiv (ordner billeder i albums) og et værktøj til sikre adgangskoder.
 
-**Fælles regler:** Builder-standarden (version 2.8) sørger for, at alle byggere ser ens ud, har de samme seks farvetemaer og de samme udgivere og håndterer metadata ens.
+**Fælles regler:** Builder-standarden (version 2.9) sørger for, at alle byggere ser ens ud, har de samme seks farvetemaer og de samme udgivere og håndterer metadata ens.
 
 ## Det, projektet holder fast i
 

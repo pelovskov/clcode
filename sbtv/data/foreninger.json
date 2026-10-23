@@ -56,6 +56,16 @@
             "beskrivelse": "Vi samler billeder, historier og artikler om roskildemusikken.",
             "hjemmeside": "",
             "logo": "grafik/rmu.png"
+        },
+        {
+            "noegle": "cirkler",
+            "navn": "cirkler",
+            "udgiver": "cirkler",
+            "slags": "Fællesskab",
+            "forkortelse": "ci",
+            "beskrivelse": "Cirkler er for dig, der gerne vil lære nye mennesker at kende.",
+            "hjemmeside": "https://cirkler.dk/",
+            "logo": "grafik/cirkler-logo.png"
         }
     ]
 }

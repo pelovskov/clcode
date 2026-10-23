@@ -1,7 +1,7 @@
 # Builder-standard
 
 **Fælles specifikation for værktøjskassen**
-Version 2.8 · oktober 2026
+Version 2.9 · oktober 2026
 
 Referenceimplementering: **Sidebygger** (`side-bygger.html`, version 1.5).
 Når noget er i tvivl, er det referencefilen der gælder.
@@ -275,6 +275,7 @@ dc.publisher vises som en rulleliste, aldrig som frit tekstfelt, med standardval
 
 ```js
 const PUBLISHERS = [
+  { name:'cirkler',                                 prefix:'CIR'  },
   { name:'Historisk Samfund for Roskilde Amt',      prefix:'HSR'  },
   { name:'Privat',                                  prefix:'PRIV' },
   { name:'Roskilde Musik',                          prefix:'RMU'  },
@@ -568,6 +569,7 @@ REGLER
 - Er du i tvivl om et forslag, skriv [?] efter det.
 - Dato: helst ÅÅÅÅ-MM-DD. ÅÅÅÅ-MM, ÅÅÅÅ eller "ca. ÅÅÅÅ" er også i orden.
 - Udgiver: KUN én af disse, stavet præcis sådan:
+  cirkler
   Historisk Samfund for Roskilde Amt
   Privat
   Roskilde Musik
@@ -612,6 +614,10 @@ Udgiverlisten i prompten skal altid svare til `PUBLISHERS` i 4.1. Kommer der en 
 ---
 
 ## 12. Ændringslog
+
+**Version 2.9 — oktober 2026.**
+- Ny udgiver i afsnit 4.1: **cirkler** med præfikset `CIR`, fx `CIR-side-…-2026`. Navnet staves med små bogstaver, som fællesskabet selv gør. Den er tilføjet i `PUBLISHERS` i alle byggere og i Metadata-hjælper og i prompten i afsnit 11.
+- Søgeindeks · Online: cirkler står i `foreninger.json` med nøglen `cirkler`, så `?forening=cirkler` viser deres materiale.
 
 **Version 2.8 — oktober 2026.**
 - Projektet handler nu om **lokalhistorier**: det, der foregår lige uden for døren, så alle slags foreninger passer ind. Søgeside · Bygger er nu v1.3 med standardtitlen "Søg i lokalhistorier", og søgeportalens forside og titler er rettet til. Byggerne er ikke ændret, ud over to eksempeltekster i Bogbygger (4.1) og Enkeltbillede (3.1).
