@@ -6,7 +6,8 @@
 <title>Søgeside · Bygger</title>
 <style>
 /* ---------------------------------------------------------------
-   Søgeside · Bygger — version 1.3 (okt. 2026)
+   Søgeside · Bygger — version 1.4 (okt. 2026)
+   1.4: knappen "Til søgningen" kommer frem, når man er rullet langt ned.
    1.3: standardtitlen er nu "Søg i lokalhistorier".
    1.2: henvisninger får altid 🔗-ikonet, kun http(s)-adresser bliver til links,
         og "Uden område" hedder som i Builder-standard 4.1.
@@ -314,6 +315,15 @@ footer{max-width:1100px;margin:0 auto;padding:.6rem 1.25rem 3rem;color:var(--mut
   a.row{padding:1rem .6rem;gap:.75rem}
   .icon{flex:0 0 1.6rem}
 }
+/* Knappen "Til søgningen" nederst til højre, når man er rullet langt ned. */
+.optil{position:fixed;right:1rem;bottom:1rem;z-index:20;display:flex;align-items:center;gap:.45rem;
+  font-family:inherit;font-size:1.05rem;font-weight:bold;min-height:48px;padding:.55rem 1.15rem;
+  background:var(--accent);color:#fff;border:2px solid #fff;border-radius:999px;cursor:pointer;
+  box-shadow:0 4px 14px rgba(0,0,0,.25)}
+.optil[hidden]{display:none}
+.optil:hover{text-decoration:underline}
+.optil svg{width:1.25rem;height:1.25rem;flex:0 0 auto}
+@media print{.optil{display:none}}
 </style>
 </head>
 <body>
@@ -353,6 +363,8 @@ footer{max-width:1100px;margin:0 auto;padding:.6rem 1.25rem 3rem;color:var(--mut
 Denne side er selvstændig og indeholder alt indhold direkte i filen. Byg søgesiden
 igen med <em>Søgeside · Bygger</em>, når der er lagt nye filer i mappen.
 </footer>
+
+<button type="button" class="optil" id="optil" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 14l6-6 6 6"/></svg>Til søgningen</button>
 
 <script>
 const DATA = __DATA_JSON__;
@@ -628,6 +640,22 @@ omrSel.addEventListener("change", render);
 typeSel.addEventListener("change", render);
 document.getElementById("sortBy").addEventListener("change", render);
 render();
+
+/* ---- Knappen "Til søgningen" ----
+   Mange ruller ned gennem listen i stedet for at søge. Når man er rullet
+   langt ned, kommer en knap frem, der fører op til søgefeltet igen. */
+(function(){
+  const knap = document.getElementById("optil");
+  const felt = document.getElementById("q");
+  function tjek(){ knap.hidden = window.scrollY < window.innerHeight * 1.5; }
+  window.addEventListener("scroll", tjek, {passive:true});
+  knap.addEventListener("click", ()=>{
+    const rolig = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    window.scrollTo({top:0, behavior: rolig ? "auto" : "smooth"});
+    felt.focus({preventScroll:true});
+  });
+  tjek();
+})();
 <\/script>
 </body>
 </html>`;

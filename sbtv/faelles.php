@@ -555,7 +555,7 @@ function skriv_statisk_soegeside(array $indeks): void
 
 /* =========================================================================
    Del 6 · Skabelonen for søgesiden
-   Svarer til Søgeside · Bygger 1.2 (små billeder og ?hjem=), men billederne
+   Svarer til Søgeside · Bygger 1.4 (små billeder, ?hjem= og knappen "Til søgningen"), men billederne
    ligger som filer i filer/thumbs/ i stedet for inde i siden. Nye pladsholdere:
    __STI__ er mappen foran filnavnet ("filer/" online, "" i offline-udgaven),
    __FODNOTE__ er teksten nederst.
@@ -708,6 +708,15 @@ footer{max-width:1100px;margin:0 auto;padding:.6rem 1.25rem 3rem;color:var(--mut
   .icon{flex:0 0 1.6rem}
   .thumb{flex-basis:4.5rem;width:4.5rem;height:3.4rem}
 }
+/* Knappen "Til søgningen" nederst til højre, når man er rullet langt ned. */
+.optil{position:fixed;right:1rem;bottom:1rem;z-index:20;display:flex;align-items:center;gap:.45rem;
+  font-family:inherit;font-size:1.05rem;font-weight:bold;min-height:48px;padding:.55rem 1.15rem;
+  background:var(--accent);color:#fff;border:2px solid #fff;border-radius:999px;cursor:pointer;
+  box-shadow:0 4px 14px rgba(0,0,0,.25)}
+.optil[hidden]{display:none}
+.optil:hover{text-decoration:underline}
+.optil svg{width:1.25rem;height:1.25rem;flex:0 0 auto}
+@media print{.optil{display:none}}
 </style>
 </head>
 <body>
@@ -752,6 +761,8 @@ __TOP__
 <footer>
 __FODNOTE__
 </footer>
+
+<button type="button" class="optil" id="optil" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 14l6-6 6 6"/></svg>Til søgningen</button>
 
 <script>
 const DATA = __DATA_JSON__;
@@ -1087,6 +1098,22 @@ omrSel.addEventListener("change", render);
 typeSel.addEventListener("change", render);
 document.getElementById("sortBy").addEventListener("change", render);
 render();
+
+/* ---- Knappen "Til søgningen" ----
+   Mange ruller ned gennem listen i stedet for at søge. Når man er rullet
+   langt ned, kommer en knap frem, der fører op til søgefeltet igen. */
+(function(){
+  const knap = document.getElementById("optil");
+  const felt = document.getElementById("q");
+  function tjek(){ knap.hidden = window.scrollY < window.innerHeight * 1.5; }
+  window.addEventListener("scroll", tjek, {passive:true});
+  knap.addEventListener("click", ()=>{
+    const rolig = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    window.scrollTo({top:0, behavior: rolig ? "auto" : "smooth"});
+    felt.focus({preventScroll:true});
+  });
+  tjek();
+})();
 </script>
 </body>
 </html>
