@@ -1,7 +1,7 @@
 # Builder-standard
 
 **Fælles specifikation for værktøjskassen**
-Version 2.9 · oktober 2026
+Version 2.10 · oktober 2026
 
 Referenceimplementering: **Sidebygger** (`side-bygger.html`, version 1.5).
 Når noget er i tvivl, er det referencefilen der gælder.
@@ -151,7 +151,7 @@ Teksten ved afkrydsningsfelter skrives med almindelige bogstaver i 14,5 px, ikke
 
 ### Temaerne til outputfilen
 
-Seks temaer, samme nøgler og samme værdier i alle apps. Vælges med store farvede radioknapper med farveprikker, i denne rækkefølge. Hvert tema har både lys og mørk udgave (`d`-præfiks = mørk tilstand).
+Syv temaer, samme nøgler og samme værdier i alle apps. Vælges med store farvede radioknapper med farveprikker, i denne rækkefølge. Hvert tema har både lys og mørk udgave (`d`-præfiks = mørk tilstand).
 
 | Nøgle | Navn i vælgeren | Accent |
 |---|---|---|
@@ -161,6 +161,7 @@ Seks temaer, samme nøgler og samme værdier i alle apps. Vælges med store farv
 | `roedekors` | Røde Kors | #E30A0B |
 | `roskildetv` | Roskilde TV | #B03035 |
 | `roskildemusik` | Roskilde Musik | #C2410C |
+| `cirkler` | cirkler | #7351C4 |
 
 `label` i `THEMES` er temaets fulde beskrivelse. Vælgeren viser det korte navn fra tabellen, så knapperne kan stå på én linje.
 
@@ -215,6 +216,14 @@ const THEMES = {
     muted:'#55555C', line:'#E4E2DE', quote:'#3F3F46',
     dPaper:'#141416', dSurface:'#1E1E21', dInk:'#F4F4F5', dBody:'#E0E0E3',
     dMuted:'#A6A6AD', dLine:'#36363B', dQuote:'#C4C4CA'
+  },
+  cirkler: {
+    label:'cirkler',
+    accent:'#7351C4', accentDark:'#5A3DA3', onAccent:'#F2FA5A',
+    paper:'#FBF9F5', surface:'#FFFFFF', ink:'#111111', body:'#222222',
+    muted:'#55555C', line:'#E6E1F0', quote:'#3A3A3A',
+    dPaper:'#141317', dSurface:'#1E1C24', dInk:'#F4F2F8', dBody:'#E2DFE8',
+    dMuted:'#AAA6B4', dLine:'#38343F', dQuote:'#C8C4D2'
   }
 };
 ```
@@ -222,6 +231,8 @@ const THEMES = {
 Roskilde TV's farveprik i vælgeren er flerfarvet (logoets seks prikfarver). Mediekort · Bygger må desuden vise prikrækken i selve kortet.
 
 Roskilde Musiks farver kommer fra foreningens logo: orange, næsten sort og grå. Logoets klare orange (`#FF5500`) er for lys til hvid tekst (kontrast 3,2), så accenten er en mørkere, brændt orange (`#C2410C`, kontrast 5,2 med hvid). Den klare orange bruges kun i farveprikken, som er en lille plade: `radial-gradient(circle, #FF5500 0 30%, #1C1C1F 33% 100%)`.
+
+cirklers farver kommer fra fællesskabets logo: gul `#F2FA5A`, lyseblå `#BCE3EC`, lavendel `#DEC9FF`, creme `#FBF9F5` og sort. De tre lyse farver er for lyse til tekst, så accenten er en dyb lilla (`#7351C4`) med logoets gule farve som tekst på accenten (kontrast 5,0). Baggrunden er logoets creme. Farveprikken i vælgeren er tre små cirkler med sort kant, ligesom i logoet. Mediekort · Bygger viser de tre cirkler i kortet og på den tegnede plakat, på samme måde som Roskilde TV's prikker.
 
 Temaet skrives ud som CSS-variabler i `:root` i den genererede fil, aldrig som faste farver inde i reglerne. Kommer et nyt tema til, tilføjes det her først og kopieres derefter til alle byggere.
 
@@ -483,7 +494,7 @@ Regler:
 - [ ] Feltrækkefølgen fra afsnit 2
 - [ ] Skriftstørrelser og kontrast fra afsnit 3
 - [ ] Afkrydsningstekster med almindelige bogstaver, ikke versaler
-- [ ] De seks temaer med `THEMES` kopieret uændret fra afsnit 3
+- [ ] De syv temaer med `THEMES` kopieret uændret fra afsnit 3
 - [ ] Indlæsning af egne filer med pæn afvisning af fremmede filer, andre formater og ældre builderVersion
 - [ ] Billeder 1600 px / 0,82 (undtagelserne står i afsnit 8)
 - [ ] Alt-tekstfelt pr. billede
@@ -614,6 +625,11 @@ Udgiverlisten i prompten skal altid svare til `PUBLISHERS` i 4.1. Kommer der en 
 ---
 
 ## 12. Ændringslog
+
+**Version 2.10 — oktober 2026.**
+- Nyt tema i afsnit 3: **cirkler** (`cirkler`) med farver fra fællesskabets logo: dyb lilla accent, gul tekst på accenten og creme baggrund. Farveprikken i vælgeren er tre små cirkler. Temaet er tilføjet i alle 11 byggere.
+- Mediekort · Bygger (v1.3) viser cirklers tre cirkler i kortet og på den tegnede plakat, når temaet er valgt.
+- Filformatet er uændret.
 
 **Version 2.9 — oktober 2026.**
 - Ny udgiver i afsnit 4.1: **cirkler** med præfikset `CIR`, fx `CIR-side-…-2026`. Navnet staves med små bogstaver, som fællesskabet selv gør. Den er tilføjet i `PUBLISHERS` i alle byggere og i Metadata-hjælper og i prompten i afsnit 11.

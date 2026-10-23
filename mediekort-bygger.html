@@ -133,7 +133,7 @@
 
 <div class="topbar">
   <h1>Mediekort · Bygger</h1>
-  <span>Lav et kort til en video, en podcast eller et talende billede, med kapitler og udskrift · kører lokalt, ingen server · version 1.2</span>
+  <span>Lav et kort til en video, en podcast eller et talende billede, med kapitler og udskrift · kører lokalt, ingen server · version 1.3</span>
 </div>
 
 <div class="layout">
@@ -182,6 +182,11 @@
           <input type="radio" name="theme" value="roskildemusik">
           <div class="swatches"><span class="swatch" style="background:#C2410C"></span><span class="swatch" style="background:radial-gradient(circle, #FF5500 0 30%, #1C1C1F 33% 100%)"></span></div>
           <div class="tname">Roskilde Musik</div>
+        </label>
+        <label class="theme-option" data-theme="cirkler" style="--theme-accent:#7351C4">
+          <input type="radio" name="theme" value="cirkler">
+          <div class="swatches"><span class="swatch" style="background:#7351C4"></span><span class="swatch" style="background:radial-gradient(circle at 32% 34%, #DEC9FF 0 21%, #111 22% 27%, transparent 28%), radial-gradient(circle at 72% 40%, #F2FA5A 0 15%, #111 16% 21%, transparent 22%), radial-gradient(circle at 48% 72%, #BCE3EC 0 20%, #111 21% 26%, transparent 27%), #FBF9F5"></span></div>
+          <div class="tname">cirkler</div>
         </label>
       </div>
     </div>
@@ -446,7 +451,7 @@
 
 <script>
 /* =======================================================================
-   Mediekort · Bygger — version 1.2
+   Mediekort · Bygger — version 1.3
    1.1: videofil fra fx pCloud.
    1.2: "Talende billede" (mode 'picture'): billedet i op til 2000 px i sin
         egen form, fuld skærm-visning, lille favicon, felt til billedets ophav,
@@ -574,11 +579,21 @@ const THEMES = {
     muted:'#55555C', line:'#E4E2DE', quote:'#3F3F46',
     dPaper:'#141416', dSurface:'#1E1E21', dInk:'#F4F4F5', dBody:'#E0E0E3',
     dMuted:'#A6A6AD', dLine:'#36363B', dQuote:'#C4C4CA'
+  },
+  cirkler: {
+    label:'cirkler',
+    accent:'#7351C4', accentDark:'#5A3DA3', onAccent:'#F2FA5A',
+    paper:'#FBF9F5', surface:'#FFFFFF', ink:'#111111', body:'#222222',
+    muted:'#55555C', line:'#E6E1F0', quote:'#3A3A3A',
+    dPaper:'#141317', dSurface:'#1E1C24', dInk:'#F4F2F8', dBody:'#E2DFE8',
+    dMuted:'#AAA6B4', dLine:'#38343F', dQuote:'#C8C4D2'
   }
 };
 
 // Roskilde TV's logo: seks prikker. Vises i kortet, når temaet er Roskilde TV.
 const RTV_DOTS = ['#4DB0E8', '#3576BA', '#8E2D62', '#B03035', '#E8803A', '#EFAF45'];
+// cirklers tre cirkler fra logoet, med sort kant.
+const CIR_DOTS = ['#DEC9FF', '#BCE3EC', '#F2FA5A'];
 
 const $ = id => document.getElementById(id);
 
@@ -1226,6 +1241,9 @@ function drawnPoster(s, t){
   } else if (rtv){
     const pos = [[150,815,26],[300,745,36],[480,700,46],[690,680,56],[930,695,68],[1250,735,108]];
     deco = RTV_DOTS.map((c, i) => '<circle cx="' + pos[i][0] + '" cy="' + pos[i][1] + '" r="' + pos[i][2] + '" fill="' + c + '"/>').join('');
+  } else if (s.theme === 'cirkler'){
+    const pos = [[260,700,120],[1340,250,90],[1300,720,150]];
+    deco = CIR_DOTS.map((c, i) => '<circle cx="' + pos[i][0] + '" cy="' + pos[i][1] + '" r="' + pos[i][2] + '" fill="' + c + '" stroke="#111" stroke-width="10"/>').join('');
   } else {
     deco = '<path fill="' + fg + '" opacity=".10" d="M0 900V610h120v-60h70v60h90V520l60-50 60 50v90h110V560h80v50h120V470l40-90 40 90v140h100V540h90v70h140V500l70-60 70 60v110h130V570h90v40h150v290z"/>';
   }
@@ -1699,7 +1717,9 @@ function buildPageHTML(s, opts){
   if (s.audioDuration && isAudio) metaLine.push(isPic ? 'Fortælling ' + fmtClock(s.audioDuration) : 'Varighed ' + fmtDuration(s.audioDuration));
   if (s.videoDuration && isFile) metaLine.push('Varighed ' + fmtDuration(s.videoDuration));
   const dotsBlock = s.theme === 'roskildetv'
-    ? '<div class="dots" aria-hidden="true">' + RTV_DOTS.map(c => '<i style="background:' + c + '"></i>').join('') + '</div>' : '';
+    ? '<div class="dots" aria-hidden="true">' + RTV_DOTS.map(c => '<i style="background:' + c + '"></i>').join('') + '</div>'
+    : s.theme === 'cirkler'
+    ? '<div class="dots dots--cirkler" aria-hidden="true">' + CIR_DOTS.map(c => '<i style="background:' + c + '"></i>').join('') + '</div>' : '';
 
   const sourceData = {
     format:'mediekort', builderVersion:BUILDER_VERSION,
@@ -1779,6 +1799,9 @@ function buildPageHTML(s, opts){
 + '.dots{display:flex; align-items:flex-end; gap:5px; margin:0 0 10px;}\n'
 + '.dots i{display:block; border-radius:50%; width:9px; height:9px;}\n'
 + '.dots i:nth-child(2){width:10px;height:10px}.dots i:nth-child(3){width:11px;height:11px}.dots i:nth-child(4){width:12px;height:12px}.dots i:nth-child(5){width:14px;height:14px}.dots i:nth-child(6){width:16px;height:16px}\n'
++ '.dots--cirkler{gap:6px;}\n'
++ '.dots--cirkler i{width:14px;height:14px;border:2px solid #111;box-sizing:border-box;}\n'
++ '.dots--cirkler i:nth-child(2){width:18px;height:18px}.dots--cirkler i:nth-child(3){width:12px;height:12px}\n'
 + '.eyebrow{font-size:0.8em; letter-spacing:0.11em; text-transform:uppercase; font-weight:700; color:var(--accent-text); margin-bottom:10px;}\n'
 + 'h1{font-family:var(--serif); font-size:2.1em; line-height:1.2; margin:0 0 8px; color:var(--ink); font-weight:700;}\n'
 + '.metaline{font-size:0.95em; color:var(--muted); margin:0 0 6px;}\n'

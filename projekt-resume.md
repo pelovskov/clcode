@@ -61,7 +61,7 @@ Projektet startede som "Lokalhistorie på tværs af generationer" i Syd for Bane
 
 **Værktøjer:** Feltoptager (optag lyd i marken), Lydlab og Fotolab (gør lyd og billeder klar), Metadata-hjælper (lader en AI foreslå metadata og kontrollerer svaret), Musikpakke, Skyggeramme, Billedarkiv (ordner billeder i albums) og et værktøj til sikre adgangskoder.
 
-**Fælles regler:** Builder-standarden (version 2.9) sørger for, at alle byggere ser ens ud, har de samme seks farvetemaer og de samme udgivere og håndterer metadata ens.
+**Fælles regler:** Builder-standarden (version 2.10) sørger for, at alle byggere ser ens ud, har de samme syv farvetemaer og de samme udgivere og håndterer metadata ens.
 
 ## Det, projektet holder fast i
 
