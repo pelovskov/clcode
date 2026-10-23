@@ -1,7 +1,7 @@
 # Builder-standard
 
 **Fælles specifikation for værktøjskassen**
-Version 2.10 · oktober 2026
+Version 2.11 · oktober 2026
 
 Referenceimplementering: **Sidebygger** (`side-bygger.html`, version 1.5).
 Når noget er i tvivl, er det referencefilen der gælder.
@@ -41,7 +41,7 @@ Vejledningsbygger og PWA · Bygger afviger bevidst på enkelte punkter, fordi de
 
 Metadata-hjælper laver ingen outputfil og har derfor hverken temaer, forhåndsvisning af en side, indlæsning eller afsnit 5. Den følger standarden for builderens udseende (afsnit 2 og 3), `PUBLISHERS`, dc.type-listen og de 15 felter i afsnit 4.
 
-Søgeside · Bygger (`tools/soegeside-bygger.html`, v1.3) og Søgeindeks · Online (`sbtv/`, den samme søgeside med login, upload og administration på et webhotel med PHP) er værktøjer, ikke byggere. De læser metadata fra byggernes filer (`builder-source-data` med de 15 Dublin Core-felter), men laver ikke selv en fil efter afsnit 5 og har derfor hverken temaer, Dublin Core-panel eller byggernes udseende. De følger standarden på disse punkter: `?hjem=` sendes med til filerne (5.3), `dc.publisher` vises som *Område* med valget **Uden område** (4.1), og en henvisning kendes på sin `link` og vises med 🔗, uanset `dc.type`. Kun `http(s)`-adresser bliver til links.
+Søgeside · Bygger (`tools/soegeside-bygger.html`, v1.4) og Søgeindeks · Online (`sbtv/`, den samme søgeside med login, upload og administration på et webhotel med PHP) er værktøjer, ikke byggere. De læser metadata fra byggernes filer (`builder-source-data` med de 15 Dublin Core-felter), men laver ikke selv en fil efter afsnit 5 og har derfor hverken temaer, Dublin Core-panel eller byggernes udseende. De følger standarden på disse punkter: `?hjem=` sendes med til filerne (5.3), `dc.publisher` vises som *Område* med valget **Uden område** (4.1), og en henvisning kendes på sin `link` og vises med 🔗, uanset `dc.type`. Kun `http(s)`-adresser bliver til links.
 
 Søgeindeks · Online lægger aldrig `config.php` og `data/` i repoet. Repoet er offentligt, og de to dele indeholder adgangskoder og driftsdata. Brug `sbtv/config-eksempel.php` som skabelon.
 
@@ -625,6 +625,9 @@ Udgiverlisten i prompten skal altid svare til `PUBLISHERS` i 4.1. Kommer der en 
 ---
 
 ## 12. Ændringslog
+
+**Version 2.11 — oktober 2026.**
+- Søgeside · Bygger (v1.4) og Søgeindeks · Online: Når man er rullet langt ned i listen, kommer knappen **Til søgningen** frem nederst til højre. Den fører op til toppen og sætter markøren i søgefeltet.
 
 **Version 2.10 — oktober 2026.**
 - Nyt tema i afsnit 3: **cirkler** (`cirkler`) med farver fra fællesskabets logo: dyb lilla accent, gul tekst på accenten og creme baggrund. Farveprikken i vælgeren er tre små cirkler. Temaet er tilføjet i alle 11 byggere.
