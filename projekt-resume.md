@@ -71,7 +71,7 @@ Den fælles portal er for foreningerne. Enkeltpersoner, skoleklasser, ungdomssko
 - udgiveren skrives frit, fx "7.b, Roskilde Lille Skole";
 - kun to farvetemaer, Vinter og Sommer.
 
-Den frie udgave laves automatisk ud fra foreningernes byggere, så forbedringer følger med.
+Den frie udgave laves automatisk ud fra foreningernes byggere, så forbedringer følger med. Der er huskesedler til de vigtigste byggere, som kan printes på én side, og manuskripter til korte screencasts i mappen `vejledninger/`.
 
 ## Det, projektet holder fast i
 
