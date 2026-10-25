@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Huskeseddel (<strong>Bog · Bygger</strong>, fri udgave). Skrevet i hånden – laves ikke af opskriften.
+     Kan printes på én A4-side. -->
+<title>Sådan laver du en e-bog · Lokalhistorier</title>
+<style>
+  :root{ --accent:#2F5D8A; --paper:#EEF2F6; --surface:#FFFFFF; --ink:#14202B; --body:#25323D; --muted:#5A6772; --line:#D6DEE6; --sol:#F4C542; }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--paper); color:var(--body); line-height:1.5; font-size:18px;
+    font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif}
+  a{color:var(--accent)}
+  .ark{max-width:820px; margin:24px auto; background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:30px 34px}
+  .top{display:flex; justify-content:space-between; gap:16px; align-items:baseline; flex-wrap:wrap}
+  h1{color:var(--ink); font-size:1.9rem; line-height:1.15; margin:0 0 4px}
+  .sub{color:var(--muted); margin:0 0 20px}
+  .print{font:inherit; font-size:1rem; font-weight:600; border:2px solid var(--accent); color:var(--accent); background:#fff;
+    border-radius:999px; padding:8px 18px; cursor:pointer; min-height:44px}
+  .print:hover{background:var(--accent); color:#fff}
+  ol.trin{list-style:none; margin:0; padding:0; counter-reset:t}
+  ol.trin > li{counter-increment:t; position:relative; padding:0 0 14px 52px; margin:0 0 14px; border-bottom:1px solid var(--line)}
+  ol.trin > li:last-child{border-bottom:none; margin-bottom:0}
+  ol.trin > li::before{content:counter(t); position:absolute; left:0; top:0; width:34px; height:34px; border-radius:50%;
+    background:var(--accent); color:#fff; font-weight:700; display:flex; align-items:center; justify-content:center}
+  ol.trin strong.t{display:block; color:var(--ink); font-size:1.1rem; margin-bottom:2px}
+  ol.trin p{margin:0}
+  ol.trin ul{margin:4px 0 0; padding-left:20px}
+  .knap{display:inline-block; border:1px solid var(--muted); border-radius:6px; padding:0 6px; font-size:.92em; background:var(--paper); white-space:nowrap}
+  .tip{margin-top:20px; background:#FFF8E1; border-left:6px solid var(--sol); border-radius:8px; padding:14px 18px}
+  .tip h2{font-size:1.1rem; margin:0 0 6px; color:var(--ink)}
+  .tip ul{margin:0; padding-left:20px}
+  .fod{color:var(--muted); font-size:.9rem; margin:18px 0 0}
+  @media print{
+    body{background:#fff; font-size:11pt; line-height:1.4}
+    h1{font-size:20pt}
+    .sub{margin-bottom:10pt}
+    ol.trin > li{padding-bottom:7pt; margin-bottom:7pt; padding-left:40px}
+    ol.trin > li::before{width:26px; height:26px}
+    ol.trin strong.t{font-size:12pt}
+    .tip{margin-top:10pt; padding:8pt 12pt}
+    .fod{display:none}
+    .ark{margin:0; border:none; padding:0; max-width:none}
+    .print, .tilbage{display:none}
+    ol.trin > li::before{-webkit-print-color-adjust:exact; print-color-adjust:exact}
+    .tip{-webkit-print-color-adjust:exact; print-color-adjust:exact}
+    @page{margin:14mm}
+  }
+</style>
+</head>
+<body>
+<div class="ark">
+  <div class="top">
+    <div>
+      <h1>Sådan laver du en e-bog</h1>
+      <p class="sub">Huskeseddel til <strong>Bog · Bygger</strong> · Lokalhistorier, fri udgave</p>
+    </div>
+    <button type="button" class="print" onclick="window.print()">Print huskesedlen</button>
+  </div>
+
+  <ol class="trin">
+    <li><strong class="t">Åbn Bog</strong>
+      <p>Åbn forsiden<span class="tilbage"> (<a href="index.html">index.html</a>)</span>, og klik på <strong>Bog</strong>.</p></li>
+
+    <li><strong class="t">Lav forsiden</strong>
+      <p>Under <strong>Bogens forside</strong> skriver du <strong>Titel</strong> og evt. <strong>Sted</strong> og en <strong>Kort forklaring</strong>. Vælg et <strong>Forsidebillede</strong>, og skriv en alt-tekst til det. Vælg <strong>Vinter</strong> eller <strong>Sommer</strong> under <strong>Tema</strong>.</p></li>
+
+    <li><strong class="t">Skriv bogens tekst</strong>
+      <p>Skriv eller sæt teksten ind under <strong>Manuskriptet</strong>. Har du skrevet den i forvejen, kan du også hente den fra en fil.</p></li>
+
+    <li><strong class="t">Del teksten i kapitler</strong>
+      <p>En linje, der begynder med <code>#</code> eller <code>##</code>, starter et nyt <strong>kapitel</strong> og kommer med i indholdsfortegnelsen, fx <code># Kapitel 1: Ankomsten</code>. <code>**fed**</code> giver <strong>fed</strong> og <code>*kursiv*</code> giver <em>kursiv</em>.</p></li>
+
+    <li><strong class="t">Vælg, hvordan bogen åbner</strong>
+      <p>Under <strong>Visning når bogen åbnes</strong> vælger du <strong>Lys</strong>, <strong>Sepia</strong> (gullig papirfarve) eller <strong>Mørk</strong>. Læseren kan selv skifte senere.</p></li>
+
+    <li><strong class="t">Fortæl om bogen</strong>
+      <p>Åbn <strong>Dublin Core-metadata</strong>, og skriv <strong>Ophav / skaber</strong> (forfatteren), <strong>Udgiver</strong>, <strong>Emne / nøgleord</strong> og <strong>Rettigheder</strong>.</p></li>
+
+    <li><strong class="t">Gem bogen</strong>
+      <p>Klik på <span class="knap">Generér bog (.html)</span>. Knappen virker, når der er en titel og noget tekst. Filen havner i <em>Overførsler</em>. Dobbeltklik på den for at læse bogen.</p></li>
+
+    <li><strong class="t">Ret bogen senere</strong>
+      <p>Åbn Bog igen, og vælg filen under <strong>Indlæs eksisterende bog</strong>. Alt kommer med.</p></li>
+  </ol>
+
+  <div class="tip">
+    <h2>Godt at vide</h2>
+    <ul>
+      <li>Kig i forhåndsvisningen til højre, mens du skriver. Så ser du med det samme, om kapitlerne kommer rigtigt.</li>
+      <li>Bogen er <strong>én fil</strong>. Den virker uden internet, på computer, tablet og telefon.</li>
+      <li>Alt sker på din egen computer. Intet sendes nogen steder hen.</li>
+    </ul>
+  </div>
+  <p class="fod">Lokalhistorier · fri udgave</p>
+</div>
+</body>
+</html>
