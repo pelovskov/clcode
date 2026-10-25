@@ -39,6 +39,15 @@
   .ikon{font-size:1.8rem; line-height:1; flex:0 0 auto}
   .kort strong{display:block; color:var(--ink); font-size:1.08rem; margin-bottom:2px}
   .kort span.t{color:var(--muted); font-size:.98rem}
+  .hent{display:flex; flex-wrap:wrap; gap:14px 22px; align-items:center; margin-top:22px; padding:16px 18px;
+    border:2px solid var(--accent); border-radius:12px; background:var(--surface)}
+  .hent[hidden]{display:none}
+  .hent a{display:inline-flex; align-items:center; gap:10px; background:var(--accent); color:#fff; text-decoration:none;
+    font-weight:700; padding:12px 20px; border-radius:999px; min-height:48px}
+  .hent a:hover{background:var(--accent-dark)}
+  .hent a svg{width:22px; height:22px; flex:0 0 auto}
+  .hent p{margin:0; flex:1 1 280px; color:var(--muted)}
+  @media (prefers-color-scheme: dark){ .hent a{color:#10161C} }
   footer{border-top:1px solid var(--line); color:var(--muted); font-size:.98rem}
   footer .wrap{padding-top:22px; padding-bottom:40px}
   footer p{margin:0 0 8px; max-width:48rem}
@@ -55,6 +64,11 @@
       <li><strong>Udfyld felterne</strong>, læg billeder eller lyd ind, og vælg Vinter eller Sommer.</li>
       <li><strong>Gem filen.</strong> Den virker uden internet og kan deles, lægges på en hjemmeside eller et USB-stik.</li>
     </ol>
+    <!-- Vises kun, når siden ligger på en hjemmeside. I en udpakket kopi findes zip-filen ikke. -->
+    <div class="hent" id="hent" hidden>
+      <a href="lokalhistorier-fri-udgave.zip" download><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 4v11"/><path d="M7 10l5 5 5-5"/><path d="M5 20h14"/></svg>Hent det hele som zip-fil</a>
+      <p>Alle byggere og værktøjer med forsiden, ca. 0,6 MB. Pak zip-filen ud, og åbn <strong>index.html</strong>. Så virker det hele på din egen computer eller fra et USB-stik, også uden internet.</p>
+    </div>
   </div>
 </header>
 
@@ -97,5 +111,8 @@
     <p>Lokalhistorier · fri udgave er lavet af de samme folk, som står bag den fælles søgeportal for lokalhistorier fra Roskilde og omegn.</p>
   </div>
 </footer>
+<script>
+  if (/^https?:$/.test(location.protocol)) document.getElementById('hent').hidden = false;
+</script>
 </body>
 </html>

@@ -28,6 +28,8 @@ Filformatet er det samme. En fil fra den frie udgave kan derfor åbnes i forenin
 
 Hele mappen kan kopieres til et USB-stik eller lægges på en hjemmeside. Alt virker uden internet.
 
+Ligger mappen på en hjemmeside, viser forsiden knappen **Hent det hele som zip-fil**. Den henter `lokalhistorier-fri-udgave.zip` med forsiden, byggerne, værktøjerne og denne vejledning. Pak zip-filen ud, og åbn `index.html`. I en udpakket kopi er knappen skjult, fordi zip-filen ikke ligger i den.
+
 ## Til den, der vedligeholder
 
 Byggerne i mappen laves af opskriften **`lav-fri-udgave.py`** ud fra de almindelige byggere i repoets rod og værktøjerne i `tools/`. Ret aldrig i de lavede filer i hånden. Ret i den almindelige bygger eller i opskriften, og kør opskriften igen:
@@ -36,4 +38,4 @@ Byggerne i mappen laves af opskriften **`lav-fri-udgave.py`** ud fra de almindel
 python3 fri/lav-fri-udgave.py
 ```
 
-Kun `index.html` og `LAES-MIG.md` er skrevet i hånden. Opskriften stopper med en fejlbesked, hvis en almindelig bygger er ændret, så den ikke længere passer. Så skal opskriften rettes til.
+Kun `index.html` og `LAES-MIG.md` er skrevet i hånden. Til sidst pakker opskriften det hele i `lokalhistorier-fri-udgave.zip`. Zip-filen ændrer sig kun, når indholdet gør. Opskriften stopper med en fejlbesked, hvis en almindelig bygger er ændret, så den ikke længere passer. Så skal opskriften rettes til.
