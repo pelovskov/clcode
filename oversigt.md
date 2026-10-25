@@ -35,6 +35,8 @@ Værktøjerne ligger i mappen `tools/`. De følger ikke Builder-standarden, men 
 | Feltoptager | `tools/feltoptager.html` | 1 | optager lyd, rydder op og gemmer som mp3 eller som lydfortælling (HTML) |
 | Lydlab | `tools/lydlab.html` | 1 | gør en lydoptagelse klar: mono, jævn lyd og fast lydstyrke, ud kommer en mp3 |
 | Fotolab | `tools/fotolab.html` | 4 | farve-effekter, billedformat og Polaroid med håndskrevet tekst |
+| Lydudtrækker | `tools/lydudtraekker.html` | – | trækker lyden ud af en HTML-fil som mp3, når den oprindelige lydfil er væk |
+| Billedudtrækker | `tools/billedudtraekker.html` | 1.0 | trækker billederne ud af en HTML-fil, fx et gammelt album, som billedfiler eller samlet i en zip-fil |
 | Musikpakke · Bygger | `tools/musikpakke-bygger.html` | 1 | laver en offline musik-app (PWA) med 3–5 samlinger som zip-fil |
 | Skyggeramme | `tools/skyggeramme.html` | – | sætter en blød skygge om et skærmbillede til wikien |
 | Kodeord og hash | `tools/password-hash.html` | 2.0 | laver et sikkert kodeord og den linje med bcrypt-hash, der skal i `config.php` |
