@@ -61,6 +61,8 @@ Efter en ændring skal du beskrive, hvordan jeg selv kan afprøve den i browsere
 
 ## Ting der hænger sammen
 
+- **Den frie udgave** (`fri/`) laves af opskriften `fri/lav-fri-udgave.py` ud fra de almindelige byggere. Når en bygger eller Søgeside · Bygger ændres, køres opskriften igen (`python3 fri/lav-fri-udgave.py`), så den frie udgave følger med. Ret aldrig i de lavede filer i `fri/` i hånden. Kun `fri/index.html` og `fri/LAES-MIG.md` er skrevet i hånden.
+
 - `tools/feltoptager.html` laver lydfortællinger i **Lydfortælling · Byggerens filformat** og skriver selv `builderVersion`. Tælles `BUILDER_VERSION` op i `lydfortaelling-bygger.html`, skal `builderVersion` i Feltoptageren rettes med, ellers afviser byggeren filerne.
 
 - `billedarkiv/billedarkiv.html` eksporterer albums med en `.json`-fil ved hvert billede, som **Album · Bygger** læser (kendes på `exportedFilename`). Ændres feltnavnene i eksporten, skal `album-bygger.html` og standardens afsnit 8.1 rettes med.

@@ -61,7 +61,17 @@ Projektet startede som "Lokalhistorie på tværs af generationer" i Syd for Bane
 
 **Værktøjer:** Feltoptager (optag lyd i marken), Lydlab og Fotolab (gør lyd og billeder klar), Metadata-hjælper (lader en AI foreslå metadata og kontrollerer svaret), Musikpakke, Skyggeramme, Billedarkiv (ordner billeder i albums) og et værktøj til sikre adgangskoder.
 
-**Fælles regler:** Builder-standarden (version 2.11) sørger for, at alle byggere ser ens ud, har de samme syv farvetemaer og de samme udgivere og håndterer metadata ens.
+**Fælles regler:** Builder-standarden (version 2.12) sørger for, at alle byggere ser ens ud, har de samme syv farvetemaer og de samme udgivere og håndterer metadata ens.
+
+## Fri udgave til alle andre
+
+Den fælles portal er for foreningerne. Enkeltpersoner, skoleklasser, ungdomsskolen og andre institutioner skal også kunne lave historier, album og lydfortællinger, men uden at det hele kommer ind i den fælles samling. Til dem er der **Lokalhistorier · fri udgave** i mappen `fri/`, med sin egen forside:
+
+- de samme byggere, plus Samling og Søgeside, så en skoleklasse kan samle sine ting i en mappe med egen forside og søgeside;
+- udgiveren skrives frit, fx "7.b, Roskilde Lille Skole";
+- kun to farvetemaer, Vinter og Sommer.
+
+Den frie udgave laves automatisk ud fra foreningernes byggere, så forbedringer følger med.
 
 ## Det, projektet holder fast i
 
