@@ -1,7 +1,7 @@
 # Builder-standard
 
 **Fælles specifikation for værktøjskassen**
-Version 2.12 · oktober 2026
+Version 2.13 · oktober 2026
 
 Referenceimplementering: **Sidebygger** (`side-bygger.html`, version 1.5).
 Når noget er i tvivl, er det referencefilen der gælder.
@@ -497,6 +497,7 @@ Regler:
 - [ ] Skriftstørrelser og kontrast fra afsnit 3
 - [ ] Afkrydsningstekster med almindelige bogstaver, ikke versaler
 - [ ] De syv temaer med `THEMES` kopieret uændret fra afsnit 3
+- [ ] Advarsel fra browseren, før man forlader siden med ugemte ændringer
 - [ ] Indlæsning af egne filer med pæn afvisning af fremmede filer, andre formater og ældre builderVersion
 - [ ] Billeder 1600 px / 0,82 (undtagelserne står i afsnit 8)
 - [ ] Alt-tekstfelt pr. billede
@@ -627,6 +628,9 @@ Udgiverlisten i prompten skal altid svare til `PUBLISHERS` i 4.1. Kommer der en 
 ---
 
 ## 12. Ændringslog
+
+**Version 2.13 — oktober 2026.**
+- Alle byggere advarer nu, før man forlader siden med ugemte ændringer: Har man skrevet eller lagt noget ind, siden filen sidst blev gemt som .html, spørger browseren, om man vil forlade siden. At indlæse en fil tæller ikke som en ændring. Ny linje i tjeklisten (afsnit 10). Byggerne har fået et nyt versionsnummer; filformaterne er uændrede.
 
 **Version 2.12 — oktober 2026.**
 - Afsnit 1: **Lokalhistorier · fri udgave** i mappen `fri/` med undtagelserne for udgiver, temaer, emneord og identifikator. Den laves af opskriften `fri/lav-fri-udgave.py`.

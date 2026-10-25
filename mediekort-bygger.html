@@ -133,7 +133,7 @@
 
 <div class="topbar">
   <h1>Mediekort · Bygger</h1>
-  <span>Lav et kort til en video, en podcast eller et talende billede, med kapitler og udskrift · kører lokalt, ingen server · version 1.3</span>
+  <span>Lav et kort til en video, en podcast eller et talende billede, med kapitler og udskrift · kører lokalt, ingen server · version 1.4</span>
 </div>
 
 <div class="layout">
@@ -451,7 +451,7 @@
 
 <script>
 /* =======================================================================
-   Mediekort · Bygger — version 1.3
+   Mediekort · Bygger — version 1.4
    1.1: videofil fra fx pCloud.
    1.2: "Talende billede" (mode 'picture'): billedet i op til 2000 px i sin
         egen form, fuld skærm-visning, lille favicon, felt til billedets ophav,
@@ -2328,6 +2328,31 @@ $('generateBtn').addEventListener('click', async () => {
 /* ---------- Start ---------- */
 selectTheme('original');
 setMode('video');
+/* ---- Advarsel, før man forlader siden uden at have gemt ----
+   Har man skrevet eller lagt noget ind siden sidst, filen blev gemt, spørger
+   browseren, om man vil forlade siden. Når filen gemmes (.html), forsvinder
+   advarslen igen. At indlæse en fil tæller ikke som en ændring. */
+(function(){
+  var INDLAES = { loadPage:1, loadInput:1, loadPlayer:1 };
+  var aendret = false;
+  function marker(e){
+    var el = e.target;
+    if (el && el.id && INDLAES[el.id]) return;
+    aendret = true;
+  }
+  document.addEventListener('input', marker, true);
+  document.addEventListener('change', marker, true);
+  document.addEventListener('drop', marker, true);
+  document.addEventListener('click', function(e){
+    var a = e.target && e.target.closest ? e.target.closest('a[download]') : null;
+    if (a && /\.html?$/i.test(a.getAttribute('download') || '')) aendret = false;
+  }, true);
+  window.addEventListener('beforeunload', function(e){
+    if (!aendret) return;
+    e.preventDefault();
+    e.returnValue = '';
+  });
+})();
 </script>
 </body>
 </html>
