@@ -20,9 +20,12 @@ Den læser byggerne i repoets rod og værktøjerne i tools/ og skriver den
 frie udgave i mappen fri/. Ret aldrig i de lavede filer i fri/ i hånden –
 ret i opskriften eller i den almindelige bygger, og kør opskriften igen.
 Kun index.html (forsiden) og LAES-MIG.md i fri/ er skrevet i hånden.
+Til sidst pakkes det hele i lokalhistorier-fri-udgave.zip, som kan hentes
+fra forsiden.
 """
 import re
 import sys
+import zipfile
 from pathlib import Path
 
 ROD = Path(__file__).resolve().parent.parent
@@ -168,6 +171,25 @@ def lav_soegeside():
 KOPIER = ['tools/feltoptager.html', 'tools/lydlab.html', 'tools/fotolab.html', 'tools/skyggeramme.html']
 
 
+ZIP_NAVN = 'lokalhistorier-fri-udgave.zip'
+ZIP_MAPPE = 'lokalhistorier-fri-udgave'
+
+
+def lav_zip():
+    """Pakker forsiden, byggerne, værktøjerne og vejledningen i én zip-fil, som
+    kan hentes fra forsiden. Opskriften selv kommer ikke med. Alle filer får samme
+    faste tidspunkt, så zip-filen kun ændrer sig, når indholdet gør."""
+    filer = sorted(p for p in UD.iterdir()
+                   if p.suffix in ('.html', '.md') and p.name != ZIP_NAVN)
+    with zipfile.ZipFile(UD / ZIP_NAVN, 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as z:
+        for p in filer:
+            info = zipfile.ZipInfo(f'{ZIP_MAPPE}/{p.name}', date_time=(2026, 1, 1, 0, 0, 0))
+            info.compress_type = zipfile.ZIP_DEFLATED
+            info.external_attr = 0o644 << 16
+            z.writestr(info, p.read_bytes())
+    print(f'Lavet: fri/{ZIP_NAVN} ({len(filer)} filer, {(UD / ZIP_NAVN).stat().st_size // 1024} KB)')
+
+
 if __name__ == '__main__':
     UD.mkdir(exist_ok=True)
     for f in BYGGERE:
@@ -176,3 +198,4 @@ if __name__ == '__main__':
     for f in KOPIER:
         (UD / Path(f).name).write_bytes((ROD / f).read_bytes())
         print(f'Kopieret: fri/{Path(f).name}')
+    lav_zip()

@@ -57,6 +57,7 @@ I mappen `fri/` ligger **Lokalhistorier · fri udgave** til enkeltpersoner, skol
 
 - **Byggere:** Side, Album, Enkeltbillede, Før og Nu, Bog, Lydfortælling, Mediekort, Præsentation og Samling i fri udgave. Udgiveren skrives i et tekstfelt, og der er kun temaerne Vinter og Sommer.
 - **Værktøjer:** Søgeside · Bygger med neutrale ord, og Feltoptager, Lydlab, Fotolab og Skyggeramme uændret.
+- **Zip-fil:** Det hele kan hentes som `fri/lokalhistorier-fri-udgave.zip` med knappen på forsiden, når mappen ligger på en hjemmeside.
 - **Opskriften:** Filerne laves af `fri/lav-fri-udgave.py` ud fra de almindelige byggere og har samme versionsnumre og filformater som dem.
 
 ## Andet
