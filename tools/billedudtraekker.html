@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Billedudtrækker · version 1.0 (okt. 2026)
+     Finder billeder, der ligger inde i en HTML-fil som base64 (data:image/…),
+     fx i et album fra en gammel udgave af Album · Bygger, og gemmer dem som
+     almindelige billedfiler – én ad gangen eller alle i en zip-fil.
+     Alt sker på din egen computer. Intet sendes nogen steder hen. -->
+<title>Billedudtrækker</title>
+<style>
+  :root{
+    --paper:#EDE7D8; --surface:#FBF8EF; --ink:#211E19; --rust:#9A4630; --rust-dark:#82392A;
+    --hint:#5F5A4B; --line:#cbc2a8;
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--paper); color:var(--ink); line-height:1.55;
+    font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size:17px}
+  :focus-visible{outline:3px solid var(--rust); outline-offset:2px}
+  .wrap{max-width:1000px; margin:0 auto; padding:28px 18px 60px}
+  h1{font-size:1.8rem; margin:0 0 4px}
+  .sub{color:var(--hint); margin:0 0 22px}
+  .drop{display:block; border:3px dashed var(--line); border-radius:12px; background:var(--surface);
+    padding:30px 20px; text-align:center; cursor:pointer}
+  .drop.over{border-color:var(--rust); background:#fff}
+  .drop strong{display:block; font-size:1.2rem; margin-bottom:6px}
+  .drop input{display:block; margin:14px auto 0; font-size:1rem}
+  .status{margin:18px 0 0; font-weight:600}
+  .status.fejl{color:#9b1c1c}
+  .fil{margin-top:28px; border-top:1px solid var(--line); padding-top:18px}
+  .fil h2{font-size:1.25rem; margin:0 0 4px; word-break:break-word}
+  .fil .info{color:var(--hint); margin:0 0 12px}
+  .handlinger{display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:0 0 14px}
+  button{font:inherit; font-weight:600; min-height:44px; padding:8px 16px; border-radius:8px; cursor:pointer;
+    border:2px solid var(--rust); background:#fff; color:var(--rust)}
+  button.hoved{background:var(--rust); color:#fff}
+  button.hoved:hover{background:var(--rust-dark); border-color:var(--rust-dark)}
+  button:hover{text-decoration:underline}
+  button:disabled{opacity:.5; cursor:default; text-decoration:none}
+  label.vis{display:flex; gap:8px; align-items:center; cursor:pointer}
+  label.vis input{width:20px; height:20px; accent-color:var(--rust)}
+  .gitter{display:grid; grid-template-columns:repeat(auto-fill, minmax(170px, 1fr)); gap:14px}
+  .kort{background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:10px; display:flex; flex-direction:column; gap:8px}
+  .kort.lille{border-style:dashed}
+  .kort .billede{aspect-ratio:1; background:#fff; border-radius:6px; display:flex; align-items:center; justify-content:center; overflow:hidden}
+  .kort img{max-width:100%; max-height:100%; display:block}
+  .kort .navn{font-weight:600; font-size:.95rem; word-break:break-all}
+  .kort .maal{color:var(--hint); font-size:.9rem}
+  .kort label{display:flex; gap:8px; align-items:center; cursor:pointer; font-size:.95rem}
+  .kort label input{width:20px; height:20px; accent-color:var(--rust)}
+  .kort button{min-height:40px; padding:6px 10px; font-size:.95rem}
+  .note{color:var(--hint); font-size:.95rem; margin-top:30px}
+  [hidden]{display:none !important}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <h1>Billedudtrækker</h1>
+  <p class="sub">Henter billederne ud af en HTML-fil, fx et album lavet med en gammel udgave af Album · Bygger · version 1.0</p>
+
+  <label class="drop" id="drop">
+    <strong>Vælg en eller flere HTML-filer med billeder</strong>
+    eller træk dem herind
+    <input type="file" id="filer" accept=".html,.htm,text/html" multiple>
+  </label>
+  <p class="status" id="status" role="status" aria-live="polite"></p>
+
+  <div id="resultater"></div>
+
+  <p class="note">Alt sker på din egen computer, og intet sendes nogen steder hen. Billederne gemmes præcis, som de ligger i filen, uden at blive gjort mindre. Små billeder som ikoner og miniaturer er skjult fra start, men kan vises.</p>
+</main>
+
+<script>
+"use strict";
+
+const LILLE = 300;   // billeder under 300 px på den længste led regnes som ikoner eller miniaturer
+const ENDELSE = { jpeg:'jpg', jpg:'jpg', png:'png', webp:'webp', gif:'gif', 'svg+xml':'svg', avif:'avif', bmp:'bmp' };
+
+function slugify(s, fallback){
+  const out = (s || '').toLowerCase()
+    .replace(/æ/g,'ae').replace(/ø/g,'oe').replace(/å/g,'aa')
+    .normalize('NFD').replace(/[̀-ͯ]/g,'')
+    .replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
+  return out || fallback || '';
+}
+
+function fmtKB(n){ return n >= 1048576 ? (n/1048576).toFixed(1).replace('.', ',') + ' MB' : Math.max(1, Math.round(n/1024)) + ' KB'; }
+
+/* base64 → bytes. Tåler mellemrum og \/ fra JSON. */
+function tilBytes(b64){
+  const ren = b64.replace(/[\s\\]/g, '');
+  const bin = atob(ren);
+  const ud = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) ud[i] = bin.charCodeAt(i);
+  return ud;
+}
+
+/* Finder alle indlejrede billeder i teksten. Ens billeder tages kun med én gang. */
+function findBilleder(tekst){
+  const re = /data:image\\?\/([a-z0-9.+-]+);base64,([A-Za-z0-9+\/=\\\s]{200,})/gi;
+  const set = new Set(), ud = [];
+  let m;
+  while ((m = re.exec(tekst))){
+    const b64 = m[2].replace(/[\s\\]/g, '');
+    const noegle = b64.length + ':' + b64.slice(0, 80) + b64.slice(-80);
+    if (set.has(noegle)) continue;
+    set.add(noegle);
+    const type = m[1].toLowerCase();
+    try { ud.push({ type, bytes: tilBytes(b64) }); } catch (e) { /* ødelagt base64 springes over */ }
+  }
+  return ud;
+}
+
+function maal(url){
+  return new Promise(res => {
+    const img = new Image();
+    img.onload = () => res({ w: img.naturalWidth, h: img.naturalHeight });
+    img.onerror = () => res({ w: 0, h: 0 });
+    img.src = url;
+  });
+}
+
+function hent(blob, navn){
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = navn;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+}
+
+/* ---- En lille zip-fil uden komprimering (billederne er allerede pakket) ---- */
+const CRC = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++){ let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+function crc32(b){ let c = 0xFFFFFFFF; for (let i = 0; i < b.length; i++) c = CRC[(c ^ b[i]) & 0xFF] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+
+function lavZip(filer){
+  const enc = new TextEncoder(), dele = [], central = [];
+  const nu = new Date();
+  const tid = (nu.getHours() << 11) | (nu.getMinutes() << 5) | (nu.getSeconds() >> 1);
+  const dato = ((nu.getFullYear() - 1980) << 9) | ((nu.getMonth() + 1) << 5) | nu.getDate();
+  let offset = 0;
+  filer.forEach(f => {
+    const navn = enc.encode(f.navn), crc = crc32(f.bytes), str = f.bytes.length;
+    const h = new DataView(new ArrayBuffer(30));
+    h.setUint32(0, 0x04034b50, true); h.setUint16(4, 20, true); h.setUint16(6, 0x0800, true); h.setUint16(8, 0, true);
+    h.setUint16(10, tid, true); h.setUint16(12, dato, true); h.setUint32(14, crc, true);
+    h.setUint32(18, str, true); h.setUint32(22, str, true); h.setUint16(26, navn.length, true); h.setUint16(28, 0, true);
+    dele.push(h.buffer, navn, f.bytes);
+    const c = new DataView(new ArrayBuffer(46));
+    c.setUint32(0, 0x02014b50, true); c.setUint16(4, 20, true); c.setUint16(6, 20, true); c.setUint16(8, 0x0800, true);
+    c.setUint16(10, 0, true); c.setUint16(12, tid, true); c.setUint16(14, dato, true); c.setUint32(16, crc, true);
+    c.setUint32(20, str, true); c.setUint32(24, str, true); c.setUint16(28, navn.length, true);
+    c.setUint32(42, offset, true);
+    central.push(c.buffer, navn);
+    offset += 30 + navn.length + str;
+  });
+  const cdStr = central.reduce((s, d) => s + d.byteLength, 0);
+  const e = new DataView(new ArrayBuffer(22));
+  e.setUint32(0, 0x06054b50, true); e.setUint16(8, filer.length, true); e.setUint16(10, filer.length, true);
+  e.setUint32(12, cdStr, true); e.setUint32(16, offset, true);
+  return new Blob([...dele, ...central, e.buffer], { type: 'application/zip' });
+}
+
+/* ---- Visning ---- */
+async function behandl(fil){
+  const tekst = await fil.text();
+  const billeder = findBilleder(tekst);
+  const base = slugify(fil.name.replace(/\.html?$/i, ''), 'billeder');
+
+  const boks = document.createElement('section');
+  boks.className = 'fil';
+  const h = document.createElement('h2'); h.textContent = fil.name; boks.appendChild(h);
+  const info = document.createElement('p'); info.className = 'info'; boks.appendChild(info);
+  document.getElementById('resultater').appendChild(boks);
+
+  if (!billeder.length){
+    info.textContent = 'Der er ingen indlejrede billeder i filen.';
+    return 0;
+  }
+
+  const poster = [];
+  for (let i = 0; i < billeder.length; i++){
+    const b = billeder[i];
+    const endelse = ENDELSE[b.type] || 'bin';
+    const blob = new Blob([b.bytes], { type: 'image/' + b.type });
+    const url = URL.createObjectURL(blob);
+    const m = await maal(url);
+    poster.push({ endelse, blob, url, bytes: b.bytes, ...m, lille: m.w > 0 && Math.max(m.w, m.h) < LILLE });
+  }
+  const antalSmaa = poster.filter(p => p.lille).length;
+  /* Store billeder nummereres for sig og små for sig: album-01.jpg … og album-lille-01.jpg … */
+  const cifre = Math.max(2, String(poster.length).length);
+  let nrStor = 0, nrLille = 0;
+  poster.forEach(p => {
+    const nr = p.lille ? ++nrLille : ++nrStor;
+    p.navn = base + (p.lille ? '-lille-' : '-') + String(nr).padStart(cifre, '0') + '.' + p.endelse;
+  });
+
+  const handl = document.createElement('div'); handl.className = 'handlinger';
+  const zipKnap = document.createElement('button'); zipKnap.type = 'button'; zipKnap.className = 'hoved';
+  handl.appendChild(zipKnap);
+  let visSmaa = null;
+  if (antalSmaa){
+    const l = document.createElement('label'); l.className = 'vis';
+    visSmaa = document.createElement('input'); visSmaa.type = 'checkbox';
+    l.appendChild(visSmaa); l.appendChild(document.createTextNode(' Vis også små billeder (' + antalSmaa + ')'));
+    handl.appendChild(l);
+  }
+  boks.appendChild(handl);
+
+  const gitter = document.createElement('div'); gitter.className = 'gitter'; boks.appendChild(gitter);
+  poster.forEach(p => {
+    const k = document.createElement('div'); k.className = 'kort' + (p.lille ? ' lille' : '');
+    const fig = document.createElement('div'); fig.className = 'billede';
+    const img = document.createElement('img'); img.src = p.url; img.alt = p.navn; fig.appendChild(img);
+    const n = document.createElement('div'); n.className = 'navn'; n.textContent = p.navn;
+    const mm = document.createElement('div'); mm.className = 'maal';
+    mm.textContent = (p.w ? p.w + ' × ' + p.h + ' px · ' : '') + fmtKB(p.bytes.length);
+    const lab = document.createElement('label');
+    p.valg = document.createElement('input'); p.valg.type = 'checkbox'; p.valg.checked = !p.lille;
+    lab.appendChild(p.valg); lab.appendChild(document.createTextNode(' Med i zip-filen'));
+    const knap = document.createElement('button'); knap.type = 'button'; knap.textContent = 'Hent billedet';
+    knap.setAttribute('aria-label', 'Hent ' + p.navn);
+    knap.addEventListener('click', () => hent(p.blob, p.navn));
+    p.valg.addEventListener('change', opdater);
+    k.append(fig, n, mm, lab, knap);
+    p.kort = k;
+    gitter.appendChild(k);
+  });
+
+  function synlige(){ return poster.filter(p => !p.lille || (visSmaa && visSmaa.checked)); }
+  function opdater(){
+    poster.forEach(p => { p.kort.hidden = p.lille && !(visSmaa && visSmaa.checked); });
+    const valgte = synlige().filter(p => p.valg.checked);
+    zipKnap.textContent = 'Hent ' + valgte.length + (valgte.length === 1 ? ' billede' : ' billeder') + ' som zip-fil';
+    zipKnap.disabled = !valgte.length;
+  }
+  if (visSmaa) visSmaa.addEventListener('change', opdater);
+  zipKnap.addEventListener('click', () => {
+    const valgte = synlige().filter(p => p.valg.checked);
+    hent(lavZip(valgte.map(p => ({ navn: p.navn, bytes: p.bytes }))), base + '-billeder.zip');
+  });
+
+  const store = poster.length - antalSmaa;
+  info.textContent = 'Fandt ' + store + (store === 1 ? ' billede' : ' billeder')
+    + (antalSmaa === 1 ? ' og 1 lille billede (ikon eller miniature), som er skjult'
+       : antalSmaa ? ' og ' + antalSmaa + ' små billeder (ikoner eller miniaturer), som er skjult' : '') + '.';
+  opdater();
+  return poster.length;
+}
+
+async function vaelg(filer){
+  const html = Array.from(filer).filter(f => /\.html?$/i.test(f.name) || f.type === 'text/html');
+  const status = document.getElementById('status');
+  status.classList.remove('fejl');
+  if (!html.length){ status.textContent = 'Vælg en HTML-fil (.html).'; status.classList.add('fejl'); return; }
+  document.getElementById('resultater').innerHTML = '';
+  status.textContent = 'Leder efter billeder …';
+  let i = 0;
+  for (const f of html){
+    try { i += await behandl(f); }
+    catch (e){ status.textContent = 'Filen "' + f.name + '" kunne ikke læses.'; status.classList.add('fejl'); return; }
+  }
+  status.textContent = i ? 'Færdig. Vælg de billeder, du vil have, og hent dem.' : 'Der blev ikke fundet nogen billeder.';
+}
+
+document.getElementById('filer').addEventListener('change', e => vaelg(e.target.files));
+const drop = document.getElementById('drop');
+['dragenter', 'dragover'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.add('over'); }));
+['dragleave', 'drop'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.remove('over'); }));
+drop.addEventListener('drop', e => { if (e.dataTransfer && e.dataTransfer.files.length) vaelg(e.dataTransfer.files); });
+</script>
+</body>
+</html>
