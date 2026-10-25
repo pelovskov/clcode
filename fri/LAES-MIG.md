@@ -25,6 +25,7 @@ Filformatet er det samme. En fil fra den frie udgave kan derfor åbnes i forenin
 | Samling · Bygger, som binder 2–6 filer sammen | `samling-bygger.html` |
 | Søgeside · Bygger, som laver en søgeside til en mappe | `soegeside-bygger.html` |
 | Feltoptager, Lydlab, Fotolab og Skyggeramme | `feltoptager.html`, `lydlab.html`, `fotolab.html`, `skyggeramme.html` |
+| Huskesedler til Side, Album, Lydfortælling, Præsentation og Samling med Søgeside | `vejledning-….html` |
 
 Hele mappen kan kopieres til et USB-stik eller lægges på en hjemmeside. Alt virker uden internet.
 
@@ -38,4 +39,4 @@ Byggerne i mappen laves af opskriften **`lav-fri-udgave.py`** ud fra de almindel
 python3 fri/lav-fri-udgave.py
 ```
 
-Kun `index.html` og `LAES-MIG.md` er skrevet i hånden. Til sidst pakker opskriften det hele i `lokalhistorier-fri-udgave.zip`. Zip-filen ændrer sig kun, når indholdet gør. Opskriften stopper med en fejlbesked, hvis en almindelig bygger er ændret, så den ikke længere passer. Så skal opskriften rettes til.
+Kun `index.html`, `LAES-MIG.md` og huskesedlerne `vejledning-….html` er skrevet i hånden. Manuskripterne til screencasts ligger i repoets mappe `vejledninger/`. Til sidst pakker opskriften det hele i `lokalhistorier-fri-udgave.zip`. Zip-filen ændrer sig kun, når indholdet gør. Opskriften stopper med en fejlbesked, hvis en almindelig bygger er ændret, så den ikke længere passer. Så skal opskriften rettes til.
