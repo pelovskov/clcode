@@ -133,7 +133,7 @@
 
 <div class="topbar">
   <h1>Mediekort · Bygger</h1>
-  <span>Lav et kort til en video, en podcast eller et talende billede, med kapitler og udskrift · kører lokalt, ingen server · version 1.4</span>
+  <span>Lav et kort til en video, en podcast eller et talende billede, med kapitler og udskrift · kører lokalt, ingen server · version 1.5</span>
 </div>
 
 <div class="layout">
@@ -343,6 +343,17 @@
       <ul class="chapcheck" id="chapCheck"></ul>
     </div>
 
+    <div class="field" id="segFields">
+      <label for="fSegments">Udvalgte stykker (valgfri)</label>
+      <textarea id="fSegments" class="mono small" placeholder="00:11 – 44:21&#10;50:12 – 59:44"></textarea>
+      <div class="hint">Til en forevisning, hvor kun dele af filmen skal vises, fx når der fortælles til en stumfilm. Én linje pr. stykke, der skal <strong>med</strong>: først hvor det starter, så hvor det slutter. Resten springes over. Kortet får knapperne <em>Afspil den udvalgte version</em> og <em>Afspil hele filmen</em>. En video på YouTube kan kun afspilles udvalgt, når kortet ligger på en hjemmeside.</div>
+      <div class="check-row">
+        <label class="check"><input type="checkbox" id="fSegPause">
+          <span>Hold pause efter hvert stykke, så der kan fortælles imellem</span></label>
+      </div>
+      <ul class="chapcheck" id="segCheck"></ul>
+    </div>
+
     <div class="sectionhead">Læs mere — udskrift (valgfri)</div>
 
     <div class="hint" id="picTransTip" hidden style="margin:-6px 0 18px; font-size:13.5px; color:var(--hint); line-height:1.55; background:#f7f3e7; border-left:4px solid var(--rust); padding:10px 13px">
@@ -451,7 +462,7 @@
 
 <script>
 /* =======================================================================
-   Mediekort · Bygger — version 1.4
+   Mediekort · Bygger — version 1.5
    1.1: videofil fra fx pCloud.
    1.2: "Talende billede" (mode 'picture'): billedet i op til 2000 px i sin
         egen form, fuld skærm-visning, lille favicon, felt til billedets ophav,
@@ -474,7 +485,7 @@ const state = {
   audioBlob:null, audioName:'', audioBlobUrl:'',
   kicker:'', title:'', location:'', shareImage:'',
   poster:'', posterAlt:'',
-  text:'', note:'', chaptersRaw:'',
+  text:'', note:'', chaptersRaw:'', segmentsRaw:'', segPause:false,
   transTitle:'', transcript:'',
   ctas:[{text:'',url:''},{text:'',url:''},{text:'',url:''}],
   homeMode:'auto', homeLabel:'', homeUrl:'',
@@ -745,6 +756,31 @@ function parseChapters(raw){
   });
   list.sort((a, b) => a.t - b.t);
   return { list, bad };
+}
+// Udvalgte stykker: én linje pr. stykke, der skal med, fx "00:11 – 44:21".
+// Stykker, der overlapper, lægges sammen.
+function parseSegments(raw){
+  const list = [], bad = [];
+  String(raw || '').split('\n').forEach(line => {
+    const l = line.trim();
+    if (!l) return;
+    const m = l.match(/^[-–•*]?\s*((?:\d{1,2}:)?\d{1,2}:\d{2})\s*(?:[-–—]|til)\s*((?:\d{1,2}:)?\d{1,2}:\d{2})\s*(.*)$/i);
+    if (!m){ bad.push(l); return; }
+    const a = Math.round(timeToSec(m[1])), b = Math.round(timeToSec(m[2]));
+    if (b <= a){ bad.push(l); return; }
+    list.push({ a, b });
+  });
+  list.sort((x, y) => x.a - y.a);
+  const merged = [];
+  list.forEach(g => {
+    const last = merged[merged.length - 1];
+    if (last && g.a <= last.b) last.b = Math.max(last.b, g.b);
+    else merged.push({ a: g.a, b: g.b });
+  });
+  return { list: merged, bad };
+}
+function segmentsToText(arr){
+  return (arr || []).map(g => fmtTime(g.a) + ' – ' + fmtTime(g.b)).join('\n');
 }
 function chaptersToText(arr){
   return (arr || []).map(c => fmtTime(c.t) + ' ' + c.label).join('\n');
@@ -1465,6 +1501,124 @@ function mediekortRuntime(C){
     seek(parseInt(b.getAttribute("data-t"), 10) || 0);
   });
 
+  /* --- Udvalgte stykker: afspilleren springer selv over det, der ikke skal vises ---
+     Videoen ændres ikke. Hvert kvarte sekund ser kortet efter, hvor afspilleren er.
+     Er den uden for de udvalgte stykker, springer den til det næste – eller holder
+     pause først, hvis det er valgt. YouTube styres med YouTubes egen afspiller-API,
+     som kun virker, når kortet ligger på en hjemmeside. */
+  var segs = C.segs || [], segbar = byId("segbar");
+  if (segs.length && segbar){
+    var segStatus = byId("segStatus"), segNext = byId("segNext"), segwrap = byId("segwrap");
+    var vidEl = byId("vid"), yt = null, ytReady = false, ytWaits = [];
+    var curated = false, waiting = -1, guard = 0;
+    function fmtT(sec){
+      sec = Math.max(0, Math.floor(sec));
+      var h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), x = sec % 60;
+      return (h ? h + ":" + (m < 10 ? "0" : "") + m : m) + ":" + (x < 10 ? "0" : "") + x;
+    }
+    function say(t){ segStatus.textContent = t; }
+    function nowAt(){ return vidEl ? vidEl.currentTime : (ytReady ? yt.getCurrentTime() : 0); }
+    function isPlaying(){ return vidEl ? !vidEl.paused : (ytReady && yt.getPlayerState() === 1); }
+    function goTo(t, play){
+      guard = Date.now();
+      if (vidEl){
+        try { vidEl.currentTime = t; } catch(e){}
+        if (play){ var p = vidEl.play(); if (p && p.catch) p.catch(function(){}); }
+      } else if (ytReady){
+        yt.seekTo(t, true);
+        if (play) yt.playVideo();
+      }
+    }
+    function halt(){ if (vidEl) vidEl.pause(); else if (ytReady) yt.pauseVideo(); }
+    // YouTube: afspilleren laves, og YouTubes API hentes første gang, den skal bruges.
+    function withYt(fn, startAt){
+      if (ytReady){ fn(); return; }
+      ytWaits.push(fn);
+      if (yt) return;
+      playVideo(startAt || 0);
+      if (!frame) return;
+      function attach(){
+        yt = new YT.Player(frame, { events: { onReady: function(){
+          ytReady = true;
+          var w = ytWaits; ytWaits = [];
+          w.forEach(function(f){ f(); });
+        } } });
+      }
+      if (window.YT && window.YT.Player) attach();
+      else {
+        var old = window.onYouTubeIframeAPIReady;
+        window.onYouTubeIframeAPIReady = function(){ if (old) old(); attach(); };
+        var sc = document.createElement("script");
+        sc.src = "https://www.youtube.com/iframe_api";
+        document.head.appendChild(sc);
+      }
+    }
+    function begin(t){
+      if (vidEl) goTo(t, true);
+      else withYt(function(){ goTo(t, true); }, t);
+    }
+    function sayPart(i){ say("Stykke " + (i + 1) + " af " + segs.length + " · " + fmtT(segs[i].a) + "–" + fmtT(segs[i].b)); }
+    function tick(){
+      if (!curated || waiting >= 0 || !isPlaying() || Date.now() - guard < 1500) return;
+      var t = nowAt(), i, next = -1;
+      for (i = 0; i < segs.length; i++){
+        if (t >= segs[i].a - 0.5 && t < segs[i].b){ sayPart(i); return; }
+      }
+      for (i = 0; i < segs.length; i++){ if (segs[i].a > t){ next = i; break; } }
+      if (next < 0){
+        halt(); curated = false; segNext.hidden = true;
+        say("Den udvalgte version er slut.");
+        return;
+      }
+      if (C.segPause && t >= segs[0].a){
+        halt(); goTo(segs[next].a, false);
+        waiting = next; segNext.hidden = false;
+        say("Pause. Tryk på Næste stykke eller mellemrumstasten for at fortsætte med stykke " + (next + 1) + " af " + segs.length + ".");
+        return;
+      }
+      goTo(segs[next].a, true);
+      sayPart(next);
+    }
+    function nextPart(){
+      var n = waiting;
+      if (n < 0){
+        // Midt i et stykke: spring til starten af det næste.
+        if (!curated) return;
+        var t = nowAt();
+        for (var i = 0; i < segs.length; i++){ if (segs[i].a > t + 1){ n = i; break; } }
+        if (n < 0) return;
+      }
+      waiting = -1; segNext.hidden = true;
+      sayPart(n);
+      begin(segs[n].a);
+    }
+    byId("segPlay").addEventListener("click", function(){
+      curated = true; waiting = -1; segNext.hidden = true;
+      sayPart(0);
+      begin(segs[0].a);
+    });
+    segNext.addEventListener("click", nextPart);
+    byId("segFull").addEventListener("click", function(){
+      curated = false; waiting = -1; segNext.hidden = true;
+      say("Hele filmen afspilles.");
+      if (vidEl || canEmbed) begin(0); else playVideo(0);
+    });
+    byId("segFs").addEventListener("click", function(){
+      var el = segwrap;
+      if (document.fullscreenElement){ if (document.exitFullscreen) document.exitFullscreen(); }
+      else if (el.requestFullscreen) el.requestFullscreen();
+      else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+    });
+    document.addEventListener("keydown", function(e){
+      var tag = (e.target && e.target.tagName) || "";
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+      if ((e.key === " " || e.key === "Spacebar") && waiting >= 0){ e.preventDefault(); nextPart(); }
+      else if ((e.key === "n" || e.key === "N") && curated){ e.preventDefault(); nextPart(); }
+    });
+    if (vidEl) vidEl.addEventListener("timeupdate", tick);
+    setInterval(tick, 250);
+  }
+
   /* --- Talende billede: se billedet i fuld skærm, mens lyden spiller videre --- */
   var zoomBtn = byId("zoomBtn"), lb = byId("lightbox");
   if (zoomBtn && lb){
@@ -1579,6 +1733,8 @@ function buildPageHTML(s, opts){
   const id = s.videoId;
   const watch = id ? watchUrl(id) : '';
   const chapters = parseChapters(s.chaptersRaw).list;
+  // Udvalgte stykker gælder kun video på YouTube og videofil.
+  const segs = (s.mode === 'video' || s.mode === 'videofile') ? parseSegments(s.segmentsRaw).list : [];
   const textHtml = mdToHtml(s.text);
   const hasTranscript = !!s.transcript.trim();
   const transTitle = s.transTitle.trim() || (isPic ? 'Læs fortællingen' : 'Læs mere – udskrift af hele udsendelsen');
@@ -1661,6 +1817,25 @@ function buildPageHTML(s, opts){
       + '<div class="offline" role="status">Du er ikke på internettet, så videoen kan ikke afspilles lige nu.' + offlineTail + '</div>';
   }
 
+  /* Udvalgte stykker: knapper under afspilleren, og afspiller og knapper samles,
+     så de kan vises i fuld skærm sammen. */
+  if (segs.length){
+    const segTotal = segLength(segs.reduce((n, g) => n + g.b - g.a, 0));
+    const segBlock = '<div class="segbar" id="segbar">'
+      + '<div class="seg-btns">'
+      + '<button type="button" class="seg-btn" id="segPlay">' + ICON_PLAY + '<span>Afspil den udvalgte version' + (segTotal ? ' (' + segTotal + ')' : '') + '</span></button>'
+      + '<button type="button" class="seg-btn alt" id="segNext" hidden><span>Næste stykke</span></button>'
+      + '<button type="button" class="seg-btn alt" id="segFull"><span>Afspil hele filmen</span></button>'
+      + '<button type="button" class="seg-btn alt" id="segFs"><span>Fuld skærm</span></button>'
+      + '</div>'
+      + '<p class="seg-status" id="segStatus" role="status" aria-live="polite">Den udvalgte version består af '
+      + (segs.length === 1 ? 'ét stykke' : segs.length + ' stykker') + ' af filmen' + (s.segPause ? ' med pause imellem' : '') + '.</p>'
+      + '<p class="seg-lokal">Den udvalgte version kan kun afspilles, når kortet ligger på en hjemmeside.</p>'
+      + '<p class="seg-keys">Taster: <kbd>N</kbd> springer til næste stykke' + (s.segPause ? ', og <kbd>mellemrum</kbd> fortsætter efter en pause' : '') + '.</p>'
+      + '</div>';
+    playerBlock = '<div class="segwrap" id="segwrap">' + playerBlock + segBlock + '</div>';
+  }
+
   /* Om og kapitler */
   const hasOm = !!(textHtml || s.note.trim()), hasKap = chapters.length > 0;
   let colsBlock = '';
@@ -1732,6 +1907,7 @@ function buildPageHTML(s, opts){
     posterAlt: s.posterAlt, posterCredit: s.posterCredit, hasPoster: !!s.poster,
     omTitle: s.omTitle,
     text: s.text, note: s.note, chapters: chapters,
+    segments: segs, segPause: !!(segs.length && s.segPause),
     transcriptTitle: s.transTitle, transcript: s.transcript,
     ctas: s.ctas,
     homeMode: homeMode, homeLabel: s.homeLabel, homeUrl: s.homeUrl,
@@ -1743,7 +1919,7 @@ function buildPageHTML(s, opts){
   const ogDesc = stripMdToPlain(s.text, 200);
   const shareUrl = s.shareImage.trim();
   // Et talende billede afspilles af den samme lydafspiller som en podcast.
-  const runtimeConfig = { storeKey: 'mediekort:' + (dc.identifier || fileName) + ':pos', mode: isAudio ? 'audio' : s.mode, playLabel: playLabel, id: s.mode === 'video' ? id : '', title: pageTitle, filename: fileName, homeMode: homeMode, homeUrl: homeUrl };
+  const runtimeConfig = { storeKey: 'mediekort:' + (dc.identifier || fileName) + ':pos', mode: isAudio ? 'audio' : s.mode, playLabel: playLabel, id: s.mode === 'video' ? id : '', title: pageTitle, filename: fileName, homeMode: homeMode, homeUrl: homeUrl, segs: segs, segPause: !!(segs.length && s.segPause) };
   const taellerBlock = (s.taellerBlock && !isPreview) ? s.taellerBlock + '\n' : '';
   const aT = lighten(t.accent, 0.5);
 
@@ -1805,6 +1981,24 @@ function buildPageHTML(s, opts){
 + '.eyebrow{font-size:0.8em; letter-spacing:0.11em; text-transform:uppercase; font-weight:700; color:var(--accent-text); margin-bottom:10px;}\n'
 + 'h1{font-family:var(--serif); font-size:2.1em; line-height:1.2; margin:0 0 8px; color:var(--ink); font-weight:700;}\n'
 + '.metaline{font-size:0.95em; color:var(--muted); margin:0 0 6px;}\n'
++ '.segbar{margin-top:14px;}\n'
++ '.seg-btns{display:flex; flex-wrap:wrap; gap:10px;}\n'
++ '.seg-btn{display:inline-flex; align-items:center; gap:8px; font:inherit; font-weight:700; font-size:calc(15px * var(--fs)); min-height:46px; padding:8px 18px; border-radius:999px; border:2px solid var(--accent); background:var(--accent); color:var(--on-accent); cursor:pointer;}\n'
++ '.seg-btn.alt{background:var(--surface); color:var(--accent);}\n'
++ '.seg-btn:hover{text-decoration:underline;}\n'
++ '.seg-btn svg{width:18px; height:18px;}\n'
++ '.seg-btn[hidden]{display:none;}\n'
++ '.seg-status{margin:10px 0 0; font-weight:600; color:var(--ink);}\n'
++ '.seg-keys{margin:4px 0 0; font-size:calc(14px * var(--fs)); color:var(--muted);}\n'
++ '.seg-keys kbd{font:inherit; border:1px solid var(--line); border-radius:4px; padding:0 5px; background:var(--surface);}\n'
++ '.seg-lokal{display:none; margin:8px 0 0; color:var(--muted);}\n'
++ '.is-local .seg-lokal{display:block;}\n'
++ '.is-local #segPlay, .is-local #segNext{display:none;}\n'
++ '.segwrap:fullscreen{background:#000; display:flex; flex-direction:column; justify-content:center; padding:2vh 3vw; overflow:auto;}\n'
++ '.segwrap:fullscreen .player{width:min(100%, calc(80vh * 16 / 9)); margin:0 auto; border-radius:0;}\n'
++ '.segwrap:fullscreen .segbar{width:min(100%, calc(80vh * 16 / 9)); margin:12px auto 0;}\n'
++ '.segwrap:fullscreen .seg-status, .segwrap:fullscreen .seg-keys{color:#ddd;}\n'
++ '.segwrap:fullscreen .fallback, .segwrap:fullscreen .credit, .segwrap:fullscreen .offline{display:none;}\n'
 + '.player{position:relative; aspect-ratio:16/9; background:var(--accent-dark); border-radius:10px; overflow:hidden; margin-top:20px; box-shadow:0 4px 14px var(--shadow);}\n'
 + '.player svg.drawn, .player img.poster, .player iframe{position:absolute; inset:0; width:100%; height:100%; border:0;}\n'
 + '.player img.poster{object-fit:cover;}\n'
@@ -1963,6 +2157,8 @@ function readForm(){
   state.text = $('fText').value;
   state.note = $('fNote').value;
   state.chaptersRaw = $('fChapters').value;
+  state.segmentsRaw = $('fSegments').value;
+  state.segPause = $('fSegPause').checked;
   state.transTitle = $('fTransTitle').value;
   state.transcript = $('fTranscript').value;
   for (let i = 0; i < 3; i++){
@@ -2008,6 +2204,17 @@ function updateChapCheck(){
   $('chapCheck').innerHTML = html.join('');
 }
 
+// Længden af et stykke: sekunder under et minut, ellers minutter.
+function segLength(sec){ return sec < 60 ? sec + ' sek.' : fmtDuration(sec); }
+
+function updateSegCheck(){
+  const r = parseSegments(state.segmentsRaw);
+  const html = r.list.map((g, i) => '<li><span class="t">' + (i + 1) + '.</span><span>' + fmtTime(g.a) + ' – ' + fmtTime(g.b) + ' (' + segLength(g.b - g.a) + ')</span></li>');
+  r.bad.forEach(b => html.push('<li class="bad"><span class="t">?</span><span>Kan ikke læses: ' + escapeHtml(b) + '</span></li>'));
+  if (r.list.length) html.push('<li><span class="t">I alt</span><span>' + segLength(r.list.reduce((n, g) => n + g.b - g.a, 0)) + '</span></li>');
+  $('segCheck').innerHTML = html.join('');
+}
+
 function setMode(mode){
   state.mode = (mode === 'audio' || mode === 'videofile' || mode === 'picture') ? mode : 'video';
   const isPic = state.mode === 'picture';
@@ -2016,6 +2223,7 @@ function setMode(mode){
   $('videoFields').hidden = state.mode !== 'video';
   $('audioFields').hidden = !isAudioMode(state.mode);
   $('videoFileFields').hidden = state.mode !== 'videofile';
+  $('segFields').hidden = !(state.mode === 'video' || state.mode === 'videofile');
   $('picAudioTip').hidden = !isPic;
   $('picTransTip').hidden = !isPic;
   $('shareYtRow').hidden = state.mode !== 'video';
@@ -2087,6 +2295,8 @@ function onUrlInput(){
   if (el.tagName === 'SELECT' || el.type === 'checkbox') el.addEventListener('change', renderPreview);
 });
 $('fChapters').addEventListener('input', () => { readForm(); updateChapCheck(); renderPreview(); });
+$('fSegments').addEventListener('input', () => { readForm(); updateSegCheck(); renderPreview(); });
+$('fSegPause').addEventListener('change', renderPreview);
 $('fUrl').addEventListener('input', onUrlInput);
 let audioUrlTimer = null;
 $('fAudioUrl').addEventListener('input', () => { clearTimeout(audioUrlTimer); audioUrlTimer = setTimeout(testAudioUrl, 600); });
@@ -2193,6 +2403,8 @@ $('loadPage').addEventListener('change', async (e) => {
     $('fText').value = data.text || '';
     $('fNote').value = data.note || '';
     $('fChapters').value = chaptersToText(data.chapters);
+    $('fSegments').value = segmentsToText(data.segments);
+    $('fSegPause').checked = !!data.segPause;
     $('fTransTitle').value = data.transcriptTitle || '';
     $('fTranscript').value = data.transcript || '';
     (data.ctas || []).forEach((c, i) => {
@@ -2234,6 +2446,7 @@ $('loadPage').addEventListener('change', async (e) => {
     state.taellerBlock = extractTaellerBlock(text);
     readForm();
     updateChapCheck();
+    updateSegCheck();
     setMode(state.mode);
     if (state.mode === 'video') onUrlInput();
     if (isAudioMode(state.mode) && state.audioUrl) testAudioUrl();

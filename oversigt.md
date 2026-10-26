@@ -16,7 +16,7 @@ Byggerne laver en færdig fil, som kan gemmes, deles og åbnes uden internet. De
 | Før og Nu · Bygger | `foer-og-nu-bygger.html` | 2.1 | 2 | to billeder fra samme sted, rettet ind oven på hinanden, med skyder eller overtoning | Image |
 | Bogbygger | `bog-bygger.html` | 4.2 | 4 | e-bog med forside og kapitler | Text |
 | Lydfortælling · Bygger | `lydfortaelling-bygger.html` | 4.1 | 4 | lydafspiller med billede og tekst | Sound |
-| Mediekort · Bygger | `mediekort-bygger.html` | 1.4 | 1 | kort til en video, en podcast eller et talende billede | MovingImage eller Sound |
+| Mediekort · Bygger | `mediekort-bygger.html` | 1.5 | 1 | kort til en video, en podcast eller et talende billede | MovingImage eller Sound |
 | Præsentation · Bygger | `praesentation-bygger.html` | 1.1 | 1 | billedshow til foredrag og oplæg, med pile, fuld skærm og automatisk visning | Image |
 | Henvisning · Bygger | `henvisning-bygger.html` | 2.1 | 2 | "skilt" der sender videre til en side på nettet | Text (kan ændres) |
 | Samling · Bygger | `samling-bygger.html` | 2.1 | 2 | forside der binder 2–6 færdige filer sammen | Collection |
