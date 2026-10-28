@@ -30,6 +30,7 @@ define('HAENDELSER',    DATA_MAPPE . '/haendelser.log');
 define('INDSTILLINGER', DATA_MAPPE . '/indstillinger.json');
 define('LOGIN_FORSOEG', DATA_MAPPE . '/login-forsoeg.json');
 define('BRUGER_FIL',    DATA_MAPPE . '/brugere.json');        // redaktører, oprettet på admin-siden
+define('RTV_STATUS',    DATA_MAPPE . '/rtv-status.json');     // prikkerne i Roskilde TV's arbejdsliste
 define('FORENINGER_FIL', DATA_MAPPE . '/foreninger.json');   // registret over deltagende foreninger
 define('THUMB_MAPPE',   FIL_MAPPE . '/thumbs');               // små billeder til søgesiden (240 × 180 px)
 const THUMB_B = 240;
@@ -349,6 +350,10 @@ function laes_post(string $sti, string $navn): array
         'link'      => $link,
         'appformat' => som_tekst($data['format'] ?? $data['builder'] ?? ''),
     ];
+    /* Mediekort til en YouTube-video husker videoens id, så arbejdslisten
+       (rtv.php) selv kan sætte en grøn prik ved videoer med et mediekort. */
+    $vid = som_tekst($data['videoId'] ?? '');
+    if (preg_match('/^[A-Za-z0-9_-]{11}$/', $vid)) $post['video'] = $vid;
     foreach (DC_FELTER as $f) $post[$f] = som_tekst($dc[$f] ?? '');
     if ($post['title'] === '') $post['title'] = preg_replace('/\.html?$/i', '', $navn);
     return ['post' => $post];
@@ -1327,7 +1332,7 @@ function side_top(string $titel, string $sub, ?string $bruger, string $aktiv = '
     header('Referrer-Policy: same-origin');
     $nav = '';
     if ($bruger !== null) {
-        $pkt = [['index.php', 'Søgesiden', ''], ['upload.php', 'Læg filer op', 'upload']];
+        $pkt = [['index.php', 'Søgesiden', ''], ['upload.php', 'Læg filer op', 'upload'], ['rtv.php', 'Arbejdsliste', 'rtv']];
         if (er_admin($bruger)) $pkt[] = ['admin.php', 'Admin', 'admin'];
         $nav = '<nav aria-label="Menu"><ul>';
         foreach ($pkt as [$url, $txt, $id]) {

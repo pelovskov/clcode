@@ -8,7 +8,7 @@ start_session();
 
 /* Kun vores egne sider må man sendes videre til efter login. */
 $til = (string)($_GET['til'] ?? $_POST['til'] ?? 'upload.php');
-if (!in_array($til, ['upload.php', 'admin.php', 'kode.php'], true)) $til = 'upload.php';
+if (!in_array($til, ['upload.php', 'admin.php', 'kode.php', 'rtv.php'], true)) $til = 'upload.php';
 
 if (aktuel_bruger() !== null) {
     header('Location: ' . $til);

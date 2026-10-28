@@ -25,6 +25,10 @@ $ADMINS = [];
 $STANDARD_TITEL      = 'Søg i lokalhistorier';
 $STANDARD_UNDERTITEL = '';
 
+/* Hvor knappen «Lav mediekort» i Roskilde TV's arbejdsliste (rtv.php) skal
+   åbne Mediekort · Bygger. Normalt repoets adresse på GitHub Pages. */
+$MEDIEKORT_ADRESSE = 'https://pelovskov.github.io/clcode/mediekort-bygger.html';
+
 /* Siden lav-hash.php laver hashes til brugerlisten. Den gemmer intet.
    Sæt til false, når alle brugere er oprettet. */
 $TILLAD_HASH_SIDE = true;
