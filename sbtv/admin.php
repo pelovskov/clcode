@@ -1,7 +1,8 @@
 <?php
 /* =========================================================================
    Søgeindeks · Online — admin
-   Slet filer, genopbyg søgesiden, ret overskrift og se hvem der har gjort hvad.
+   Slet filer, genopbyg søgesiden, ret overskrift, styr redaktører og se hvem
+   der har gjort hvad. Kun for superadmins.
    Slettede filer lægges i data/papirkurv/, så de kan hentes tilbage med FTP.
    ========================================================================= */
 
@@ -10,6 +11,8 @@ $bruger = kraev_login(true);
 
 $besked = '';
 $fejl = '';
+$engangskode = '';      // vises kun én gang, lige efter den er lavet
+$engangsTil = '';
 
 function papirkurv_indhold(): array
 {
@@ -68,6 +71,60 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             });
             log_haendelse($bruger, 'ændrede overskriften');
             $besked = 'Overskriften er gemt.';
+        }
+
+        elseif ($handling === 'ny_bruger') {
+            $navn = mb_strtolower(trim((string)($_POST['navn'] ?? '')), 'UTF-8');
+            if (!gyldigt_brugernavn($navn)) {
+                $fejl = 'Brugernavnet skal være 2–30 tegn: små bogstaver, tal, punktum, bindestreg eller understreg.';
+            } elseif (isset(config_brugere()[$navn]) || isset(redaktoerer()[$navn])) {
+                $fejl = 'Der findes allerede en bruger med navnet "' . $navn . '".';
+            } else {
+                $kode = lav_engangskode();
+                $ok = med_laas(function () use ($navn, $kode, $bruger) {
+                    $r = redaktoerer();
+                    if (isset($r[$navn])) return false;
+                    $r[$navn] = ['hash' => lav_hash($kode), 'aktiv' => true, 'skal_skifte' => true,
+                                 'oprettet' => time(), 'oprettet_af' => $bruger];
+                    ksort($r);
+                    return skriv_json(BRUGER_FIL, $r);
+                });
+                if ($ok) {
+                    log_haendelse($bruger, 'oprettede redaktøren ' . $navn);
+                    $engangskode = $kode; $engangsTil = $navn;
+                } else {
+                    $fejl = 'Brugeren kunne ikke oprettes. Tjek rettighederne på mappen data/.';
+                }
+            }
+        }
+
+        elseif (in_array($handling, ['ny_kode', 'luk', 'genaabn'], true)) {
+            $navn = (string)($_POST['navn'] ?? '');
+            if (!er_redaktoer_fra_admin($navn)) {
+                $fejl = 'Brugeren findes ikke, eller den står i config.php og kan kun rettes der.';
+            } else {
+                $kode = $handling === 'ny_kode' ? lav_engangskode() : '';
+                $ok = med_laas(function () use ($navn, $handling, $kode) {
+                    $r = redaktoerer();
+                    if (!isset($r[$navn])) return false;
+                    if ($handling === 'ny_kode'){ $r[$navn]['hash'] = lav_hash($kode); $r[$navn]['skal_skifte'] = true; }
+                    if ($handling === 'luk'){ $r[$navn]['aktiv'] = false; $r[$navn]['lukket'] = time(); }
+                    if ($handling === 'genaabn'){ $r[$navn]['aktiv'] = true; unset($r[$navn]['lukket']); }
+                    return skriv_json(BRUGER_FIL, $r);
+                });
+                if (!$ok) {
+                    $fejl = 'Ændringen kunne ikke gemmes. Tjek rettighederne på mappen data/.';
+                } elseif ($handling === 'ny_kode') {
+                    log_haendelse($bruger, 'lavede ny engangskode til ' . $navn);
+                    $engangskode = $kode; $engangsTil = $navn;
+                } elseif ($handling === 'luk') {
+                    log_haendelse($bruger, 'lukkede redaktøren ' . $navn);
+                    $besked = $navn . ' er lukket og kan ikke logge ind længere.';
+                } else {
+                    log_haendelse($bruger, 'genåbnede redaktøren ' . $navn);
+                    $besked = $navn . ' er åbnet igen og kan logge ind med sin gamle adgangskode.';
+                }
+            }
         }
 
         elseif ($handling === 'toem') {
@@ -189,6 +246,62 @@ side_top('Admin', 'Ryd op, byg søgesiden forfra og ret overskriften.', $bruger,
 </section>
 <?php endif; ?>
 
+<section class="panel" aria-labelledby="h-brugere">
+  <h2 id="h-brugere">Brugere</h2>
+<?php if ($engangskode !== ''): ?>
+  <div class="besked" role="status">
+    <p>Engangskode til <strong><?= h($engangsTil) ?></strong>:</p>
+    <p style="font-size:1.5rem;font-family:ui-monospace,Menlo,Consolas,monospace;letter-spacing:.05em;margin:.4rem 0"><?= h($engangskode) ?></p>
+    <p>Giv koden til <?= h($engangsTil) ?> personligt eller i en sms. Den vises kun nu.
+    Første gang <?= h($engangsTil) ?> logger ind, skal vedkommende vælge sin egen adgangskode.</p>
+  </div>
+<?php endif; ?>
+  <p class="hint"><strong>Superadmins</strong> kan alt og står i config.php. <strong>Redaktører</strong>
+  kan lægge filer op og skifte deres egen adgangskode, men ikke slette filer eller styre brugere.</p>
+  <ul class="liste">
+<?php foreach (array_keys(config_brugere()) as $navn): ?>
+    <li>
+      <span class="hoved"><span class="t"><?= h($navn) ?></span>
+        <span class="m"><?= er_admin($navn) ? 'Superadmin' : 'Redaktør' ?> · står i config.php</span></span>
+    </li>
+<?php endforeach; ?>
+<?php foreach (redaktoerer() as $navn => $r):
+        if (isset(config_brugere()[$navn])) continue;
+        $status = empty($r['aktiv']) ? 'Lukket' . (!empty($r['lukket']) ? ' ' . dansk_tid((int)$r['lukket'], false) : '')
+                : (!empty($r['skal_skifte']) ? 'Har endnu ikke valgt sin egen adgangskode' : 'Aktiv'); ?>
+    <li>
+      <span class="hoved"><span class="t"><?= h($navn) ?></span>
+        <span class="m">Redaktør · <?= h($status) ?> · oprettet <?= h(dansk_tid((int)($r['oprettet'] ?? 0), false)) ?><?= !empty($r['oprettet_af']) ? ' af ' . h($r['oprettet_af']) : '' ?></span></span>
+      <span style="display:flex;gap:.5rem;flex-wrap:wrap">
+<?php if (!empty($r['aktiv'])): ?>
+        <form method="post" action="admin.php"><?= csrf_felt() ?><input type="hidden" name="handling" value="ny_kode"><input type="hidden" name="navn" value="<?= h($navn) ?>">
+          <button class="rolig" type="submit" aria-label="Lav ny engangskode til <?= h($navn) ?>">Ny engangskode</button></form>
+        <form method="post" action="admin.php" class="lukform" data-navn="<?= h($navn) ?>"><?= csrf_felt() ?><input type="hidden" name="handling" value="luk"><input type="hidden" name="navn" value="<?= h($navn) ?>">
+          <button class="slet" type="submit" aria-label="Luk <?= h($navn) ?>">Luk</button></form>
+<?php else: ?>
+        <form method="post" action="admin.php"><?= csrf_felt() ?><input type="hidden" name="handling" value="genaabn"><input type="hidden" name="navn" value="<?= h($navn) ?>">
+          <button class="rolig" type="submit" aria-label="Genåbn <?= h($navn) ?>">Genåbn</button></form>
+<?php endif; ?>
+      </span>
+    </li>
+<?php endforeach; ?>
+  </ul>
+
+  <form method="post" action="admin.php" style="margin-top:1.2rem">
+    <?= csrf_felt() ?>
+    <input type="hidden" name="handling" value="ny_bruger">
+    <div class="raekke">
+      <div>
+        <label class="felt" for="nyNavn">Opret ny redaktør – brugernavn</label>
+        <input class="felt" id="nyNavn" name="navn" type="text" maxlength="30" autocapitalize="none"
+               spellcheck="false" placeholder="fx bente" required pattern="[a-zæøå0-9][a-zæøå0-9._\-]{1,29}">
+      </div>
+      <div style="flex:0 0 auto"><button class="stor" type="submit">Opret redaktør</button></div>
+    </div>
+    <p class="hint">Der laves en engangskode, som du giver videre. Små bogstaver, tal, punktum og bindestreg.</p>
+  </form>
+</section>
+
 <section class="panel" aria-labelledby="h-titel">
   <h2 id="h-titel">Overskrift på søgesiden</h2>
   <form method="post" action="admin.php">
@@ -252,6 +365,9 @@ side_top('Admin', 'Ryd op, byg søgesiden forfra og ret overskriften.', $bruger,
 <script>
 document.querySelectorAll(".sletform").forEach(f => f.addEventListener("submit", e => {
   if (!confirm("Slet \"" + f.dataset.titel + "\"?\n\nFilen fjernes fra søgesiden og lægges i papirkurven.")) e.preventDefault();
+}));
+document.querySelectorAll(".lukform").forEach(f => f.addEventListener("submit", e => {
+  if (!confirm("Luk " + f.dataset.navn + "?\n\nBrugeren kan ikke logge ind, før du åbner den igen.")) e.preventDefault();
 }));
 const toem = document.getElementById("toemForm");
 if (toem) toem.addEventListener("submit", e => {
