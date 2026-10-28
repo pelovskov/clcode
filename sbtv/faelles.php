@@ -29,6 +29,7 @@ define('UPLOAD_LOG',    DATA_MAPPE . '/uploads.json');
 define('HAENDELSER',    DATA_MAPPE . '/haendelser.log');
 define('INDSTILLINGER', DATA_MAPPE . '/indstillinger.json');
 define('LOGIN_FORSOEG', DATA_MAPPE . '/login-forsoeg.json');
+define('BRUGER_FIL',    DATA_MAPPE . '/brugere.json');        // redaktører, oprettet på admin-siden
 define('FORENINGER_FIL', DATA_MAPPE . '/foreninger.json');   // registret over deltagende foreninger
 define('THUMB_MAPPE',   FIL_MAPPE . '/thumbs');               // små billeder til søgesiden (240 × 180 px)
 const THUMB_B = 240;
@@ -1140,7 +1141,14 @@ function start_session(): void
     session_start();
 }
 
-function brugerliste(): array
+/* ---- Brugere og roller ----
+   Superadmin: står i config.php ($BRUGERE og $ADMINS). Kan alt, også oprette
+   og lukke redaktører. Kan ikke fjernes fra hjemmesiden, så man aldrig kan
+   låse sig selv ude.
+   Redaktør: oprettes af en superadmin på admin-siden og gemmes i
+   data/brugere.json. Kan lægge filer op og skifte sin egen adgangskode. */
+
+function config_brugere(): array
 {
     global $BRUGERE;
     $ud = [];
@@ -1148,6 +1156,52 @@ function brugerliste(): array
         $ud[mb_strtolower(trim((string)$navn), 'UTF-8')] = (string)$hash;
     }
     return $ud;
+}
+
+function redaktoerer(): array
+{
+    $r = laes_json(BRUGER_FIL, []);
+    return is_array($r) ? $r : [];
+}
+
+/* Alle, der må logge ind lige nu: superadmins og åbne redaktører. */
+function brugerliste(): array
+{
+    $ud = config_brugere();
+    foreach (redaktoerer() as $navn => $r) {
+        if (!isset($ud[$navn]) && !empty($r['aktiv']) && !empty($r['hash'])) $ud[$navn] = (string)$r['hash'];
+    }
+    return $ud;
+}
+
+function er_redaktoer_fra_admin(string $bruger): bool
+{
+    return !isset(config_brugere()[$bruger]) && isset(redaktoerer()[$bruger]);
+}
+
+function skal_skifte_kode(string $bruger): bool
+{
+    if (!er_redaktoer_fra_admin($bruger)) return false;
+    return !empty(redaktoerer()[$bruger]['skal_skifte']);
+}
+
+function gyldigt_brugernavn(string $navn): bool
+{
+    return (bool)preg_match('/^[a-zæøå0-9][a-zæøå0-9._-]{1,29}$/u', $navn);
+}
+
+/* Engangskode: 12 tegn uden tegn, der ligner hinanden (0/o, 1/l/i). */
+function lav_engangskode(): string
+{
+    $tegn = 'abcdefghjkmnpqrstuvwxyz23456789';
+    $k = '';
+    for ($i = 0; $i < 12; $i++) $k .= $tegn[random_int(0, strlen($tegn) - 1)];
+    return substr($k, 0, 4) . '-' . substr($k, 4, 4) . '-' . substr($k, 8, 4);
+}
+
+function lav_hash(string $kode): string
+{
+    return password_hash($kode, PASSWORD_BCRYPT, ['cost' => 12]);
 }
 
 function tjek_kode(string $navn, string $kode): bool
@@ -1164,9 +1218,12 @@ function tjek_kode(string $navn, string $kode): bool
     return password_verify($kode, $hash);
 }
 
+/* Superadmin = bruger i config.php, som står i $ADMINS. Er $ADMINS tom, er alle
+   brugere i config.php superadmins. Redaktører fra admin-siden er det aldrig. */
 function er_admin(string $bruger): bool
 {
     global $ADMINS;
+    if (!isset(config_brugere()[$bruger])) return false;
     $admins = array_map(fn($a) => mb_strtolower((string)$a, 'UTF-8'), $ADMINS ?? []);
     return !$admins || in_array($bruger, $admins, true);
 }
@@ -1175,7 +1232,14 @@ function aktuel_bruger(): ?string
 {
     start_session();
     $b = $_SESSION['bruger'] ?? null;
-    return ($b !== null && isset(brugerliste()[$b])) ? $b : null;
+    if ($b === null) return null;
+    if (!isset(brugerliste()[$b])) {
+        /* Brugeren er lukket eller fjernet: login'et slutter med det samme og
+           kommer ikke tilbage, selv om brugeren senere bliver åbnet igen. */
+        unset($_SESSION['bruger']);
+        return null;
+    }
+    return $b;
 }
 
 function kraev_login(bool $admin = false): string
@@ -1183,6 +1247,11 @@ function kraev_login(bool $admin = false): string
     $b = aktuel_bruger();
     if ($b === null) {
         header('Location: login.php?til=' . rawurlencode(basename($_SERVER['SCRIPT_NAME'])));
+        exit;
+    }
+    /* En redaktør med engangskode skal vælge sin egen kode, før noget andet. */
+    if (skal_skifte_kode($b) && basename($_SERVER['SCRIPT_NAME']) !== 'kode.php') {
+        header('Location: kode.php');
         exit;
     }
     if ($admin && !er_admin($b)) {
@@ -1265,6 +1334,7 @@ function side_top(string $titel, string $sub, ?string $bruger, string $aktiv = '
             $nav .= '<li><a href="' . $url . '"' . ($id !== '' && $id === $aktiv ? ' aria-current="page"' : '')
                   . '>' . $txt . '</a></li>';
         }
+        $nav .= '<li><a href="kode.php"' . ($aktiv === 'kode' ? ' aria-current="page"' : '') . '>Skift adgangskode</a></li>';
         $nav .= '<li class="ud"><a href="logout.php">Log ud</a> <span>(' . h($bruger) . ')</span></li></ul></nav>';
     }
     ?><!DOCTYPE html>

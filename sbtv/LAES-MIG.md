@@ -10,7 +10,8 @@ singlefile-HTML fra Byggerne, henvisninger og videokort.
 |---|---|
 | `index.php` | Søgesiden. Den er offentlig. |
 | `upload.php` | Læg filer op (kræver login). |
-| `admin.php` | Slet filer, byg søgesiden forfra, ret overskrift, se hvem der har gjort hvad. |
+| `admin.php` | Kun for superadmins: slet filer, byg søgesiden forfra, ret overskrift, opret og luk redaktører, se hvem der har gjort hvad. |
+| `kode.php` | Skift din egen adgangskode. Redaktører med en engangskode sendes hertil første gang. |
 | `login.php`, `logout.php` | Log ind og ud. |
 | `lav-hash.php` | Laver adgangskode-linjer til `config.php`. Gemmer intet. Det samme kan gøres uden server med `tools/password-hash.html`. |
 | `config.php` | Brugere og indstillinger. Den eneste fil, du normalt retter i. |
@@ -18,7 +19,7 @@ singlefile-HTML fra Byggerne, henvisninger og videokort.
 | `filer/` | Alle de filer, der er lagt op, plus en færdig `soegeside.html`. |
 | `filer/thumbs/` | Små billeder (240 × 180 px) til søgesiden og forsiden. Laves af sig selv. |
 | `grafik/` | Foreningernes logoer, fx `grafik/rmu.png`. Skal kunne ses udefra, så de må **ikke** ligge i `data/`. |
-| `data/` | Indeks, log, papirkurv og `foreninger.json`. Spærret for adgang udefra. |
+| `data/` | Indeks, log, papirkurv, `foreninger.json` og `brugere.json` med redaktørerne. Spærret for adgang udefra. |
 
 ## Sådan sætter du det op
 
@@ -26,13 +27,29 @@ singlefile-HTML fra Byggerne, henvisninger og videokort.
    `config.php` på webhotellet. Selve `config.php` med adgangskoderne ligger **ikke** i
    repoet, fordi det er offentligt. Det samme gælder `data/` (indeks, log og login-forsøg),
    som serveren selv opretter og fylder.
-2. Åbn `https://ditdomæne.dk/arkiv/lav-hash.php`, skriv brugernavn og adgangskode,
-   og kopiér den linje, du får.
-3. Sæt linjen ind i `config.php` under `$BRUGERE`. Gentag for hver bruger.
-   Dine eksisterende bcrypt-hashes (`$2b$` eller `$2y$`, cost 12) kan bruges direkte.
-4. Skal kun nogle af brugerne kunne slette, så skriv dem i `$ADMINS`, fx `['kim']`.
-5. Sæt `$TILLAD_HASH_SIDE = false;`, når alle er oprettet.
-6. Log ind via `upload.php`, og ret overskriften på admin-siden.
+2. Opret superadmins: Lav en hash med `tools/password-hash.html` på din egen computer
+   eller med `https://ditdomæne.dk/arkiv/lav-hash.php`, og kopiér den linje, du får.
+3. Sæt linjen ind i `config.php` under `$BRUGERE`, og skriv brugernavnet i `$ADMINS`,
+   fx `['poul']`. Dine eksisterende bcrypt-hashes (`$2b$` eller `$2y$`, cost 12) kan bruges direkte.
+4. Sæt `$TILLAD_HASH_SIDE = false;`, når superadmins er oprettet.
+5. Log ind via `upload.php`, og ret overskriften på admin-siden.
+6. Opret redaktører på admin-siden under **Brugere** (se nedenfor).
+
+## Brugere og roller
+
+| | Superadmin | Redaktør |
+|---|---|---|
+| Lægge filer op | ✓ | ✓ |
+| Skifte sin egen adgangskode | i `config.php` | ✓ på siden *Skift adgangskode* |
+| Slette filer, bygge søgesiden forfra, rette overskrift | ✓ | – |
+| Oprette, lukke og genåbne redaktører | ✓ | – |
+
+- **Superadmins** står i `config.php` i både `$BRUGERE` og `$ADMINS`. De kan ikke ændres eller fjernes fra hjemmesiden, så man aldrig kan låse sig selv ude.
+- ⚠️ **Er `$ADMINS` tom, er alle brugere i `config.php` superadmins.** Skriv derfor altid superadmins i `$ADMINS`.
+- **Redaktører** oprettes på admin-siden under **Brugere**: Skriv et brugernavn, og tryk *Opret redaktør*. Der vises en **engangskode** én gang. Giv den videre personligt eller i en sms. Første gang redaktøren logger ind, skal vedkommende vælge sin egen adgangskode på mindst 10 tegn. Du kender aldrig deres rigtige kode.
+- **Glemt kode:** tryk *Ny engangskode* ud for brugeren.
+- **Luk:** Brugeren bliver logget ud med det samme og kan ikke logge ind, før en superadmin trykker *Genåbn*. Brugeren slettes ikke, så loggen viser stadig, hvem der har gjort hvad.
+- Redaktørerne gemmes i `data/brugere.json` med bcrypt-hashes. Filen ligger aldrig i repoet.
 
 ## Tjek at data-mappen er spærret
 

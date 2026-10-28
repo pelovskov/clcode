@@ -6,7 +6,8 @@
    Dette er den eneste fil, du normalt skal rette i.
    ========================================================================= */
 
-/* Brugere der må logge ind og lægge filer op.
+/* Superadmins. De kan alt, også oprette og lukke redaktører på admin-siden.
+   Redaktører oprettes på admin-siden og står IKKE her.
    Format:  'brugernavn' => 'bcrypt-hash',
    Lav hashen med lav-hash.php (eller dit eget hash-værktøj, cost 12).
    Skriv brugernavne med små bogstaver. */
@@ -16,8 +17,8 @@ $BRUGERE = [
     // 'anne' => '$2y$12$................................................',
 ];
 
-/* Hvem må bruge admin-siden (slette filer, genopbygge, ændre overskrift)?
-   Tom liste = alle brugere ovenfor.  Eksempel: $ADMINS = ['kim']; */
+/* Hvem af brugerne ovenfor er superadmins? Skriv dem altid her.
+   OBS: Tom liste = alle brugere ovenfor er superadmins.  Eksempel: $ADMINS = ['kim']; */
 $ADMINS = [];
 
 /* Overskrift og undertekst, indtil de bliver ændret på admin-siden. */

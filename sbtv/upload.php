@@ -22,6 +22,12 @@ if ($bruger === null) {
     if ($erAjax) svar_json(['ok' => false, 'fejl' => 'Du er ikke logget ind mere. Genindlæs siden og log ind igen.']);
     kraev_login();
 }
+/* En redaktør med engangskode skal vælge sin egen kode, før der kan lægges op. */
+if (skal_skifte_kode($bruger)) {
+    if ($erAjax) svar_json(['ok' => false, 'fejl' => 'Vælg først din egen adgangskode under «Skift adgangskode».']);
+    header('Location: kode.php');
+    exit;
+}
 
 /* ---- Én fil ---- */
 function haandter_fil(string $origNavn, string $tmp, int $fejlkode, string $bruger): array
