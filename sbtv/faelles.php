@@ -1417,6 +1417,16 @@ input.felt,select.felt{font-family:inherit;font-size:1.05rem;width:100%;padding:
 
 .liste{list-style:none;margin:0;padding:0}
 .liste > li{display:flex;gap:1rem;align-items:center;padding:.8rem .7rem;border-radius:8px}
+.liste > li[hidden]{display:none}
+.hop{display:flex;flex-wrap:wrap;gap:.3rem .9rem;align-items:center;margin:0 0 1rem;font-size:1rem}
+.hop span{color:var(--muted)}
+details.filvis{margin-top:.6rem}
+details.filvis > summary{cursor:pointer;font-weight:bold;color:var(--accent);padding:.5rem 0;min-height:44px}
+.optil{position:fixed;right:1rem;bottom:1rem;z-index:20;display:flex;align-items:center;gap:.45rem;font-family:inherit;font-size:1.05rem;font-weight:bold;min-height:48px;padding:.55rem 1.15rem;background:var(--accent);color:#fff;border:2px solid #fff;border-radius:999px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+.optil[hidden]{display:none}
+.optil:hover{text-decoration:underline}
+.optil svg{width:1.25rem;height:1.25rem}
+@media print{.optil{display:none}}
 .liste > li:nth-child(odd){background:var(--paper)}
 .liste > li:nth-child(even){background:var(--paper-dim)}
 .liste .hoved{flex:1 1 auto;min-width:0}
@@ -1470,7 +1480,20 @@ function side_bund(): void
 {
     ?>
 </main>
+<button type="button" class="optil" id="optil" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 14l6-6 6 6"/></svg>Til toppen</button>
 <script>
+/* Knappen "Til toppen", når man er rullet langt ned på en lang side. */
+(function(){
+  const knap = document.getElementById("optil");
+  function tjek(){ knap.hidden = window.scrollY < window.innerHeight * 1.5; }
+  window.addEventListener("scroll", tjek, {passive:true});
+  knap.addEventListener("click", () => {
+    const rolig = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    window.scrollTo({top:0, behavior: rolig ? "auto" : "smooth"});
+    const h = document.querySelector("h1, h2"); if (h){ h.setAttribute("tabindex", "-1"); h.focus({preventScroll:true}); }
+  });
+  tjek();
+})();
 (function(){
   const knapper = document.querySelectorAll(".tekststr button");
   function saet(v, gem){
