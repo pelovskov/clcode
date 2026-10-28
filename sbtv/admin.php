@@ -181,6 +181,15 @@ side_top('Admin', 'Ryd op, byg søgesiden forfra og ret overskriften.', $bruger,
 <script>document.getElementById("engangskode").focus();</script>
 <?php endif; ?>
 
+<nav class="hop" aria-label="Gå til et afsnit">
+  <span>Gå til:</span>
+  <a href="#h-filer">Filer</a>
+  <a href="#h-brugere">Brugere</a>
+  <a href="#h-titel">Overskrift</a>
+  <a href="#h-vedl">Vedligeholdelse</a>
+  <a href="#h-log">Hvem har gjort hvad</a>
+</nav>
+
 <?php if ($ukendte || $forsvundne): ?>
 <div class="besked fejl-b">
   <p><?php
@@ -212,6 +221,8 @@ side_top('Admin', 'Ryd op, byg søgesiden forfra og ret overskriften.', $bruger,
     </div>
   </div>
   <p class="hint" id="adminAntal" role="status" aria-live="polite"></p>
+  <details class="filvis" id="filVis">
+  <summary>Vis alle <?= count($poster) ?> filer</summary>
   <ul class="liste" id="adminListe">
 <?php foreach ($poster as $navn => $p):
         $l = $log[$navn] ?? null;
@@ -234,6 +245,7 @@ side_top('Admin', 'Ryd op, byg søgesiden forfra og ret overskriften.', $bruger,
     </li>
 <?php endforeach; ?>
   </ul>
+  </details>
 <?php endif; ?>
 </section>
 
@@ -386,10 +398,13 @@ if (toem) toem.addEventListener("submit", e => {
   const soeg = document.getElementById("adminSoeg");
   const sort = document.getElementById("adminSort");
   const antal = document.getElementById("adminAntal");
+  const fold = document.getElementById("filVis");
   const alle = Array.from(liste.children);
 
+  /* Alle ord skal findes, men ikke nødvendigvis ved siden af hinanden. */
   function vis(){
     const q = soeg.value.trim().toLowerCase();
+    const ord = q.split(/\s+/).filter(Boolean);
     const s = sort.value;
     const raekker = alle.slice().sort((a, b) => {
       if (s === "nyeste") return b.dataset.tid - a.dataset.tid;
@@ -398,12 +413,13 @@ if (toem) toem.addEventListener("submit", e => {
     });
     let n = 0;
     raekker.forEach(li => {
-      const med = !q || li.dataset.soeg.indexOf(q) !== -1;
+      const med = ord.every(w => li.dataset.soeg.indexOf(w) !== -1);
       li.hidden = !med;
       if (med) n++;
       liste.appendChild(li);
     });
-    antal.textContent = q ? "Viser " + n + " af " + alle.length : "";
+    antal.textContent = q ? (n ? "Viser " + n + " af " + alle.length + " filer." : "Ingen filer passer til søgningen.") : "";
+    if (q) fold.open = true;
   }
   soeg.addEventListener("input", vis);
   sort.addEventListener("change", vis);
