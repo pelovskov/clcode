@@ -133,7 +133,7 @@
 
 <div class="topbar">
   <h1>Mediekort · Bygger</h1>
-  <span>Lav et kort til en video, en podcast eller et talende billede, med kapitler og udskrift · kører lokalt, ingen server · version 1.5 · fri udgave</span>
+  <span>Lav et kort til en video, en podcast eller et talende billede, med kapitler og udskrift · kører lokalt, ingen server · version 1.6 · fri udgave</span>
 </div>
 
 <div class="layout">
@@ -437,7 +437,7 @@
 
 <script>
 /* =======================================================================
-   Mediekort · Bygger — version 1.5
+   Mediekort · Bygger — version 1.6
    1.1: videofil fra fx pCloud.
    1.2: "Talende billede" (mode 'picture'): billedet i op til 2000 px i sin
         egen form, fuld skærm-visning, lille favicon, felt til billedets ophav,
@@ -2463,6 +2463,21 @@ $('generateBtn').addEventListener('click', async () => {
 /* ---------- Start ---------- */
 selectTheme('vinter');
 setMode('video');
+
+// Åbnet fra Roskilde TV's arbejdsliste, fx mediekort-bygger.html?yt=VIDEO-ID&titel=…:
+// videoen og titlen udfyldes med det samme. Kun et gyldigt YouTube-id bruges.
+(function(){
+  let p;
+  try { p = new URLSearchParams(location.search); } catch (e) { return; }
+  const yt = (p.get('yt') || '').trim();
+  if (!/^[A-Za-z0-9_-]{11}$/.test(yt)) return;
+  setMode('video');
+  $('fUrl').value = 'https://www.youtube.com/watch?v=' + yt;
+  onUrlInput();
+  const titel = (p.get('titel') || '').trim().slice(0, 200);
+  if (titel && !$('fTitle').value.trim()) $('fTitle').value = titel;
+  renderPreview();
+})();
 /* ---- Advarsel, før man forlader siden uden at have gemt ----
    Har man skrevet eller lagt noget ind siden sidst, filen blev gemt, spørger
    browseren, om man vil forlade siden. Når filen gemmes (.html), forsvinder

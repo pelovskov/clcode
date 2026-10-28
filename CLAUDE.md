@@ -63,6 +63,8 @@ Efter en ændring skal du beskrive, hvordan jeg selv kan afprøve den i browsere
 
 - **Den frie udgave** (`fri/`) laves af opskriften `fri/lav-fri-udgave.py` ud fra de almindelige byggere. Når en bygger eller Søgeside · Bygger ændres, køres opskriften igen (`python3 fri/lav-fri-udgave.py`), så den frie udgave følger med. Ret aldrig i de lavede filer i `fri/` i hånden. Kun `fri/index.html`, `fri/LAES-MIG.md` og huskesedlerne `fri/vejledning-*.html` er skrevet i hånden. Manuskripterne til screencasts ligger i `vejledninger/`. Ændres en bygger, så trinene ikke passer længere, skal huskesedlen og manuskriptet rettes med. Opskriften laver også `fri/lokalhistorier-fri-udgave.zip`, som kan hentes fra forsiden, så kør den igen, også når forsiden eller vejledningen er rettet.
 
+- `tools/rtv-arbejdsliste.html` laves af `tools/lav-rtv-arbejdsliste.py` ud fra det offentlige `roskilde-tv-videoarkiv.html`. Når arkivet opdateres, køres opskriften igen. Arbejdslisten (med knappen «Lav mediekort») linkes kun fra dashboardet, aldrig fra portalen. Knappen bruger `mediekort-bygger.html?yt=…&titel=…`, så den adresse skal Mediekort blive ved med at forstå.
+
 - `tools/feltoptager.html` laver lydfortællinger i **Lydfortælling · Byggerens filformat** og skriver selv `builderVersion`. Tælles `BUILDER_VERSION` op i `lydfortaelling-bygger.html`, skal `builderVersion` i Feltoptageren rettes med, ellers afviser byggeren filerne.
 
 - `billedarkiv/billedarkiv.html` eksporterer albums med en `.json`-fil ved hvert billede, som **Album · Bygger** læser (kendes på `exportedFilename`). Ændres feltnavnene i eksporten, skal `album-bygger.html` og standardens afsnit 8.1 rettes med.

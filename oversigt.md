@@ -16,7 +16,7 @@ Byggerne laver en færdig fil, som kan gemmes, deles og åbnes uden internet. De
 | Før og Nu · Bygger | `foer-og-nu-bygger.html` | 2.1 | 2 | to billeder fra samme sted, rettet ind oven på hinanden, med skyder eller overtoning | Image |
 | Bogbygger | `bog-bygger.html` | 4.2 | 4 | e-bog med forside og kapitler | Text |
 | Lydfortælling · Bygger | `lydfortaelling-bygger.html` | 4.1 | 4 | lydafspiller med billede og tekst | Sound |
-| Mediekort · Bygger | `mediekort-bygger.html` | 1.5 | 1 | kort til en video, en podcast eller et talende billede | MovingImage eller Sound |
+| Mediekort · Bygger | `mediekort-bygger.html` | 1.6 | 1 | kort til en video, en podcast eller et talende billede | MovingImage eller Sound |
 | Præsentation · Bygger | `praesentation-bygger.html` | 1.1 | 1 | billedshow til foredrag og oplæg, med pile, fuld skærm og automatisk visning | Image |
 | Henvisning · Bygger | `henvisning-bygger.html` | 2.1 | 2 | "skilt" der sender videre til en side på nettet | Text (kan ændres) |
 | Samling · Bygger | `samling-bygger.html` | 2.1 | 2 | forside der binder 2–6 færdige filer sammen | Collection |
@@ -36,6 +36,7 @@ Værktøjerne ligger i mappen `tools/`. De følger ikke Builder-standarden, men 
 | Lydlab | `tools/lydlab.html` | 1 | gør en lydoptagelse klar: mono, jævn lyd og fast lydstyrke, ud kommer en mp3 |
 | Fotolab | `tools/fotolab.html` | 4 | farve-effekter, billedformat og Polaroid med håndskrevet tekst |
 | Lydudtrækker | `tools/lydudtraekker.html` | – | trækker lyden ud af en HTML-fil som mp3, når den oprindelige lydfil er væk |
+| Roskilde TV · arbejdsliste | `tools/rtv-arbejdsliste.html` | – | alle Roskilde TV's udsendelser med knappen «Lav mediekort», der åbner Mediekort med videoen udfyldt. Laves af `tools/lav-rtv-arbejdsliste.py` ud fra `roskilde-tv-videoarkiv.html` |
 | Billedudtrækker | `tools/billedudtraekker.html` | 1.0 | trækker billederne ud af en HTML-fil, fx et gammelt album, som billedfiler eller samlet i en zip-fil |
 | Musikpakke · Bygger | `tools/musikpakke-bygger.html` | 1 | laver en offline musik-app (PWA) med 3–5 samlinger som zip-fil |
 | Skyggeramme | `tools/skyggeramme.html` | – | sætter en blød skygge om et skærmbillede til wikien |
@@ -65,6 +66,7 @@ I mappen `fri/` ligger **Lokalhistorier · fri udgave** til enkeltpersoner, skol
 | Navn | Fil | Hvad det er |
 |---|---|---|
 | Dashboard | `bygger-dash.html` | forside med links til byggere og værktøjer |
+| Roskilde TV · videoarkiv | `roskilde-tv-videoarkiv.html` | den offentlige liste over Roskilde TV's 3.048 udsendelser, uden knapper. Kan linkes fra portalen |
 | Søgeindeks · Online | `sbtv/` | den samme søgeside som Søgeside · Bygger, men med login, upload og administration på et webhotel med PHP. Se `sbtv/LAES-MIG.md` |
 | Builder-standarden | `builder-standard.md` | fælles regler for byggerne, version 2.13 |
 | Projektresumé | `projekt-resume.md` | kort fortælling om hele projektet til idéudvikling og sparring med mennesker og Claude |
