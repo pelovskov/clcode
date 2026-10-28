@@ -36,7 +36,7 @@ Værktøjerne ligger i mappen `tools/`. De følger ikke Builder-standarden, men 
 | Lydlab | `tools/lydlab.html` | 1 | gør en lydoptagelse klar: mono, jævn lyd og fast lydstyrke, ud kommer en mp3 |
 | Fotolab | `tools/fotolab.html` | 4 | farve-effekter, billedformat og Polaroid med håndskrevet tekst |
 | Lydudtrækker | `tools/lydudtraekker.html` | – | trækker lyden ud af en HTML-fil som mp3, når den oprindelige lydfil er væk |
-| Roskilde TV · arbejdsliste | `tools/rtv-arbejdsliste.html` | – | alle Roskilde TV's udsendelser med knappen «Lav mediekort», der åbner Mediekort med videoen udfyldt. Laves af `tools/lav-rtv-arbejdsliste.py` ud fra `roskilde-tv-videoarkiv.html` |
+| Roskilde TV · arbejdsliste | `tools/rtv-arbejdsliste.html` | – | alle Roskilde TV's udsendelser med knappen «Lav mediekort», der åbner Mediekort med videoen udfyldt. Laves af `tools/lav-rtv-arbejdsliste.py` ud fra `roskilde-tv-videoarkiv.html`. Udgaven med fælles prikker ligger i søgeindekset som `sbtv/rtv.php` |
 | Billedudtrækker | `tools/billedudtraekker.html` | 1.0 | trækker billederne ud af en HTML-fil, fx et gammelt album, som billedfiler eller samlet i en zip-fil |
 | Musikpakke · Bygger | `tools/musikpakke-bygger.html` | 1 | laver en offline musik-app (PWA) med 3–5 samlinger som zip-fil |
 | Skyggeramme | `tools/skyggeramme.html` | – | sætter en blød skygge om et skærmbillede til wikien |

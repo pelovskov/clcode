@@ -263,7 +263,7 @@ side_top('Admin', 'Ryd op, byg søgesiden forfra og ret overskriften.', $bruger,
 <section class="panel" aria-labelledby="h-brugere">
   <h2 id="h-brugere">Brugere</h2>
   <p class="hint"><strong>Superadmins</strong> kan alt og står i config.php. <strong>Redaktører</strong>
-  kan lægge filer op og skifte deres egen adgangskode, men ikke slette filer eller styre brugere.</p>
+  kan lægge filer op, sætte prikker i arbejdslisten og skifte deres egen adgangskode, men ikke slette filer eller styre brugere.</p>
   <ul class="liste">
 <?php foreach (array_keys(config_brugere()) as $navn): ?>
     <li>

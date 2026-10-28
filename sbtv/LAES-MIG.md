@@ -11,6 +11,8 @@ singlefile-HTML fra Byggerne, henvisninger og videokort.
 | `index.php` | Søgesiden. Den er offentlig. |
 | `upload.php` | Læg filer op (kræver login). |
 | `admin.php` | Kun for superadmins: slet filer, byg søgesiden forfra, ret overskrift, opret og luk redaktører, se hvem der har gjort hvad. |
+| `rtv.php` | Roskilde TV's arbejdsliste med fælles prikker: rød (bør have et mediekort), gul (i gang) og grøn (færdig). Kræver login. Viser `rtv-skabelon.html`. |
+| `rtv-skabelon.html` | Selve listen over Roskilde TV's udsendelser. Laves af `tools/lav-rtv-arbejdsliste.py` i repoet. Ret ikke i hånden. |
 | `kode.php` | Skift din egen adgangskode. Redaktører med en engangskode sendes hertil første gang. |
 | `login.php`, `logout.php` | Log ind og ud. |
 | `lav-hash.php` | Laver adgangskode-linjer til `config.php`. Gemmer intet. Det samme kan gøres uden server med `tools/password-hash.html`. |
@@ -19,7 +21,7 @@ singlefile-HTML fra Byggerne, henvisninger og videokort.
 | `filer/` | Alle de filer, der er lagt op, plus en færdig `soegeside.html`. |
 | `filer/thumbs/` | Små billeder (240 × 180 px) til søgesiden og forsiden. Laves af sig selv. |
 | `grafik/` | Foreningernes logoer, fx `grafik/rmu.png`. Skal kunne ses udefra, så de må **ikke** ligge i `data/`. |
-| `data/` | Indeks, log, papirkurv, `foreninger.json` og `brugere.json` med redaktørerne. Spærret for adgang udefra. |
+| `data/` | Indeks, log, papirkurv, `foreninger.json`, `brugere.json` med redaktørerne og `rtv-status.json` med prikkerne. Spærret for adgang udefra. |
 
 ## Sådan sætter du det op
 
@@ -40,6 +42,7 @@ singlefile-HTML fra Byggerne, henvisninger og videokort.
 | | Superadmin | Redaktør |
 |---|---|---|
 | Lægge filer op | ✓ | ✓ |
+| Se og sætte prikker i arbejdslisten (`rtv.php`) | ✓ | ✓ |
 | Skifte sin egen adgangskode | i `config.php` | ✓ på siden *Skift adgangskode* |
 | Slette filer, bygge søgesiden forfra, rette overskrift | ✓ | – |
 | Oprette, lukke og genåbne redaktører | ✓ | – |
@@ -50,6 +53,20 @@ singlefile-HTML fra Byggerne, henvisninger og videokort.
 - **Glemt kode:** tryk *Ny engangskode* ud for brugeren.
 - **Luk:** Brugeren bliver logget ud med det samme og kan ikke logge ind, før en superadmin trykker *Genåbn*. Brugeren slettes ikke, så loggen viser stadig, hvem der har gjort hvad.
 - Redaktørerne gemmes i `data/brugere.json` med bcrypt-hashes. Filen ligger aldrig i repoet.
+
+## Roskilde TV's arbejdsliste med prikker
+
+`rtv.php` viser alle Roskilde TV's udsendelser for dem, der er logget ind. Hver video har en prik:
+
+- **Rød:** bør have et mediekort.
+- **Gul:** mediekortet er ved at blive lavet. Navn og dato står ved prikken.
+- **Grøn:** færdig og lagt i søgeindekset. Grøn kommer **af sig selv**, når der ligger et mediekort til videoen i søgeindekset.
+
+Tryk på prikken for at skifte farve, eller hold musen over en video og tryk **R**, **Y**, **G** eller **0**. Prikkerne gemmes i `data/rtv-status.json`, og alle, der er logget ind, ser de samme. Siden henter nye prikker hvert minut.
+
+Knappen *Lav mediekort* åbner Mediekort · Bygger på adressen i `$MEDIEKORT_ADRESSE` i `config.php`, normalt repoets GitHub Pages.
+
+Efter opdateringen: Tryk én gang på **Byg søgesiden forfra** på admin-siden, så de mediekort, der allerede ligger i søgeindekset, også giver grønne prikker.
 
 ## Tjek at data-mappen er spærret
 
