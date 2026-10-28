@@ -166,6 +166,20 @@ side_top('Admin', 'Ryd op, byg søgesiden forfra og ret overskriften.', $bruger,
 <?php if ($fejl !== ''): ?>
 <div class="besked fejl-b" role="alert"><p><?= h($fejl) ?></p></div>
 <?php endif; ?>
+<?php if ($engangskode !== ''): ?>
+<div class="besked" role="status" id="engangskode" tabindex="-1">
+  <p>Engangskode til <strong><?= h($engangsTil) ?></strong>:</p>
+  <p style="font-size:1.5rem;font-family:ui-monospace,Menlo,Consolas,monospace;letter-spacing:.05em;margin:.4rem 0"><?= h($engangskode) ?></p>
+  <p>Giv koden til <?= h($engangsTil) ?> personligt eller i en sms. Den vises kun nu.
+    Første gang <?= h($engangsTil) ?> logger ind, skal vedkommende vælge sin egen adgangskode.</p>
+<?php $loginAdr = ((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http') . '://'
+        . ($_SERVER['HTTP_HOST'] ?? '') . rtrim(dirname($_SERVER['SCRIPT_NAME']), '/') . '/login.php'; ?>
+  <label class="felt" for="smsTekst">Tekst, du kan kopiere og sende</label>
+  <textarea class="felt" id="smsTekst" rows="3" readonly style="width:100%;font-family:inherit;font-size:1rem"
+>Log ind på <?= h($loginAdr) ?> med brugernavnet <?= h($engangsTil) ?> og engangskoden <?= h($engangskode) ?> – du bliver bedt om at vælge din egen adgangskode.</textarea>
+</div>
+<script>document.getElementById("engangskode").focus();</script>
+<?php endif; ?>
 
 <?php if ($ukendte || $forsvundne): ?>
 <div class="besked fejl-b">
@@ -248,14 +262,6 @@ side_top('Admin', 'Ryd op, byg søgesiden forfra og ret overskriften.', $bruger,
 
 <section class="panel" aria-labelledby="h-brugere">
   <h2 id="h-brugere">Brugere</h2>
-<?php if ($engangskode !== ''): ?>
-  <div class="besked" role="status">
-    <p>Engangskode til <strong><?= h($engangsTil) ?></strong>:</p>
-    <p style="font-size:1.5rem;font-family:ui-monospace,Menlo,Consolas,monospace;letter-spacing:.05em;margin:.4rem 0"><?= h($engangskode) ?></p>
-    <p>Giv koden til <?= h($engangsTil) ?> personligt eller i en sms. Den vises kun nu.
-    Første gang <?= h($engangsTil) ?> logger ind, skal vedkommende vælge sin egen adgangskode.</p>
-  </div>
-<?php endif; ?>
   <p class="hint"><strong>Superadmins</strong> kan alt og står i config.php. <strong>Redaktører</strong>
   kan lægge filer op og skifte deres egen adgangskode, men ikke slette filer eller styre brugere.</p>
   <ul class="liste">
