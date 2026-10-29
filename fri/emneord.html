@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Forslag til emneord · version 1.0 · fri udgave. Laves af fri/lav-fri-udgave.py ud fra tools/emneord.html. Ret ikke i hånden. -->
+<title>Forslag til emneord · fri udgave</title>
+<style>
+  :root{
+    --paper:#EDE7D8;
+    --paper-dim:#E2DBC8;
+    --card:#FBF8EF;
+    --ink:#211E19;
+    --rust:#9A4630;      /* 6,0:1 mod papir */
+    --moss:#47543C;
+    --hint:#57524A;      /* 6,4:1 mod papir */
+    --line:#CBC2A8;
+    --ok:#2F5D34;
+    --serif:Georgia,'Iowan Old Style','Palatino Linotype',Palatino,serif;
+    --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{font-size:100%}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:1.1rem;line-height:1.6}
+  a{color:var(--rust)}
+  :focus-visible{outline:3px solid var(--rust);outline-offset:2px}
+  .spring{position:absolute;left:-999px;top:0;background:#fff;padding:.6rem 1rem;z-index:30}
+  .spring:focus{left:1rem;top:1rem}
+
+  header{border-bottom:1px solid var(--line)}
+  .topbar{max-width:1100px;margin:0 auto;padding:1.4rem 1.25rem 1.2rem;display:flex;gap:.4rem 1rem;align-items:baseline;flex-wrap:wrap}
+  .topbar h1{font-family:var(--serif);font-size:2rem;line-height:1.2;margin:0}
+  .topbar span{font-size:.95rem;color:var(--hint)}
+  main{max-width:1100px;margin:0 auto;padding:1.5rem 1.25rem 7rem}
+
+  .intro{display:grid;grid-template-columns:repeat(auto-fit,minmax(17rem,1fr));gap:1rem;margin:0 0 1.6rem}
+  .intro > div{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:1rem 1.2rem}
+  .intro h2{font-family:var(--serif);font-size:1.25rem;margin:0 0 .4rem}
+  .intro p{margin:.3rem 0}
+  .eksempel{display:inline-block;background:#fff;border:1px solid var(--line);border-radius:6px;padding:.2rem .6rem;font-size:1rem}
+  .eksempel b{color:var(--hint);font-weight:normal}
+
+  .soeg{display:flex;gap:.8rem;flex-wrap:wrap;align-items:center;margin:0 0 .4rem}
+  .soeg label{font-weight:600;color:var(--moss)}
+  .soeg input{flex:1 1 18rem;font:inherit;font-size:1.15rem;padding:.7rem .9rem;min-height:52px;
+    border:2px solid var(--line);border-radius:8px;background:#fff;color:var(--ink)}
+  .soeg input:focus{border-color:var(--rust)}
+  .antal{color:var(--hint);font-size:1rem;margin:.2rem 0 1rem;min-height:1.6em}
+
+  .gitter{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(19rem,1fr));gap:1rem}
+  .kort{background:var(--card);border:1px solid var(--line);border-left:6px solid var(--rust);border-radius:10px;
+    padding:1rem 1.1rem 1.1rem;display:flex;flex-direction:column;gap:.5rem}
+  .kort[hidden]{display:none}
+  .kort.valgt{background:#fff;border-color:var(--rust)}
+  .kort .top{display:flex;gap:.6rem;align-items:flex-start;justify-content:space-between}
+  .kort h3{font-family:var(--serif);font-size:1.4rem;line-height:1.25;margin:.15rem 0 0}
+  .kort p{margin:0}
+  .kort .undgaa{font-size:.98rem;color:var(--hint)}
+  .kort .i-stedet{font-size:1rem;background:#FFF3D6;border-radius:6px;padding:.3rem .6rem;color:var(--ink)}
+  .kort .i-stedet[hidden]{display:none}
+
+  button{font-family:var(--sans);font-size:1rem;font-weight:600;cursor:pointer;border-radius:999px;
+    min-height:46px;padding:.45rem 1rem;border:2px solid var(--rust);background:#fff;color:var(--rust);
+    display:inline-flex;align-items:center;gap:.4rem;flex:0 0 auto}
+  button:hover{background:var(--rust);color:#fff}
+  button svg{width:1.15rem;height:1.15rem;flex:0 0 auto}
+  button.kopieret{background:var(--ok);border-color:var(--ok);color:#fff}
+  label.vaelg{display:inline-flex;align-items:center;gap:.5rem;font-size:1rem;color:var(--hint);cursor:pointer;min-height:44px;margin-top:auto}
+  label.vaelg input{width:1.3rem;height:1.3rem;accent-color:var(--rust)}
+
+  section.mere{margin-top:2.2rem;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:1.1rem 1.3rem}
+  section.mere h2{font-family:var(--serif);font-size:1.35rem;margin:0 0 .5rem}
+  section.mere ul,section.mere ol{margin:.3rem 0;padding-left:1.4rem}
+  section.mere li{margin:.35rem 0}
+
+  /* Linjen med de valgte emneord, nederst på skærmen. */
+  .linje{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--ink);color:#fff;
+    box-shadow:0 -4px 14px rgba(0,0,0,.25)}
+  .linje[hidden]{display:none}
+  .linje > div{max-width:1100px;margin:0 auto;padding:.8rem 1.25rem;display:flex;gap:.6rem 1rem;align-items:center;flex-wrap:wrap}
+  .linje .lbl{font-size:.95rem;color:#E8E2D2}
+  .linje output{flex:1 1 14rem;font-size:1.15rem;font-weight:600;overflow-wrap:anywhere}
+  .linje button{border-color:#fff}
+  .linje button.rolig{background:transparent;color:#fff}
+  .linje button.rolig:hover{background:#fff;color:var(--ink)}
+
+  .besked{position:fixed;left:50%;top:1rem;transform:translateX(-50%);z-index:40;background:var(--ok);color:#fff;
+    padding:.6rem 1.2rem;border-radius:999px;font-weight:600;box-shadow:0 4px 14px rgba(0,0,0,.2)}
+  .besked[hidden]{display:none}
+  .visuelt-skjult{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+
+  @media (max-width:640px){
+    .topbar,main{padding-left:1rem;padding-right:1rem}
+    .topbar h1{font-size:1.7rem}
+    .gitter{grid-template-columns:1fr}
+  }
+  @media (prefers-reduced-motion:no-preference){button{transition:background-color .15s}}
+  @media print{
+    body{background:#fff;font-size:11pt}
+    .soeg,.antal,button,label.vaelg,.linje,.besked,.spring{display:none !important}
+    .kort{break-inside:avoid;border-left-width:4px}
+    .gitter{grid-template-columns:1fr 1fr}
+    main{padding-bottom:0}
+  }
+</style>
+</head>
+<body>
+<a class="spring" href="#liste">Spring til listen</a>
+<header>
+  <div class="topbar">
+    <h1>Forslag til emneord</h1>
+    <span>Version 1.0 · fri udgave · gode ord til feltet Emne / nøgleord</span>
+  </div>
+</header>
+
+<main>
+  <div class="intro">
+    <div>
+      <h2>Hvad er emneord?</h2>
+      <p>Emneordene fortæller, <em>hvad</em> en historie handler om. De gør det lettere at finde den igen, fx på en søgeside.</p>
+    </div>
+    <div>
+      <h2>Forslag, ikke regler</h2>
+      <p>Her er gode ord, som mange bruger. Bruger I de samme, er det let at finde alt om fx <strong>Musik</strong> på én gang. Passer ingen af dem, så skriv jeres eget ord.</p>
+    </div>
+    <div>
+      <h2>Sådan skrives de</h2>
+      <p>I feltet <strong>Emne / nøgleord</strong>: først et eller flere ord herfra, så jeres egne præcise ord. Adskil dem med semikolon.</p>
+      <p><span class="eksempel"><strong>Musik</strong>; <strong>Skole og børn</strong>; Skolekoret; 2026</span></p>
+    </div>
+  </div>
+
+  <div class="soeg" role="search">
+    <label for="q">Find et emneord</label>
+    <input id="q" type="search" autocomplete="off" placeholder="Skriv fx kirke, bøger eller festival …">
+  </div>
+  <p class="antal" id="antal" role="status" aria-live="polite"></p>
+
+  <ul class="gitter" id="liste" aria-label="Forslag til emneord"></ul>
+
+  <section class="mere" aria-labelledby="h-ligner">
+    <h2 id="h-ligner">Når to emneord ligner hinanden</h2>
+    <p>En historie må gerne have flere fælles emneord. Disse grænser hjælper, når man er i tvivl:</p>
+    <ul>
+      <li><strong>Skole og børn</strong> er grundskolen og børns hverdag. <strong>Uddannelse</strong> er gymnasier, efterskoler, universitet og forskning.</li>
+      <li><strong>Sport og motion</strong> er idræt som aktivitet, også i idrætsforeninger. <strong>Sundhed</strong> er motion for helbredets skyld. <strong>Foreningsliv</strong> er foreningerne og livet i dem, når det ikke handler om sport.</li>
+      <li><strong>Frivillighed og omsorg</strong> er frivilligt arbejde og hjælp til andre. <strong>Foreningsliv</strong> er foreningerne selv.</li>
+      <li><strong>Arkitektur</strong> er bygningen set som arkitektur. <strong>Museer og kulturarv</strong> er bevaring, fredning og samlinger. <strong>Kirke og tro</strong> er kirkelivet. En historie om en gammel kirke kan få alle tre.</li>
+      <li><strong>Erhverv og handel</strong> er butikker og firmaer. <strong>Mad og drikke</strong> er madkulturen, også på restauranter og bryggerier.</li>
+      <li><strong>Personer</strong> er en historie, hvor en person er det vigtigste. <strong>Ældre og fællesskab</strong> er ældres liv og fællesskaber. En livshistorie fra en ældre kan få begge.</li>
+    </ul>
+  </section>
+
+  <section class="mere" aria-labelledby="h-gamle">
+    <h2 id="h-gamle">Sådan giver du en færdig historie emneord</h2>
+    <ol>
+      <li>Åbn historien i den bygger, den er lavet med (fx Album · Bygger), med knappen til at åbne en færdig fil.</li>
+      <li>Find de ord, der passer, her på siden. Tryk <strong>Kopiér</strong>, eller sæt flueben ved flere og kopiér hele linjen nederst.</li>
+      <li>Sæt dem ind i feltet <strong>Emne / nøgleord</strong> først. Lad jeres egne præcise ord stå bagefter.</li>
+      <li>Gem filen igen.</li>
+    </ol>
+    <p>Passer ingen af forslagene, så skriv jeres eget ord. Det er helt i orden.</p>
+  </section>
+</main>
+
+<div class="linje" id="linje" hidden>
+  <div>
+    <span class="lbl">Dine valgte emneord:</span>
+    <output id="linjeTekst" aria-live="polite"></output>
+    <button type="button" id="kopierLinje"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg>Kopiér linjen</button>
+    <button type="button" class="rolig" id="ryd">Ryd</button>
+  </div>
+</div>
+
+<p class="besked" id="besked" role="status" aria-live="polite" hidden></p>
+
+<script>
+/* Listen svarer til emneord.md. Rækkefølgen er alfabetisk. */
+const EMNEORD = [
+  ["Arkitektur", "bygninger, byggestil, arkitekter og byggeri, set som arkitektur", "bygninger, byggeri, byggestil"],
+  ["Byudvikling", "hvordan byen og kvartererne har vokset og forandret sig", "byplanlægning, udvikling, byen"],
+  ["Erhverv og handel", "butikker, værksteder, fabrikker, håndværk og firmaer", "erhverv, handel, butikker, industri"],
+  ["Film og teater", "filmanmeldelser, teaterforestillinger og scenekunst", "biograf, skuespil, anmeldelser"],
+  ["Foreningsliv", "foreninger, klubber og livet i dem", "foreninger, klubber"],
+  ["Frivillighed og omsorg", "frivilligt arbejde, hjælp til udsatte, flygtninge og velgørenhed", "velgørenhed, nødhjælp"],
+  ["Gader og veje", "historien om en bestemt gade eller vej og dens huse", "gader, veje, vejnavne"],
+  ["Kirke og tro", "kirker, præster, gudstjenester, dåb, bisættelse og samtaler om tro og livsværdier", "religion, kristendom, præst"],
+  ["Krig og besættelse", "krige, besættelsen 1940–45, beredskab og modstandsbevægelse", "besættelsen, 2. verdenskrig, krig"],
+  ["Kunst", "udstillinger, gallerier, kunstnere, kunsthåndværk, kunstforeninger og kunst i byrummet", "billedkunst, kunstudstilling, galleri"],
+  ["Litteratur", "bøger, forfattere, romaner, bogudgivelser og oplæsning", "bøger, forfatter, boganmeldelse"],
+  ["Mad og drikke", "restauranter, madkultur, bryggerier, økologi og lokale fødevarer", "øl, mad, køkken"],
+  ["Museer og kulturarv", "museer, samlinger, fredede bygninger, kulturarv og lokalhistoriske steder", "museum, kultur"],
+  ["Musik", "musikere, bands, koncerter, spillesteder, festivaler, musikforeninger og musikliv", "musikhistorie, musikliv, koncerter"],
+  ["Natur og miljø", "naturområder, dyr, haver, klima, bæredygtighed og genbrug", "dyr, klima, grøn omstilling"],
+  ["Personer", "historier, hvor en person eller familie er det vigtigste", "personhistorie, portræt, mennesker"],
+  ["Politik og valg", "byråd, folketing, kandidater, valgdebatter og lokalpolitik", "politikere, valg, demokrati"],
+  ["Skole og børn", "grundskoler, børnehaver, skolegang og børns hverdag", "skoler, børn, skolehistorie"],
+  ["Sport og motion", "idrætsforeninger, motorsport, løb, golf og motion som aktivitet", "idræt, fodbold, sport"],
+  ["Sundhed", "sygdom, behandling, hospital, motion for helbredets skyld, trivsel og forebyggelse", "helbred, sygdom, kræft"],
+  ["Uddannelse", "gymnasier, universitet, efterskoler, studenter og forskning", "forskning"],
+  ["Ældre og fællesskab", "seniorliv, ensomhed, bofællesskaber, plejehjem og livshistorier fra ældre", "pensionister, seniorer"]
+];
+
+const IKON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg>';
+const FLUEBEN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12l5 5 9-10"/></svg>';
+
+/* Små bogstaver, og æ/ø/å skrevet som ae/oe/aa betyder det samme. */
+function vask(s){
+  return String(s).toLowerCase()
+    .replace(/aa/g,"å").replace(/ae/g,"æ").replace(/oe/g,"ø")
+    .normalize("NFD").replace(/[̀-ͯ]/g,"").normalize("NFC");
+}
+
+/* ---- Kopiér: virker også, når siden er åbnet direkte fra computeren ---- */
+function kopier(tekst){
+  if(navigator.clipboard && window.isSecureContext){
+    return navigator.clipboard.writeText(tekst).then(()=>true, ()=>gammeldags(tekst));
+  }
+  return Promise.resolve(gammeldags(tekst));
+}
+function gammeldags(tekst){
+  const t = document.createElement("textarea");
+  t.value = tekst; t.setAttribute("readonly",""); t.style.position="fixed"; t.style.opacity="0";
+  document.body.appendChild(t); t.select();
+  let ok = false;
+  try{ ok = document.execCommand("copy"); }catch(e){}
+  document.body.removeChild(t);
+  return ok;
+}
+
+const besked = document.getElementById("besked");
+let beskedTimer = null;
+function visBesked(tekst){
+  besked.textContent = tekst; besked.hidden = false;
+  clearTimeout(beskedTimer);
+  beskedTimer = setTimeout(()=>{ besked.hidden = true; }, 2200);
+}
+function kopierMedSvar(tekst, knap){
+  kopier(tekst).then(ok=>{
+    if(!ok){ visBesked("Kunne ikke kopiere. Markér teksten, og kopiér selv."); return; }
+    visBesked("Kopieret: " + tekst);
+    if(knap){
+      const gammel = knap.innerHTML;
+      knap.classList.add("kopieret"); knap.innerHTML = FLUEBEN + "Kopieret";
+      setTimeout(()=>{ knap.classList.remove("kopieret"); knap.innerHTML = gammel; }, 1800);
+    }
+  });
+}
+
+/* ---- Kortene ---- */
+const liste = document.getElementById("liste");
+const valgte = [];
+EMNEORD.forEach(([ord, om, undgaa], i)=>{
+  const li = document.createElement("li");
+  li.className = "kort";
+  li.dataset.ord = vask(ord);
+  li.dataset.om = vask(om);
+  li.dataset.undgaa = undgaa;
+  li.innerHTML =
+    '<div class="top"><h3 id="e' + i + '"></h3>' +
+    '<button type="button" class="kopier">' + IKON + 'Kopiér<span class="visuelt-skjult"></span></button></div>' +
+    '<p class="om"></p><p class="undgaa"><strong>Brug ordet i stedet for:</strong> <span></span></p>' +
+    '<p class="i-stedet" hidden></p>' +
+    '<label class="vaelg"><input type="checkbox"> Med i linjen</label>';
+  li.querySelector("h3").textContent = ord;
+  li.querySelector(".kopier .visuelt-skjult").textContent = " " + ord;
+  li.querySelector(".om").textContent = "Bruges om " + om + ".";
+  li.querySelector(".undgaa span").textContent = undgaa;
+  li.querySelector(".kopier").addEventListener("click", e=>kopierMedSvar(ord, e.currentTarget));
+  const cb = li.querySelector("input");
+  cb.setAttribute("aria-describedby", "e" + i);
+  cb.addEventListener("change", ()=>{
+    const j = valgte.indexOf(ord);
+    if(cb.checked && j === -1) valgte.push(ord);
+    if(!cb.checked && j !== -1) valgte.splice(j, 1);
+    li.classList.toggle("valgt", cb.checked);
+    visLinje();
+  });
+  liste.appendChild(li);
+});
+
+/* ---- Linjen med flere valgte emneord ---- */
+const linje = document.getElementById("linje");
+const linjeTekst = document.getElementById("linjeTekst");
+function visLinje(){
+  linje.hidden = valgte.length === 0;
+  linjeTekst.textContent = valgte.join("; ");
+}
+document.getElementById("kopierLinje").addEventListener("click", e=>kopierMedSvar(valgte.join("; "), e.currentTarget));
+document.getElementById("ryd").addEventListener("click", ()=>{
+  valgte.length = 0;
+  liste.querySelectorAll("input").forEach(cb=>{ cb.checked = false; });
+  liste.querySelectorAll(".kort").forEach(li=>li.classList.remove("valgt"));
+  visLinje();
+  document.getElementById("q").focus();
+});
+
+/* ---- Søgning ----
+   Finder ordet i emneordet, i "bruges om" og i "undgå". Står det man skriver
+   under "undgå", vises det fælles emneord, man skal bruge i stedet. */
+const q = document.getElementById("q");
+const antal = document.getElementById("antal");
+function soeg(){
+  const ord = vask(q.value.trim()).split(/\s+/).filter(Boolean);
+  let vist = 0;
+  liste.querySelectorAll(".kort").forEach(li=>{
+    const undgaa = li.dataset.undgaa.split(/\s*,\s*/);
+    const alt = li.dataset.ord + " " + li.dataset.om + " " + vask(li.dataset.undgaa);
+    const passer = ord.every(w=>alt.indexOf(w) !== -1);
+    li.hidden = !passer;
+    if(passer) vist++;
+    const boks = li.querySelector(".i-stedet");
+    const ramt = ord.length ? undgaa.filter(u=>ord.some(w=>vask(u).indexOf(w) !== -1)) : [];
+    if(passer && ramt.length && !ord.every(w=>li.dataset.ord.indexOf(w) !== -1)){
+      boks.textContent = "Skriv «" + li.querySelector("h3").textContent + "» i stedet for «" + ramt[0] + "».";
+      boks.hidden = false;
+    } else boks.hidden = true;
+  });
+  if(!ord.length) antal.textContent = EMNEORD.length + " forslag til emneord";
+  else if(vist === 0) antal.textContent = "Ingen af forslagene passer. Skriv bare jeres eget ord.";
+  else antal.textContent = "Viser " + vist + " af " + EMNEORD.length + " emneord";
+}
+q.addEventListener("input", soeg);
+soeg();
+</script>
+</body>
+</html>

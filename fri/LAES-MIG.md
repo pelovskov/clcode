@@ -11,7 +11,7 @@ Den frie udgave er lavet ud fra de samme byggere, som foreningerne i den fælles
 - **Udgiveren skriver man selv,** fx "7.b, Roskilde Lille Skole" eller sit eget navn. Der er ingen liste over foreninger.
 - **Der er to farvetemaer,** Vinter (blå) og Sommer (grøn), begge med lys og mørk tilstand.
 - **Identifikatoren har intet foreningspræfiks,** fx `album-sommerlejren-2026`.
-- **Emneordene er dem, man selv skriver.** Udgiveren sættes ikke ind som første emneord, og de fælles emneord er ikke et krav.
+- **Emneordene er dem, man selv skriver.** Udgiveren sættes ikke ind som første emneord, og de fælles emneord er ikke et krav. Siden `emneord.html` giver forslag: foreningernes fælles emneord uden dem, der kun gælder Roskilde.
 - **Foreningernes særlige ting er fjernet,** fx Sidebyggerens faste serier og foreningernes farver.
 
 Filformatet er det samme. En fil fra den frie udgave kan derfor åbnes i foreningernes byggere og omvendt. Den får så det andet sted standardtemaet.
@@ -26,6 +26,7 @@ Filformatet er det samme. En fil fra den frie udgave kan derfor åbnes i forenin
 | Søgeside · Bygger, som laver en søgeside til en mappe | `soegeside-bygger.html` |
 | Feltoptager, Lydlab, Fotolab og Skyggeramme | `feltoptager.html`, `lydlab.html`, `fotolab.html`, `skyggeramme.html` |
 | Huskesedler til Side, Album, Lydfortælling, Præsentation, Bog, Mediekort og Samling med Søgeside | `vejledning-….html` |
+| Forslag til emneord, med en kopiér-knap ved hvert ord | `emneord.html` |
 
 Hele mappen kan kopieres til et USB-stik eller lægges på en hjemmeside. Alt virker uden internet.
 
@@ -33,7 +34,7 @@ Ligger mappen på en hjemmeside, viser forsiden knappen **Hent det hele som zip-
 
 ## Til den, der vedligeholder
 
-Byggerne i mappen laves af opskriften **`lav-fri-udgave.py`** ud fra de almindelige byggere i repoets rod og værktøjerne i `tools/`. Ret aldrig i de lavede filer i hånden. Ret i den almindelige bygger eller i opskriften, og kør opskriften igen:
+Byggerne i mappen laves af opskriften **`lav-fri-udgave.py`** ud fra de almindelige byggere i repoets rod og værktøjerne i `tools/`, også `emneord.html` ud fra `tools/emneord.html`. Ret aldrig i de lavede filer i hånden. Ret i den almindelige bygger eller i opskriften, og kør opskriften igen:
 
 ```
 python3 fri/lav-fri-udgave.py

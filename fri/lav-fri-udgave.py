@@ -10,6 +10,7 @@ med i den fælles portal. Forskellene fra de almindelige byggere:
 - Udgiveren sættes ikke ind som første emneord, og identifikatoren har
   intet foreningspræfiks, fx "side-sommerlejren-2026".
 - Foreningernes særlige ting er fjernet, fx Sidebyggerens faste serier.
+- De fælles emneord (tools/emneord.html) bliver til frie forslag i fri/emneord.html.
 - Filformatet er det samme, så filerne kan åbnes i begge udgaver.
 
 Kør opskriften igen, når en almindelig bygger er blevet forbedret:
@@ -167,6 +168,65 @@ def lav_soegeside():
     print('Lavet: fri/soegeside-bygger.html')
 
 
+def ret(s, gammel, ny, fil):
+    """Som erstat, men for almindelig tekst uden mønstre. Teksten skal stå der én gang."""
+    if s.count(gammel) != 1:
+        sys.exit(f'{fil}: forventede én gang {gammel[:60]!r}, fandt {s.count(gammel)}')
+    return s.replace(gammel, ny)
+
+
+def lav_emneord():
+    """Forslag til emneord: foreningernes fælles emneord, men som frie forslag.
+    Roskilde Festival og andre ting, der kun gælder foreningerne, er taget ud."""
+    fil = 'tools/emneord.html'
+    s = (ROD / fil).read_text(encoding='utf-8')
+    s = erstat(s, r'<!-- Fælles emneord · version ([0-9.]+)\.[^>]*-->',
+               r'<!-- Forslag til emneord · version \1 · fri udgave. Laves af fri/lav-fri-udgave.py ud fra tools/emneord.html. Ret ikke i hånden. -->',
+               navn=fil)
+    s = ret(s, '<title>Fælles emneord</title>', '<title>Forslag til emneord · fri udgave</title>', fil)
+    s = ret(s, '<h1>Fælles emneord</h1>', '<h1>Forslag til emneord</h1>', fil)
+    s = erstat(s, r'<span>Version ([0-9.]+) · [^<]*</span>',
+               r'<span>Version \1 · fri udgave · gode ord til feltet Emne / nøgleord</span>', navn=fil)
+    s = erstat(s, r'<div class="intro">.*?\n  </div>\n\n  <div class="soeg"', '''<div class="intro">
+    <div>
+      <h2>Hvad er emneord?</h2>
+      <p>Emneordene fortæller, <em>hvad</em> en historie handler om. De gør det lettere at finde den igen, fx på en søgeside.</p>
+    </div>
+    <div>
+      <h2>Forslag, ikke regler</h2>
+      <p>Her er gode ord, som mange bruger. Bruger I de samme, er det let at finde alt om fx <strong>Musik</strong> på én gang. Passer ingen af dem, så skriv jeres eget ord.</p>
+    </div>
+    <div>
+      <h2>Sådan skrives de</h2>
+      <p>I feltet <strong>Emne / nøgleord</strong>: først et eller flere ord herfra, så jeres egne præcise ord. Adskil dem med semikolon.</p>
+      <p><span class="eksempel"><strong>Musik</strong>; <strong>Skole og børn</strong>; Skolekoret; 2026</span></p>
+    </div>
+  </div>
+
+  <div class="soeg"''', navn=fil)
+    s = ret(s, '  ["Roskilde Festival", "selve festivalen, camps og festivalens kulturliv", "festival, Dream City"],\n', '', fil)
+    s = ret(s, '"RUC, forskning"]', '"forskning"]', fil)
+    s = ret(s, 'aria-label="De fælles emneord"', 'aria-label="Forslag til emneord"', fil)
+    s = ret(s, '<strong>Undgå:</strong>', '<strong>Brug ordet i stedet for:</strong>', fil)
+    s = ret(s, 'EMNEORD.length + " fælles emneord"', 'EMNEORD.length + " forslag til emneord"', fil)
+    s = ret(s, '"Intet fælles emneord passer. Brug jeres eget ord efter de fælles, eller foreslå et nyt."',
+            '"Ingen af forslagene passer. Skriv bare jeres eget ord."', fil)
+    s = erstat(s, r'\n      <li><strong>Roskilde Festival</strong>.*?</li>', '', navn=fil)
+    s = ret(s, 'En historie om Domkirken kan få alle tre.', 'En historie om en gammel kirke kan få alle tre.', fil)
+    s = erstat(s, r'\n    <p><strong>Gader og veje</strong> er også en fast serie[^\n]*</p>', '', navn=fil)
+    s = ret(s, 'Sådan giver du en færdig historie de fælles emneord', 'Sådan giver du en færdig historie emneord', fil)
+    s = ret(s, 'Find de emneord, der passer, her på siden.', 'Find de ord, der passer, her på siden.', fil)
+    s = ret(s, 'efter udgiveren. Lad jeres egne', 'først. Lad jeres egne', fil)
+    s = erstat(s, r'<li>Gem filen igen, og læg den op i søgeindekset.*?</li>', '<li>Gem filen igen.</li>', navn=fil)
+    s = ret(s, '<p>Mangler der et emneord, så aftal det med de andre foreninger. Det skrives på listen, før det tages i brug.</p>',
+            '<p>Passer ingen af forslagene, så skriv jeres eget ord. Det er helt i orden.</p>', fil)
+    for ord in ('andre foreninger', 'alle foreninger', 'hvilken forening', 'Roskilde', 'søgeindeks', 'Undgå'):
+        if ord in s:
+            sys.exit(f'{fil}: «{ord}» står stadig i den frie udgave. Ret opskriften.')
+    (UD / 'emneord.html').write_text(s, encoding='utf-8')
+    print('Lavet: fri/emneord.html')
+
+
 # Værktøjer, der allerede er generelle, og som bare kopieres med.
 KOPIER = ['tools/feltoptager.html', 'tools/lydlab.html', 'tools/fotolab.html', 'tools/skyggeramme.html']
 
@@ -195,6 +255,7 @@ if __name__ == '__main__':
     for f in BYGGERE:
         lav(f)
     lav_soegeside()
+    lav_emneord()
     for f in KOPIER:
         (UD / Path(f).name).write_bytes((ROD / f).read_bytes())
         print(f'Kopieret: fri/{Path(f).name}')
