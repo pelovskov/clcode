@@ -14,6 +14,8 @@ Eksempel:
 
 Mangler der et emneord, så aftal det med de andre foreninger, og skriv det på listen, før det tages i brug.
 
+Listen findes også som en side med søgning og en kopiér-knap ved hvert ord: **`tools/emneord.html`**. Den er lettere at bruge for de fleste. Rettes listen her, skal siden rettes med.
+
 ## Listen
 
 Listen står i alfabetisk orden.

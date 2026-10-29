@@ -32,6 +32,7 @@ Værktøjerne ligger i mappen `tools/`. De følger ikke Builder-standarden, men 
 |---|---|---|---|
 | Søgeside · Bygger | `tools/soegeside-bygger.html` | 1.4 | laver en søgeside ud af en mappe med færdige filer |
 | Metadata-hjælper | `tools/metadata-hjaelper.html` | 1.2 | laver en AI-prompt til Dublin Core og kontrollerer svaret |
+| Fælles emneord | `tools/emneord.html` | 1.0 | de fælles emneord fra `emneord.md` som en side med søgning og en kopiér-knap ved hvert ord |
 | Feltoptager | `tools/feltoptager.html` | 1 | optager lyd, rydder op og gemmer som mp3 eller som lydfortælling (HTML) |
 | Lydlab | `tools/lydlab.html` | 1 | gør en lydoptagelse klar: mono, jævn lyd og fast lydstyrke, ud kommer en mp3 |
 | Fotolab | `tools/fotolab.html` | 4 | farve-effekter, billedformat og Polaroid med håndskrevet tekst |

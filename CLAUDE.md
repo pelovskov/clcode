@@ -69,7 +69,7 @@ Efter en ændring skal du beskrive, hvordan jeg selv kan afprøve den i browsere
 
 - `billedarkiv/billedarkiv.html` eksporterer albums med en `.json`-fil ved hvert billede, som **Album · Bygger** læser (kendes på `exportedFilename`). Ændres feltnavnene i eksporten, skal `album-bygger.html` og standardens afsnit 8.1 rettes med.
 
-- `emneord.md` er foreningernes fælles emneord. Udgiveren siger, hvem der har lavet en historie, og de fælles emneord siger, hvad den handler om. Nye emneord skrives på listen, før de tages i brug.
+- `emneord.md` er foreningernes fælles emneord. Udgiveren siger, hvem der har lavet en historie, og de fælles emneord siger, hvad den handler om. Nye emneord skrives på listen, før de tages i brug. Listen står også i `tools/emneord.html`, som skal rettes med.
 
 - I søgeindekset (`sbtv/`) hører nøglen i `data/foreninger.json` (fx `rmu`) sammen med udgiveren i `PUBLISHERS`. Logoerne skal ligge i `sbtv/grafik/`, ikke i `data/`, som er spærret for besøgende.
 
