@@ -105,6 +105,7 @@ Den frie udgave laves automatisk ud fra foreningernes byggere, så forbedringer 
 | `projekt-resume.md` | dette resumé |
 | `oversigt.md` | alle byggere og værktøjer med versioner |
 | `builder-standard.md` | de fælles regler for byggerne |
+| `formidling/` | præsentationsmateriale til foreninger, skoler og enkeltpersoner, til skærm og print |
 | `emneord.md` | de fælles emneord. Findes også som siden `tools/emneord.html` med kopiér-knapper |
 | `CLAUDE.md` | husregler for samarbejdet med Claude |
 | `bygger-dash.html` | forside med links til det hele |
