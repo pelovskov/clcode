@@ -3,9 +3,19 @@
    Søgeindeks · Online — søgesiden
    Viser alt, der er lagt op i mappen filer/. Siden bygges ud fra
    data/indeks.json, som opdateres hver gang en fil lægges op eller slettes.
+   Siden tager også imod søgeordene til statistikken (POST soeg og antal).
    ========================================================================= */
 
 require __DIR__ . '/faelles.php';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (isset($_POST['soeg']) && is_string($_POST['soeg'])) {
+        tael_soegning($_POST['soeg'], max(0, (int)($_POST['antal'] ?? 0)));
+    }
+    http_response_code(204);
+    exit;
+}
+tael_besoeg('soeg');
 
 $indeks = hent_indeks();
 $ind = indstillinger();
@@ -25,5 +35,6 @@ echo byg_soegeside(
     '<p class="tilbage"><a href="forside.php">'
     . '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" '
     . 'stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 11l9-7 9 7"/>'
-    . '<path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg>Til forsiden</a></p>'
+    . '<path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg>Til forsiden</a></p>',
+    'vis.php'
 );

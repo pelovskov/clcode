@@ -32,6 +32,7 @@ define('LOGIN_FORSOEG', DATA_MAPPE . '/login-forsoeg.json');
 define('BRUGER_FIL',    DATA_MAPPE . '/brugere.json');        // redaktører, oprettet på admin-siden
 define('RTV_STATUS',    DATA_MAPPE . '/rtv-status.json');     // prikkerne i Roskilde TV's arbejdsliste
 define('FORENINGER_FIL', DATA_MAPPE . '/foreninger.json');   // registret over deltagende foreninger
+define('STATISTIK_FIL', DATA_MAPPE . '/statistik.json');     // besøg, klik og søgeord (kun tal)
 define('THUMB_MAPPE',   FIL_MAPPE . '/thumbs');               // små billeder til søgesiden (240 × 180 px)
 const THUMB_B = 240;
 const THUMB_H = 180;
@@ -565,10 +566,12 @@ function skriv_statisk_soegeside(array $indeks): void
    ligger som filer i filer/thumbs/ i stedet for inde i siden. Nye pladsholdere:
    __STI__ er mappen foran filnavnet ("filer/" online, "" i offline-udgaven),
    __FODNOTE__ er teksten nederst.
+   __TAELLER_JSON__ er "vis.php" online, så klik og søgeord kan tælles,
+   og "" i offline-udgaven, hvor intet tælles.
    ========================================================================= */
 
 function byg_soegeside(array $poster, string $titel, string $under, string $sti,
-                       int $tid, string $fodnoteHtml, string $topHtml = ''): string
+                       int $tid, string $fodnoteHtml, string $topHtml = '', string $taeller = ''): string
 {
     /* Offentlige data: uden filstørrelse og uden oplysninger om hvem der lagde op. */
     $rene = array_map(function ($p) {
@@ -587,6 +590,7 @@ function byg_soegeside(array $poster, string $titel, string $under, string $sti,
         '__FODNOTE__'    => $fodnoteHtml,
         '__TOP__'        => $topHtml,
         '__STI_JSON__'   => json_encode($sti, $jsonFlag),
+        '__TAELLER_JSON__' => json_encode($taeller, $jsonFlag),
         '__DATA_JSON__'  => json_encode($rene, $jsonFlag | JSON_INVALID_UTF8_SUBSTITUTE),
         '__FORENINGER_JSON__' => json_encode(
             (object)array_map(fn($f) => $f['udgiver'], hent_foreninger()), $jsonFlag),
@@ -773,6 +777,7 @@ __FODNOTE__
 <script>
 const DATA = __DATA_JSON__;
 const STI = __STI_JSON__;
+const TAELLER = __TAELLER_JSON__;
 const FORENINGER = __FORENINGER_JSON__;
 const MED_BILLEDER = DATA.some(r=>r.thumb);
 
@@ -1030,6 +1035,7 @@ function render(){
   list.innerHTML = "";
   document.getElementById("count").textContent =
     "Viser " + rows.length + " af " + DATA.length + " poster";
+  soegLog.saet(qFelt.value, rows.length);
 
   if(rows.length===0){
     const p=document.createElement("p");
@@ -1068,6 +1074,10 @@ function render(){
     } else {
       a.href = STI + encodeURI(r.filnavn) + "?hjem=" + hjem;
     }
+    /* Online går linket gennem vis.php, som tæller klikket og sender videre. */
+    if(TAELLER){
+      a.href = TAELLER + "?f=" + encodeURIComponent(r.filnavn) + (erEkstern ? "" : "&hjem=" + hjem);
+    }
 
     let icon;
     if(MED_BILLEDER && r.thumb){
@@ -1098,6 +1108,44 @@ function render(){
     list.appendChild(a);
   });
 }
+
+/* ---- Søgeord til statistikken (kun online) ----
+   Der sendes kun selve søgeordet og antallet af træf, intet om hvem der søgte.
+   Et søgeord tælles, når man klikker på et træf, forlader siden eller går i
+   gang med en helt ny søgning. Så tælles "domkirken" og ikke "d", "do", "dom" … */
+const soegLog = (function(){
+  if(!TAELLER) return {saet: function(){}, send: function(){}};
+  let aktuel = null;
+  const sendt = new Set();
+  function send(){
+    if(!aktuel || sendt.has(aktuel.n)) return;
+    sendt.add(aktuel.n);
+    try{
+      const d = new FormData();
+      d.append("soeg", aktuel.q);
+      d.append("antal", String(aktuel.antal));
+      if(navigator.sendBeacon) navigator.sendBeacon(location.pathname, d);
+      else fetch(location.pathname, {method: "POST", body: d, keepalive: true});
+    }catch(e){}
+  }
+  function saet(q, antal){
+    q = q.trim();
+    const n = norm(q);
+    if(!n) return;
+    if(aktuel && aktuel.n.indexOf(n) === 0){          // samme ord, eller man sletter bagfra
+      if(aktuel.n === n) aktuel.antal = antal;
+      return;
+    }
+    if(aktuel && n.indexOf(aktuel.n) !== 0 && Date.now() - aktuel.siden > 1500) send();
+    aktuel = {q: q, n: n, antal: antal, siden: Date.now()};
+  }
+  document.getElementById("list").addEventListener("click", e=>{
+    if(e.target.closest && e.target.closest("a.row")) send();
+  });
+  window.addEventListener("pagehide", send);
+  document.addEventListener("visibilitychange", ()=>{ if(document.visibilityState === "hidden") send(); });
+  return {saet: saet, send: send};
+})();
 
 document.getElementById("q").addEventListener("input", render);
 omrSel.addEventListener("change", render);
@@ -1321,6 +1369,118 @@ function registrer_forsoeg(bool $lykkedes): void
 
 
 /* =========================================================================
+   Del 7b · Statistik
+   En enkel tæller, der giver en idé om, hvor meget søgeindekset bruges.
+   Der gemmes kun tal: ingen IP-adresser, ingen cookies og intet om, hvem
+   der har besøgt siden. Robotter og dem, der er logget ind, tælles ikke.
+   data/statistik.json:
+     start    hvornår tællingen begyndte
+     besoeg   dato → {forside, soeg}: antal sidevisninger
+     klik     filnavn → måned → antal gange, filen er åbnet fra portalen
+     soeg     måned → søgeord → [antal søgninger, heraf uden træf]
+   Klikkene følger filnavnet. Lægges en rettet fil op med samme navn,
+   fortsætter tællingen, og slettes en fil, bliver dens tal stående.
+   ========================================================================= */
+
+const MAKS_SOEGEORD = 1500;     // forskellige søgeord pr. måned, så filen ikke vokser vildt
+
+function er_robot(): bool
+{
+    $ua = (string)($_SERVER['HTTP_USER_AGENT'] ?? '');
+    if ($ua === '') return true;
+    return (bool)preg_match('/bot|crawl|spider|slurp|archiver|facebookexternalhit|embedly|preview|monitor|'
+        . 'curl|wget|python|java\/|httpclient|okhttp|headless|lighthouse|scan|fetch/i', $ua);
+}
+
+/* Er den besøgende logget ind? Starter ikke en session (og sætter ingen
+   cookie) hos almindelige besøgende. */
+function er_logget_ind_stille(): bool
+{
+    if (empty($_COOKIE['si_' . substr(md5(__DIR__), 0, 10)])) return false;
+    return aktuel_bruger() !== null;
+}
+
+function skal_taelles(): bool
+{
+    return !er_robot() && !er_logget_ind_stille();
+}
+
+function hent_statistik(): array
+{
+    $s = laes_json(STATISTIK_FIL, []);
+    return [
+        'start'  => (int)($s['start'] ?? 0),
+        'besoeg' => is_array($s['besoeg'] ?? null) ? $s['besoeg'] : [],
+        'klik'   => is_array($s['klik'] ?? null) ? $s['klik'] : [],
+        'soeg'   => is_array($s['soeg'] ?? null) ? $s['soeg'] : [],
+    ];
+}
+
+/* Egen lås, så tælleren aldrig venter på en upload. Går noget galt,
+   mister vi blot ét tal – siden virker stadig. */
+function statistik_opdater(callable $fn): void
+{
+    $fh = @fopen(DATA_MAPPE . '/.laas-statistik', 'c');
+    if (!$fh) return;
+    flock($fh, LOCK_EX);
+    try {
+        $s = hent_statistik();
+        if (!$s['start']) $s['start'] = time();
+        $fn($s);
+        skriv_json(STATISTIK_FIL, $s);
+    } finally {
+        flock($fh, LOCK_UN);
+        fclose($fh);
+    }
+}
+
+/* $side er 'forside' eller 'soeg'. */
+function tael_besoeg(string $side): void
+{
+    if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'GET' || !skal_taelles()) return;
+    statistik_opdater(function (array &$s) use ($side) {
+        $d = date('Y-m-d');
+        $s['besoeg'][$d][$side] = (int)($s['besoeg'][$d][$side] ?? 0) + 1;
+    });
+}
+
+function tael_klik(string $navn): void
+{
+    if (!skal_taelles()) return;
+    statistik_opdater(function (array &$s) use ($navn) {
+        $m = date('Y-m');
+        $s['klik'][$navn][$m] = (int)($s['klik'][$navn][$m] ?? 0) + 1;
+    });
+}
+
+/* Søgeordet gemmes med små bogstaver og enkelt mellemrum, så "Domkirken"
+   og "domkirken " tælles sammen. */
+function rens_soegeord(string $q): string
+{
+    $q = preg_replace('/[\x00-\x1F\x7F]+/u', ' ', $q) ?? '';
+    $q = mb_strtolower(trim(preg_replace('/\s+/u', ' ', $q) ?? ''), 'UTF-8');
+    return mb_substr($q, 0, 80, 'UTF-8');
+}
+
+function tael_soegning(string $q, int $antal): void
+{
+    if (!preg_match('//u', $q) || !skal_taelles()) return;
+    $q = rens_soegeord($q);
+    if (mb_strlen($q, 'UTF-8') < 2) return;
+    statistik_opdater(function (array &$s) use ($q, $antal) {
+        $m = date('Y-m');
+        $md = $s['soeg'][$m] ?? [];
+        if (!isset($md[$q]) && count($md) >= MAKS_SOEGEORD) return;
+        $r = $md[$q] ?? [0, 0];
+        $r[0]++;
+        if ($antal === 0) $r[1]++;
+        $md[$q] = $r;
+        $s['soeg'][$m] = $md;
+    });
+}
+
+
+/* =========================================================================
    Del 8 · Sidelayout for upload, admin og login
    Samme farver og tekststørrelser som Søgeside · Bygger.
    ========================================================================= */
@@ -1332,7 +1492,7 @@ function side_top(string $titel, string $sub, ?string $bruger, string $aktiv = '
     header('Referrer-Policy: same-origin');
     $nav = '';
     if ($bruger !== null) {
-        $pkt = [['index.php', 'Søgesiden', ''], ['upload.php', 'Læg filer op', 'upload'], ['rtv.php', 'Arbejdsliste', 'rtv']];
+        $pkt = [['index.php', 'Søgesiden', ''], ['upload.php', 'Læg filer op', 'upload'], ['rtv.php', 'Arbejdsliste', 'rtv'], ['statistik.php', 'Statistik', 'statistik']];
         if (er_admin($bruger)) $pkt[] = ['admin.php', 'Admin', 'admin'];
         $nav = '<nav aria-label="Menu"><ul>';
         foreach ($pkt as [$url, $txt, $id]) {
@@ -1448,6 +1608,22 @@ progress{width:8rem;height:1rem;accent-color:var(--accent)}
 table.log{width:100%;border-collapse:collapse;font-size:1rem}
 table.log td,table.log th{text-align:left;padding:.45rem .5rem;border-bottom:1px solid var(--line);vertical-align:top}
 table.log th{color:var(--muted);font-weight:normal}
+/* Statistiksiden */
+.tal4{display:grid;grid-template-columns:repeat(auto-fit,minmax(10rem,1fr));gap:.8rem;margin:0;padding:0;list-style:none}
+.tal4 li{background:var(--paper-dim);border-radius:8px;padding:.7rem .9rem}
+.tal4 strong{display:block;font-size:1.7rem;line-height:1.2;color:var(--footer-strong)}
+.tal4 span{font-size:.98rem;color:var(--muted)}
+table.stat{width:100%;border-collapse:collapse;font-size:1rem}
+table.stat th,table.stat td{text-align:left;padding:.45rem .5rem;border-bottom:1px solid var(--line);vertical-align:top}
+table.stat th{color:var(--muted);font-weight:normal}
+table.stat td.n,table.stat th.n{text-align:right;white-space:nowrap}
+table.stat td.bjc{width:28%}
+.bj{display:block;height:.9rem;background:var(--paper-dim);border-radius:4px;margin-top:.35rem;overflow:hidden}
+.bj span{display:block;height:100%;background:var(--accent)}
+.lille{display:block;font-size:.92rem;color:var(--muted)}
+.to{display:grid;grid-template-columns:repeat(auto-fit,minmax(18rem,1fr));gap:1.5rem}
+.to h3{font-size:1.1rem;margin:0 0 .4rem}
+@media(max-width:640px){table.stat td.bjc{display:none}}
 .logramme{overflow-x:auto}
 @media(max-width:640px){
   header,nav,main{padding-left:1rem;padding-right:1rem}

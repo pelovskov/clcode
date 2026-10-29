@@ -54,6 +54,7 @@ function type_ikon(string $t): string
 
 /* ---- Data ---------------------------------------------------------------- */
 
+tael_besoeg('forside');
 $indeks     = hent_indeks();
 $poster     = $indeks['poster'];
 $foreninger = hent_foreninger();
@@ -93,9 +94,9 @@ $nye = array_slice($nye, 0, ANTAL_NYE);
 /* Egne filer får ?hjem= med, så deres Hjem-knap fører tilbage til forsiden. */
 function post_link(array $p, string $navn): string
 {
-    $link = (string)($p['link'] ?? '');
-    if ($link !== '') return $link;
-    return 'filer/' . rawurlencode($navn) . '?hjem=' . rawurlencode((string)($_SERVER['SCRIPT_NAME'] ?? 'forside.php'));
+    /* Linket går gennem vis.php, som tæller klikket og sender videre. */
+    $hjem = (string)($_SERVER['SCRIPT_NAME'] ?? 'forside.php');
+    return 'vis.php?f=' . rawurlencode($navn) . (empty($p['link']) ? '&hjem=' . rawurlencode($hjem) : '');
 }
 
 function kort_tekst(string $s, int $max = 220): string
