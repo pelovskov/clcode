@@ -137,6 +137,11 @@ def lav(fil):
         s = erstat(s, r'\s*<option value="Gader og veje">Gader og veje</option>'
                       r'\s*<option value="Steder, institutioner og mennesker">Steder, institutioner og mennesker</option>',
                    '', navn=fil)
+        s = erstat(s, r'<label for="eyebrowSelect">Mærkat / serie \(valgfri\)</label>',
+                   '<label for="eyebrowSelect">Mærkat (valgfri)</label>', navn=fil)
+        s = erstat(s, r'<div class="hint">Vises som lille tekst over titlen\. Vælger du en af de to serier.*?</div>',
+                   '<div class="hint">Vises som lille tekst over titlen, fx «Min gade» eller «Klassens historie». '
+                   'Mærkaten vises kun på siden og bliver ikke sat ind i metadata.</div>', navn=fil)
     s = s.replace('Udgiver / område', 'Udgiver')
     # Eksempler i felterne uden foreningsnavne.
     s = re.sub(r'(id="dc_?[Ii]dentifier"[^>]*placeholder="(?:F\.eks\.|fx) )[A-Z]+-', r'\1', s)
