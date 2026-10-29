@@ -13,6 +13,8 @@ singlefile-HTML fra Byggerne, henvisninger og videokort.
 | `admin.php` | Kun for superadmins: slet filer, byg søgesiden forfra, ret overskrift, opret og luk redaktører, se hvem der har gjort hvad. |
 | `rtv.php` | Roskilde TV's arbejdsliste med fælles prikker: rød (bør have et mediekort), gul (i gang) og grøn (færdig). Kræver login. Viser `rtv-skabelon.html`. |
 | `rtv-skabelon.html` | Selve listen over Roskilde TV's udsendelser. Laves af `tools/lav-rtv-arbejdsliste.py` i repoet. Ret ikke i hånden. |
+| `statistik.php` | Besøg, mest åbnede historier og søgeord. Kræver login. |
+| `vis.php` | Mellemstation, som tæller et klik og straks åbner filen. Søgesiden og forsiden linker hertil. |
 | `kode.php` | Skift din egen adgangskode. Redaktører med en engangskode sendes hertil første gang. |
 | `login.php`, `logout.php` | Log ind og ud. |
 | `lav-hash.php` | Laver adgangskode-linjer til `config.php`. Gemmer intet. Det samme kan gøres uden server med `tools/password-hash.html`. |
@@ -21,7 +23,7 @@ singlefile-HTML fra Byggerne, henvisninger og videokort.
 | `filer/` | Alle de filer, der er lagt op, plus en færdig `soegeside.html`. |
 | `filer/thumbs/` | Små billeder (240 × 180 px) til søgesiden og forsiden. Laves af sig selv. |
 | `grafik/` | Foreningernes logoer, fx `grafik/rmu.png`. Skal kunne ses udefra, så de må **ikke** ligge i `data/`. |
-| `data/` | Indeks, log, papirkurv, `foreninger.json`, `brugere.json` med redaktørerne og `rtv-status.json` med prikkerne. Spærret for adgang udefra. |
+| `data/` | Indeks, log, papirkurv, `foreninger.json`, `brugere.json` med redaktørerne, `rtv-status.json` med prikkerne og `statistik.json` med tællerne. Spærret for adgang udefra. |
 
 ## Sådan sætter du det op
 
@@ -43,6 +45,7 @@ singlefile-HTML fra Byggerne, henvisninger og videokort.
 |---|---|---|
 | Lægge filer op | ✓ | ✓ |
 | Se og sætte prikker i arbejdslisten (`rtv.php`) | ✓ | ✓ |
+| Se statistikken (`statistik.php`) | ✓ | ✓ |
 | Skifte sin egen adgangskode | i `config.php` | ✓ på siden *Skift adgangskode* |
 | Slette filer, bygge søgesiden forfra, rette overskrift | ✓ | – |
 | Oprette, lukke og genåbne redaktører | ✓ | – |
@@ -67,6 +70,19 @@ Tryk på prikken for at skifte farve, eller hold musen over en video og tryk **R
 Knappen *Lav mediekort* åbner Mediekort · Bygger på adressen i `$MEDIEKORT_ADRESSE` i `config.php`, normalt repoets GitHub Pages.
 
 Efter opdateringen: Tryk én gang på **Byg søgesiden forfra** på admin-siden, så de mediekort, der allerede ligger i søgeindekset, også giver grønne prikker.
+
+## Statistik
+
+`statistik.php` viser, hvor meget søgeindekset bliver brugt. Alle, der er logget ind, kan se siden.
+
+- **Besøg:** hvor mange gange forsiden og søgesiden er vist, pr. dag og pr. måned.
+- **Mest åbnede historier:** Linkene på forsiden og søgesiden går gennem `vis.php`, som lægger én til tælleren og straks åbner filen. Læseren mærker ingenting. Klikkene tælles pr. **filnavn**. Lægges en rettet fil op med samme navn, fortsætter tællingen, og slettes en fil, bliver dens tal stående.
+- **Foreninger og emner:** klikkene lagt sammen pr. udgiver og pr. emneord.
+- **Søgeord:** hvad folk søger efter, og hvilke søgninger der ikke gav træf. Et søgeord tælles, når man klikker på et træf, forlader siden eller begynder på en ny søgning, så det er "domkirken" og ikke "d", "do", "dom" … der tælles.
+
+Der gemmes **kun tal** i `data/statistik.json`: ingen IP-adresser, ingen cookies og intet om, hvem der har besøgt siden. Derfor kræver det ikke et cookie-banner. Søgemaskinernes robotter og dem, der er logget ind, tælles ikke. Tallene er en indikation, ikke en præcis optælling. Den offline søgeside i `filer/soegeside.html` tæller ingenting.
+
+Tællingen begynder, den dag `vis.php` og de nye filer bliver lagt op. Den kan ikke tælle bagud.
 
 ## Tjek at data-mappen er spærret
 

@@ -38,7 +38,7 @@ Projektet startede som "Lokalhistorie på tværs af generationer" i Syd for Bane
 3. **Metadata** (Dublin Core) ligger inde i hver fil: titel, ophav, emneord, udgiver, dato og meget mere. Det svarer til et kartotekskort i et arkiv.
 4. **Søgesiderne** læser metadataene og gør filerne søgbare:
    - Søgeside · Bygger laver en søgeside til en mappe med filer;
-   - Søgeindeks · Online er en fælles søgeportal på webhotellet, hvor hver forening kan få sin egen visning.
+   - Søgeindeks · Online er en fælles søgeportal på webhotellet, hvor hver forening kan få sin egen visning. En enkel statistik viser, hvor mange der kommer forbi, hvilke historier de åbner, og hvad de søger efter. Den gemmer kun tal, intet om hvem.
 5. **Fælles emneord** (fx Musik og Arkitektur) gør det muligt at finde alt om et emne på tværs af foreningerne. Udgiveren siger, *hvem* der har lavet historien, og emneordet siger, *hvad* den handler om.
 
 ## Hvad findes nu?

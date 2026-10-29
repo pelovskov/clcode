@@ -67,7 +67,7 @@ I mappen `fri/` ligger **Lokalhistorier · fri udgave** til enkeltpersoner, skol
 |---|---|---|
 | Dashboard | `bygger-dash.html` | forside med links til byggere og værktøjer |
 | Roskilde TV · videoarkiv | `roskilde-tv-videoarkiv.html` | den offentlige liste over Roskilde TV's 3.048 udsendelser, uden knapper. Kan linkes fra portalen |
-| Søgeindeks · Online | `sbtv/` | den samme søgeside som Søgeside · Bygger, men med login, upload og administration på et webhotel med PHP. Se `sbtv/LAES-MIG.md` |
+| Søgeindeks · Online | `sbtv/` | den samme søgeside som Søgeside · Bygger, men med login, upload, administration og en enkel statistik over besøg, klik og søgeord på et webhotel med PHP. Se `sbtv/LAES-MIG.md` |
 | Builder-standarden | `builder-standard.md` | fælles regler for byggerne, version 2.13 |
 | Projektresumé | `projekt-resume.md` | kort fortælling om hele projektet til idéudvikling og sparring med mennesker og Claude |
 | Fælles emneord | `emneord.md` | emneord, som alle foreninger staver ens, fx Musik og Arkitektur, så man kan finde et emne på tværs af foreningerne |
