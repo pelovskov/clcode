@@ -35,7 +35,7 @@ Projektet startede som "Lokalhistorie på tværs af generationer" i Syd for Bane
 
 1. **En bygger** er en side, man åbner i browseren. Man udfylder felter, lægger billeder eller lyd ind og vælger farvetema efter forening. Ud kommer én færdig fil.
 2. **Den færdige fil** kan gemmes, deles på en hjemmeside, sendes på mail og åbnes om mange år, også uden internet. Byggeren kan åbne filen igen, så den kan rettes.
-3. **Metadata** (Dublin Core) ligger inde i hver fil: titel, ophav, emneord, udgiver, dato og meget mere. Det svarer til et kartotekskort i et arkiv.
+3. **Metadata** (Dublin Core) ligger inde i hver fil: titel, ophav, emneord, udgiver, dato og meget mere. Det svarer til et kartotekskort i et arkiv. Oven i det står billedteksten synligt ved billedet, og alt-teksten beskriver billedet for dem, der ikke kan se det. Alle tre lag ligger i samme fil, så billede og fortælling ikke kan skilles ad, som i et gammeldags fotoalbum, hvor teksten stod under billedet og ikke på bagsiden.
 4. **Søgesiderne** læser metadataene og gør filerne søgbare:
    - Søgeside · Bygger laver en søgeside til en mappe med filer;
    - Søgeindeks · Online er en fælles søgeportal på webhotellet, hvor hver forening kan få sin egen visning. En enkel statistik viser, hvor mange der kommer forbi, hvilke historier de åbner, og hvad de søger efter. Den gemmer kun tal, intet om hvem.
