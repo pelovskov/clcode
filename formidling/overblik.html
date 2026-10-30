@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Historier, der kan klare sig selv · Lokalhistorier</title>
+<!-- Overblik over Lokalhistorier · version 1.0
+     Samler og afløser to ældre sider fra Syd for Banen: start.html ("Historier, der kan klare
+     sig selv") og index.html ("Lokalhistorie, du kan tage med hjem").
+     Samme farver og skrift som søgeportalen. A / A+ / A++ deles med portalen (lokalhist-tekst).
+     Ingen webfonte og ingen scripts udefra: siden virker også uden internet. -->
+
+<meta name="description" content="Overblik over Lokalhistorier: historier som selvstændige filer, den fælles søgeportal, byggerne til foreninger og den frie udgave til skoler og alle andre.">
+<meta name="dc.title" content="Historier, der kan klare sig selv">
+<meta name="dc.creator" content="Poul Erik Løvskov">
+<meta name="dc.subject" content="Syd for Banen - Lokalhistorisk Forening; Museer og kulturarv; lokalhistorie; digital formidling; langtidsholdbarhed">
+<meta name="dc.description" content="Overblik over Lokalhistorier: hvad en selvstændig historie-fil er, hvordan byggere, metadata og søgeportal hænger sammen, og hvor man går ind.">
+<meta name="dc.publisher" content="Syd for Banen - Lokalhistorisk Forening">
+<meta name="dc.date" content="2026-10-30">
+<meta name="dc.type" content="Text">
+<meta name="dc.format" content="text/html">
+<meta name="dc.language" content="da">
+<meta name="dc.rights" content="Må frit bruges til lokalhistoriske formål.">
+
+<style>
+  /* Alt er i rem, så A / A+ / A++ skalerer hele siden på én gang. */
+  html{font-size:100%;-webkit-text-size-adjust:100%}
+  html[data-tekst="stor"]{font-size:112.5%}
+  html[data-tekst="storst"]{font-size:125%}
+
+  /* Søgeportalens farver. */
+  :root{
+    --accent:#8E1F49;        /* 8,3:1 mod papir */
+    --accent-lys:#A8325F;
+    --papir:#FAF9F5;
+    --papir-dyb:#F1E7EC;
+    --blaek:#241520;         /* 15,6:1 */
+    --blaek-svag:#58424D;    /* 8,0:1 */
+    --streg:#D9C7CF;
+    --serif:Georgia,"Iowan Old Style","Palatino Linotype",Palatino,"Times New Roman",serif;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  }
+  @media (prefers-contrast:more){
+    :root{--accent:#6E1638;--blaek:#000;--blaek-svag:#33202B;--streg:#9C8A93}
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--papir);color:var(--blaek);font-family:var(--serif);font-size:1.25rem;line-height:1.65}
+  a{color:var(--accent)}
+  a:focus-visible,button:focus-visible,summary:focus-visible{outline:3px solid var(--accent);outline-offset:3px;border-radius:2px}
+  .spring{position:absolute;left:-999px;top:0;background:#fff;padding:.6rem 1rem;z-index:30}
+  .spring:focus{left:1rem;top:1rem}
+
+  .ramme{max-width:48rem;margin:0 auto;padding:0 1.5rem 4rem}
+
+  .etiket{font-family:var(--sans);font-size:.9rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin:0 0 .8rem}
+
+  /* ---- tekststørrelse ---- */
+  .tekststr{display:flex;align-items:center;justify-content:flex-end;gap:.5rem;padding:1.4rem 0 0;flex-wrap:wrap}
+  .tekststr .lbl{font-family:var(--sans);font-size:.95rem;color:var(--blaek-svag)}
+  .tekststr button{font-family:var(--serif);background:#fff;color:var(--blaek);border:2px solid var(--streg);border-radius:8px;
+    min-width:48px;min-height:48px;padding:0 .6rem;cursor:pointer;line-height:1}
+  .tekststr button:nth-of-type(1){font-size:1rem}
+  .tekststr button:nth-of-type(2){font-size:1.25rem}
+  .tekststr button:nth-of-type(3){font-size:1.5rem}
+  .tekststr button:hover{border-color:var(--accent)}
+  .tekststr button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+
+  /* ---- toppen ---- */
+  .hero{padding:1.6rem 0 2.4rem}
+  .hero h1{font-size:clamp(2.2rem,6.5vw,3.1rem);line-height:1.15;font-weight:600;margin:0 0 1.1rem}
+  .manchet{font-size:1.32rem;color:var(--blaek-svag);margin:0;max-width:34rem}
+  .oprindelse{font-size:1.1rem;color:var(--blaek-svag);margin:1.2rem 0 0;max-width:34rem}
+
+  .knap{display:block;text-align:center;background:var(--accent);color:#fff;text-decoration:none;font-family:var(--sans);font-weight:600;
+    font-size:1.08rem;line-height:1.3;padding:.85rem 1rem;min-height:48px;border-radius:8px;border:2px solid var(--accent)}
+  .knap:hover{background:var(--accent-lys);border-color:var(--accent-lys)}
+  .knap:focus-visible{outline:3px solid var(--blaek);outline-offset:3px}
+  .knap.kant{background:#fff;color:var(--accent)}
+  .knap.kant:hover{background:var(--papir-dyb)}
+  .knap-note{font-family:var(--sans);font-size:1rem;line-height:1.6;color:var(--blaek-svag);margin:1rem 0 0}
+
+  /* ---- de tre veje ind: sidestillede, ikke rangordnede ---- */
+  .valg{display:grid;grid-template-columns:repeat(3,1fr);gap:1.1rem;margin:0 0 .4rem}
+  .kort{background:#fff;border:1px solid var(--streg);border-top:5px solid var(--accent);border-radius:0 0 8px 8px;
+    padding:1.2rem 1.2rem 1.3rem;display:flex;flex-direction:column}
+  .kort .etiket{font-size:.82rem;margin:0 0 .4rem;flex:0 0 auto}
+  .kort h3{font-size:1.3rem;font-weight:600;line-height:1.25;margin:0 0 .6rem}
+  .kort p{color:var(--blaek-svag);font-size:1.05rem;margin:0 0 1.2rem;flex:1 1 auto}
+  .kort .knap + .knap{margin-top:.5rem}
+
+  /* ---- afsnit ---- */
+  .afsnit{border-top:1px solid var(--streg);padding:2.6rem 0 0}
+  .afsnit h2{font-size:1.75rem;font-weight:600;margin:0 0 1rem;line-height:1.3}
+  .afsnit p{margin:0 0 1.15rem;max-width:34rem}
+  .afsnit > :last-child{margin-bottom:2.6rem}
+
+  /* ---- kæden og trinene: rækkefølgen betyder noget ---- */
+  .trin{list-style:none;margin:0 0 2rem;padding:0;counter-reset:t}
+  .trin li{counter-increment:t;display:flex;gap:1.2rem;padding:1rem 0;border-bottom:1px solid var(--streg)}
+  .trin li::before{content:counter(t);font-family:var(--sans);font-weight:700;font-size:1.15rem;color:var(--accent);padding-top:.15rem;flex:0 0 1.4rem}
+  .trin strong{font-weight:600;display:block;margin-bottom:.15rem}
+  .trin span{color:var(--blaek-svag);font-size:1.1rem;display:block}
+
+  /* ---- slags stof ---- */
+  .slags{list-style:none;margin:0 0 2rem;padding:0}
+  .slags li{display:flex;gap:1.2rem;padding:.9rem 0;border-bottom:1px solid var(--streg)}
+  .slags .type{font-family:var(--sans);font-size:.85rem;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--accent);flex:0 0 7.5rem;padding-top:.3rem}
+  .slags strong{font-weight:600;display:block;margin-bottom:.15rem}
+  .slags span.txt{color:var(--blaek-svag);font-size:1.1rem;display:block;max-width:32rem}
+
+  /* ---- sedlen på filen ---- */
+  .seddel{background:var(--papir-dyb);border:1px solid var(--streg);border-left:5px solid var(--accent);padding:1rem 1.4rem 1.3rem;margin:0 0 2.6rem}
+  .seddel summary{font-family:var(--sans);font-weight:600;font-size:1.05rem;color:var(--accent);cursor:pointer;padding:.5rem 0;min-height:44px;display:flex;align-items:center}
+  .seddel dl{font-family:var(--sans);font-size:1rem;line-height:1.6;margin:.8rem 0 0}
+  .seddel dt{color:var(--accent);font-weight:600;margin-top:.8rem}
+  .seddel dd{margin:0;word-break:break-word}
+  .seddel .haand{font-style:italic;font-size:1.15rem;color:var(--blaek-svag);margin:1.4rem 0 0}
+
+  /* ---- 3-2-1 ---- */
+  .regel{list-style:none;margin:0 0 2rem;padding:0}
+  .regel li{display:flex;gap:1.2rem;align-items:baseline;padding:.6rem 0}
+  .regel b{font-family:var(--sans);color:var(--accent);font-size:1.8rem;flex:0 0 1.7rem}
+
+  .slut{font-size:1.3rem;font-style:italic;color:var(--blaek-svag);border-left:5px solid var(--accent);padding-left:1.3rem;margin:0 0 2.2rem}
+
+  footer{border-top:1px solid var(--streg);padding-top:1.6rem;font-family:var(--sans);font-size:1rem;line-height:1.8;color:var(--blaek-svag)}
+  footer p{margin:0 0 .5rem}
+  footer a{display:inline-block;padding:.15rem 0}
+
+  /* ---- telefon: teksten bliver ikke mindre, kun rammen ---- */
+  @media (max-width:760px){
+    .valg{grid-template-columns:1fr}
+  }
+  @media (max-width:600px){
+    .ramme{padding:0 1.1rem 3.5rem}
+    .tekststr{justify-content:flex-start}
+    .hero{padding:1.2rem 0 2rem}
+    .trin li{gap:.9rem}
+    .slags li{display:block}
+    .slags .type{padding-top:0;margin-bottom:.3rem}
+    .seddel{padding:1rem 1.1rem 1.2rem}
+  }
+
+  @media print{
+    body{background:#fff;color:#000;font-size:11pt}
+    html[data-tekst]{font-size:100%}
+    .tekststr,.spring{display:none}
+    .knap{border:1px solid #000;color:#000;background:#fff}
+    .kort{border:1px solid #000;break-inside:avoid}
+    .afsnit h2{break-after:avoid}
+    .seddel[open] summary{display:none}
+  }
+</style>
+</head>
+<body>
+<a class="spring" href="#indhold">Spring til indholdet</a>
+<main class="ramme" id="indhold">
+
+  <div class="tekststr" role="group" aria-label="Tekststørrelse">
+    <span class="lbl" aria-hidden="true">Tekst</span>
+    <button type="button" data-str="normal" aria-pressed="true" aria-label="Normal tekststørrelse">A</button>
+    <button type="button" data-str="stor" aria-pressed="false" aria-label="Større tekst">A+</button>
+    <button type="button" data-str="storst" aria-pressed="false" aria-label="Størst tekst">A++</button>
+  </div>
+
+  <header class="hero">
+    <p class="etiket">Lokalhistorier · et fælles projekt</p>
+    <h1>Historier, der kan klare sig selv</h1>
+    <p class="manchet">
+      Vi laver lokalhistorie om til filer, der virker af sig selv. Én historie er én fil: billeder,
+      lyd og tekst ligger inde i den samme fil. Du henter den ned, og så er den din. Der skal hverken
+      internet, konto eller en bestemt hjemmeside til, for at den kan åbnes igen.
+    </p>
+    <p class="oprindelse">
+      Idéen og værktøjerne udspringer fra <strong>Syd for Banen - Lokalhistorisk Forening</strong> i Roskilde.
+      I dag er det et fælles projekt, hvor flere foreninger deler en søgeportal, og hvor skoler og alle
+      andre kan bruge de samme værktøjer frit.
+    </p>
+  </header>
+
+  <section class="afsnit" aria-labelledby="h-veje">
+    <p class="etiket">Tre veje ind</p>
+    <h2 id="h-veje">Hvad vil du?</h2>
+    <div class="valg">
+      <div class="kort">
+        <p class="etiket">Læse · lytte · se</p>
+        <h3>Tag historierne med hjem</h3>
+        <p>Artikler, billedalbums, lydfortællinger og små bøger fra foreningerne. Find dem i søgeportalen, og gem dem på din egen computer.</p>
+        <a class="knap" href="https://sfbbilleder.eu/over/sbtv/forside.php">Gå til søgeportalen</a>
+      </div>
+      <div class="kort">
+        <p class="etiket">For foreninger</p>
+        <h3>Vær med i den fælles portal</h3>
+        <p>Lokalhistoriske foreninger får byggere med deres egne farver og en plads i søgeportalen, hvor alle kan finde deres historier.</p>
+        <a class="knap" href="https://sfbbilleder.eu/over/sbtv/forside.php#bliv">Sådan kommer I med</a>
+      </div>
+      <div class="kort">
+        <p class="etiket">Skoler og alle andre</p>
+        <h3>Lav dine egne historier</h3>
+        <p>Den frie udgave: de samme byggere, gratis og uden login. Til skoleklasser, institutioner og alle, der har en historie at fortælle.</p>
+        <a class="knap" href="https://pelovskov.github.io/clcode/fri/">Åbn den frie udgave</a>
+        <a class="knap kant" href="fri-udgave.html">Til lærere</a>
+      </div>
+    </div>
+    <p class="knap-note">Er du i tvivl, så start i søgeportalen. Værktøjerne giver bedst mening, når du har set, hvad de laver.</p>
+  </section>
+
+  <section class="afsnit" aria-labelledby="h-ide">
+    <p class="etiket">Hele idéen</p>
+    <h2 id="h-ide">Én historie, én fil</h2>
+    <p>
+      En almindelig hjemmeside er ikke ét sted, men mange. Teksten ligger et sted, billederne et andet,
+      lyden et tredje, og en server binder det hele sammen, hver gang nogen kigger. Holder serveren op,
+      falder siden fra hinanden, også selv om hvert enkelt billede stadig findes.
+    </p>
+    <p>
+      Her gør vi det modsatte. Alt bliver pakket ind i den samme fil: billederne, lyden, teksten og
+      oplysningerne om, hvad det hele er. Filen er ikke en henvisning til historien. Filen <em>er</em> historien.
+    </p>
+    <p>
+      Det betyder, at den opfører sig som en ting, du ejer, og ikke som en adresse, du besøger. Du kan lægge
+      den på en USB-nøgle, sende den til din søster, gemme den i familiens billedmappe eller aflevere den på
+      arkivet. Den åbner i en helt almindelig browser, også på en computer uden internet.
+    </p>
+  </section>
+
+  <section class="afsnit" aria-labelledby="h-kaede">
+    <p class="etiket">Sådan hænger det sammen</p>
+    <h2 id="h-kaede">Fra fortælling til fil til dit skrivebord</h2>
+    <ol class="trin">
+      <li><div><strong>Nogen har noget at fortælle</strong>
+        <span>Billeder fra en byvandring, en optagelse med en nabo, en beretning om en gade, der ikke ligner sig selv længere.</span></div></li>
+      <li><div><strong>En bygger samler det til én fil</strong>
+        <span>Man vælger den bygger, der passer til stoffet, og udfylder felterne. Byggeren lægger selv billeder og lyd ind i filen, så der ikke hentes noget udefra.</span></div></li>
+      <li><div><strong>Filen får en seddel med</strong>
+        <span>Titel, ophav, årstal, emne og hvad man må med den. Det er den samme standard, biblioteker og arkiver bruger. Fælles emneord gør, at man kan finde alt om fx Musik på tværs af foreningerne.</span></div></li>
+      <li><div><strong>Søgeportalen samler filerne</strong>
+        <span>Læseren søger på titel, emne eller sted, klikker på filen og gemmer den. Fra det øjeblik er historien læserens egen, uafhængigt af os.</span></div></li>
+    </ol>
+    <p>
+      Kæden kan brydes hvor som helst, og resten virker stadig. Lukker søgeportalen, ligger filerne der endnu.
+      Forsvinder byggerne, kan de færdige filer stadig åbnes. Det er hele pointen med at bygge det på den måde.
+    </p>
+  </section>
+
+  <section class="afsnit" aria-labelledby="h-slags">
+    <p class="etiket">Hvad kan man lave</p>
+    <h2 id="h-slags">Ti slags historier</h2>
+    <ul class="slags">
+      <li><div class="type">Artikel</div><div><strong>Siden</strong>
+        <span class="txt">En artikel om en gade, et sted eller et menneske, med billeder, faktaboks, galleri og lydklip.</span></div></li>
+      <li><div class="type">Billeder</div><div><strong>Albummet</strong>
+        <span class="txt">Billederne vises som små felter. Klikker man på ét, folder det sig ud i fuld størrelse med tekst under.</span></div></li>
+      <li><div class="type">Ét billede</div><div><strong>Enkeltbilledet</strong>
+        <span class="txt">Til det billede, der fortjener det hele. Det kan ses i fuld opløsning, og med luppen kan man se detaljerne i baggrunden.</span></div></li>
+      <li><div class="type">Før og nu</div><div><strong>To billeder, ét sted</strong>
+        <span class="txt">Et gammelt og et nyt billede fra samme sted med en skyder imellem.</span></div></li>
+      <li><div class="type">Tekst</div><div><strong>Den lille bog</strong>
+        <span class="txt">En beretning med forside, kapitler og indholdsfortegnelse. Bogen husker selv, hvor langt læseren er nået.</span></div></li>
+      <li><div class="type">Lyd</div><div><strong>Lydfortællingen</strong>
+        <span class="txt">Et billede, en overskrift og en stor, tydelig afspiller. Hele teksten kan foldes ud for dem, der hellere vil læse med.</span></div></li>
+      <li><div class="type">Video og lyd</div><div><strong>Mediekortet</strong>
+        <span class="txt">Et kort til en video, en podcast eller et talende billede, med beskrivelse, kapitler og udskrift.</span></div></li>
+      <li><div class="type">Foredrag</div><div><strong>Præsentationen</strong>
+        <span class="txt">Et billedshow til et oplæg eller en byvandring, også i fuld skærm.</span></div></li>
+      <li><div class="type">Henvisning</div><div><strong>Skiltet</strong>
+        <span class="txt">En lille fil, der fortæller om en side på nettet og sender videre til den, så den også kan findes i søgeportalen.</span></div></li>
+      <li><div class="type">Samling</div><div><strong>Temapakken</strong>
+        <span class="txt">En forside, der binder flere filer sammen under ét emne, så en byvandring, en gade eller en familie kan følges ad.</span></div></li>
+    </ul>
+    <p>
+      Uanset hvilken slags det er, kommer der én HTML-fil ud i den anden ende. Den ser forskellig ud,
+      men den opfører sig ens.
+    </p>
+  </section>
+
+  <section class="afsnit" aria-labelledby="h-hvorfor">
+    <p class="etiket">Hvorfor filer i stedet for et link</p>
+    <h2 id="h-hvorfor">Et link virker, så længe nogen holder døren åben</h2>
+    <p>
+      En hjemmeside kræver, at nogen bliver ved med at betale, vedligeholde og passe på den. En tjeneste
+      kræver en konto og nogle betingelser, der kan laves om. Det er ikke dommedagstanker, det er bare,
+      hvordan det plejer at gå: Foreninger holder pause, tjenester lukker, og formater, man engang stolede på,
+      kan pludselig ikke åbnes. Optagelser på MiniDisc var også en god idé engang.
+    </p>
+    <p>
+      Derfor er filen det bærende. Når du har hentet den, er historien ikke længere afhængig af os, af
+      foreningen eller af et firma. Søgeportalen er den nemme vej ind. Den er bare ikke det eneste sted,
+      historien findes.
+    </p>
+  </section>
+
+  <section class="afsnit" aria-labelledby="h-seddel">
+    <p class="etiket">Konteksten følger med</p>
+    <h2 id="h-seddel">Filen kan selv fortælle, hvad den er</h2>
+    <p>
+      I farmors fotoalbum stod der med håndskrift under billederne: <em>“Søs og Frede i sommerhuset, 1961.”</em>
+      Uden den sætning er billedet bare to ukendte mennesker. Et digitalt billede kender sin ISO-værdi og sine
+      GPS-koordinater, men ikke hvem der er på det, eller hvorfor nogen gemte det.
+    </p>
+    <p>
+      Derfor har hver eneste fil en lille seddel skrevet ind i sig. Det er den, søgeportalen søger i, og det er
+      den, der stadig kan læses om 50 år, hvor ingen længere kan spørge os. Den følger med filen, også når filen
+      ligger på en USB-nøgle i en skuffe.
+    </p>
+    <details class="seddel">
+      <summary>Vis sedlen på denne side</summary>
+      <dl>
+        <dt>Titel</dt><dd>Historier, der kan klare sig selv</dd>
+        <dt>Ophav</dt><dd>Poul Erik Løvskov</dd>
+        <dt>Udgiver</dt><dd>Syd for Banen - Lokalhistorisk Forening</dd>
+        <dt>Dato</dt><dd>2026-10-30</dd>
+        <dt>Emne</dt><dd>Syd for Banen - Lokalhistorisk Forening; Museer og kulturarv; lokalhistorie; digital formidling; langtidsholdbarhed</dd>
+        <dt>Type</dt><dd>Text</dd>
+        <dt>Sprog</dt><dd>da</dd>
+        <dt>Rettigheder</dt><dd>Må frit bruges til lokalhistoriske formål.</dd>
+      </dl>
+      <p class="haand">Sådan en seddel sidder på hver eneste historie i søgeportalen, også på denne side.</p>
+    </details>
+  </section>
+
+  <section class="afsnit" aria-labelledby="h-gem">
+    <p class="etiket">Til læseren</p>
+    <h2 id="h-gem">Sådan tager du en historie med hjem</h2>
+    <ol class="trin">
+      <li><div><strong>Find en historie i søgeportalen</strong>
+        <span>Søg på et ord, eller vælg en forening eller en type: tekst, billede, lyd eller video.</span></div></li>
+      <li><div><strong>Klik på den</strong>
+        <span>Den åbner som en helt almindelig webside.</span></div></li>
+      <li><div><strong>Gem den, hvis du vil beholde den</strong>
+        <span>Gå ned i bunden af historien, og klik på <em>Gem filen</em>. Nu ligger hele historien på din computer eller telefon. Billeder, lyd og tekst er med inde i filen.</span></div></li>
+      <li><div><strong>Åbn den igen senere</strong>
+        <span>Find filen der, hvor du gemte den, og klik eller dobbeltklik på den. Den åbner i din browser. Bliver du spurgt, hvilket program der skal bruges, så vælg din browser.</span></div></li>
+    </ol>
+    <p>
+      På telefon og tablet lander filen i <em>Filer</em> eller <em>Overførsler</em>. Åbn den derfra, og vælg din
+      browser, hvis den spørger.
+    </p>
+  </section>
+
+  <section class="afsnit" aria-labelledby="h-321">
+    <p class="etiket">Når du har hentet den</p>
+    <h2 id="h-321">Tre kopier, to slags medier, ét andet sted</h2>
+    <ul class="regel">
+      <li><b>3</b><span>Behold originalen og to kopier.</span></li>
+      <li><b>2</b><span>Gem dem på to forskellige slags medier, fx computeren og en USB-nøgle eller en ekstern disk.</span></li>
+      <li><b>1</b><span>Lad mindst én kopi ligge et andet sted end de øvrige, fx hos et familiemedlem.</span></li>
+    </ul>
+    <p class="slut">En historie, der kun findes ét sted, findes på lånt tid.</p>
+    <p class="slut" style="font-size:1.15rem">Hvis en helt fremmed fandt din vigtigste fil om 50 år, hvad ville du så ønske, der stod i den?</p>
+  </section>
+
+  <footer>
+    <p><strong>Spørgsmål?</strong> Skriv til Poul Erik Løvskov, <a href="mailto:pel@lovskov.com">pel@lovskov.com</a></p>
+    <p>Lokalhistorier udspringer fra Syd for Banen - Lokalhistorisk Forening, Roskilde. Materialet må frit bruges til lokalhistoriske formål.</p>
+    <p>Denne side er selv én fil: Hent den, og den virker uden internet.</p>
+  </footer>
+
+</main>
+
+<script>
+/* Tekststørrelse: A / A+ / A++. Indstillingen deles med søgeportalen. */
+(function(){
+  var knapper = document.querySelectorAll(".tekststr button");
+  function saet(v, gem){
+    if(v && v !== "normal"){ document.documentElement.setAttribute("data-tekst", v); }
+    else { document.documentElement.removeAttribute("data-tekst"); v = "normal"; }
+    knapper.forEach(function(k){ k.setAttribute("aria-pressed", String(k.dataset.str === v)); });
+    if(gem){ try{ localStorage.setItem("lokalhist-tekst", v); }catch(e){} }
+  }
+  var gemt = null;
+  try{ gemt = localStorage.getItem("lokalhist-tekst"); }catch(e){}
+  if(gemt){ saet(gemt, false); }
+  knapper.forEach(function(k){ k.addEventListener("click", function(){ saet(k.dataset.str, true); }); });
+})();
+</script>
+</body>
+</html>
