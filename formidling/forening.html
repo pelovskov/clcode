@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Foreningsudgaven · den grundige side · version 1.0
+     Til bestyrelser og frivillige i foreninger, der vil være med i den fælles søgeportal.
+     Hører sammen med arket forening-ark.html. Samme farver som søgeportalen.
+     VIDEOERNE: Adresserne sættes ind i listen VIDEOER nederst i filen. Se forklaringen der. -->
+<title>Foreningsudgaven · Lokalhistorier</title>
+<style>
+  /* Søgeportalens farver. */
+  :root{
+    --accent:#8E1F49;      /* 8,3:1 mod papir */
+    --accent-mork:#6E1638;
+    --accent-lys:#F1E7EC;
+    --papir:#FAF9F5;
+    --ink:#241520;
+    --body:#33202B;
+    --muted:#58424D;       /* 8,0:1 mod papir */
+    --line:#D9C7CF;
+    --gul:#E8B04A;
+    --gul-lys:#FBF1DC;
+    --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+    --serif:Georgia,"Times New Roman",serif;
+  }
+  *{box-sizing:border-box}
+  html{font-size:100%;scroll-behavior:smooth}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+  body{margin:0;background:var(--papir);color:var(--body);font-family:var(--sans);font-size:1.1rem;line-height:1.65}
+  a{color:var(--accent)}
+  :focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+  .spring{position:absolute;left:-999px;top:0;background:#fff;padding:.6rem 1rem;z-index:30}
+  .spring:focus{left:1rem;top:1rem}
+  .wrap{max-width:980px;margin:0 auto;padding:0 1.25rem}
+
+  /* ---- toppen ---- */
+  .hoved{background:var(--accent);color:#fff;padding:2.2rem 0 2rem}
+  .over{margin:0;font-size:.95rem;letter-spacing:.05em;text-transform:uppercase}
+  .hoved h1{margin:.25rem 0 .6rem;font-family:var(--serif);font-size:2.6rem;line-height:1.15;color:#fff}
+  .hoved .lead{margin:0;font-size:1.25rem;max-width:38em}
+  .knapper{display:flex;gap:.7rem;flex-wrap:wrap;margin-top:1.3rem}
+  .knap{display:inline-flex;align-items:center;gap:.5rem;min-height:50px;padding:.55rem 1.3rem;border-radius:999px;
+    font-weight:700;text-decoration:none;border:2px solid #fff}
+  .knap.lys{background:#fff;color:var(--accent)}
+  .knap.lys:hover{background:var(--gul-lys)}
+  .knap.kant{color:#fff}
+  .knap.kant:hover{background:rgba(255,255,255,.15)}
+
+  nav.indhold{background:var(--accent-lys);border-bottom:1px solid var(--line)}
+  nav.indhold ul{list-style:none;margin:0 auto;padding:.7rem 1.25rem;max-width:980px;display:flex;flex-wrap:wrap;gap:.2rem 1.3rem;font-size:1rem}
+  nav.indhold li span{color:var(--muted);display:inline-flex;align-items:center;min-height:40px}
+  nav.indhold a{display:inline-flex;align-items:center;min-height:40px}
+
+  /* ---- afsnit ---- */
+  main section{padding:2.4rem 0 .4rem}
+  h2{font-family:var(--serif);font-size:1.8rem;line-height:1.25;color:var(--ink);margin:0 0 .8rem;display:flex;align-items:center;gap:.6rem}
+  h2::before{content:"";width:8px;height:1.1em;background:var(--gul);border-radius:4px;display:block;flex:0 0 auto}
+  h3{font-size:1.22rem;color:var(--ink);margin:1.6rem 0 .4rem}
+  p{margin:.5rem 0}
+  .ingress{font-size:1.2rem;max-width:44em}
+
+  .gitter{list-style:none;margin:1rem 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(17rem,1fr));gap:.9rem}
+  .gitter li{background:#fff;border:1px solid var(--line);border-top:4px solid var(--accent);border-radius:0 0 10px 10px;padding:1rem 1.1rem}
+  .gitter .ikon{font-size:1.6rem;line-height:1.2;display:block}
+  .gitter strong{display:block;color:var(--ink);font-size:1.1rem;margin:.2rem 0 .2rem}
+  .gitter span.t{display:block;font-size:1rem}
+
+  .foreninger{list-style:none;margin:1rem 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(14rem,1fr));gap:.6rem}
+  .foreninger li{background:var(--accent-lys);border-radius:8px;padding:.7rem .9rem}
+  .foreninger strong{display:block;color:var(--ink)}
+  .foreninger span{display:block;font-size:.95rem;color:var(--muted)}
+
+  ol.trin{margin:1rem 0;padding:0;list-style:none;counter-reset:trin}
+  ol.trin > li{counter-increment:trin;position:relative;padding:0 0 1rem 3rem}
+  ol.trin > li::before{content:counter(trin);position:absolute;left:0;top:-.1rem;width:2.1rem;height:2.1rem;border-radius:50%;
+    background:var(--accent);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center}
+  ol.trin strong.top{display:block;color:var(--ink);font-size:1.12rem}
+
+  .boks{background:var(--gul-lys);border-left:6px solid var(--gul);border-radius:0 10px 10px 0;padding:1rem 1.2rem;margin:1.2rem 0}
+  .boks h3{margin-top:0}
+  .boks ul{margin:.4rem 0 0;padding-left:1.3rem}
+  .boks li{margin:.3rem 0}
+
+  /* ---- videoerne ---- */
+  .videoer{display:grid;grid-template-columns:1fr;gap:1.6rem;margin-top:1rem}
+  .video{margin:0;background:#fff;border:1px solid var(--line);border-radius:12px;padding:1rem 1rem 1.1rem}
+  .video h3{margin:0 0 .3rem}
+  .video p.om{margin:0 0 .8rem;max-width:44em}
+  .skaerm{position:relative;width:100%;aspect-ratio:16/9;background:#2B1A23;border-radius:8px;overflow:hidden}
+  .skaerm iframe,.skaerm video{position:absolute;inset:0;width:100%;height:100%;border:0;background:#000}
+  .snart{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.6rem;
+    color:#F5E9EF;text-align:center;padding:1rem}
+  .snart svg{width:3.4rem;height:3.4rem;opacity:.9}
+  .snart b{font-size:1.25rem}
+  .snart span{font-size:1rem;opacity:.9}
+  .video .ny{display:inline-block;margin-top:.6rem;font-size:.98rem}
+  .video .ny[hidden]{display:none}
+  .kun-print{display:none}
+
+  .sporg h3{margin-top:1.4rem}
+  .sporg p{max-width:46em}
+
+  .fod{margin-top:2.5rem;background:var(--accent-lys);border-top:1px solid var(--line);padding:1.8rem 0 2.4rem}
+  .fod p{margin:.3rem 0}
+  .fod .stor{font-size:1.15rem}
+  .fod .lille{font-size:.92rem;color:var(--muted)}
+
+  .optil{position:fixed;right:1rem;bottom:1rem;z-index:20;display:flex;align-items:center;gap:.45rem;font:inherit;font-size:1rem;font-weight:700;
+    min-height:48px;padding:.5rem 1.1rem;background:var(--accent);color:#fff;border:2px solid #fff;border-radius:999px;cursor:pointer;
+    box-shadow:0 4px 14px rgba(0,0,0,.25)}
+  .optil[hidden]{display:none}
+  .optil svg{width:1.2rem;height:1.2rem}
+
+  @media (min-width:900px){
+    .videoer{grid-template-columns:1fr 1fr}
+    .videoer .video:first-child{grid-column:1 / -1}
+  }
+  @media (max-width:760px){
+    .hoved h1{font-size:2rem}
+    h2{font-size:1.5rem}
+  }
+
+  /* ---- Print ---- */
+  @page{size:A4;margin:14mm 14mm 16mm}
+  @media print{
+    /* Alle størrelser er i rem, så én grundstørrelse skalerer det hele til papir. */
+    html{scroll-behavior:auto;font-size:9.4pt}
+    body{background:#fff;line-height:1.45}
+    .spring,nav.indhold,.knapper,.optil,.skaerm,.video .ny{display:none !important}
+    .kun-print{display:block}
+    .hoved{padding:6mm 0 5mm;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .wrap{max-width:none;padding:0 2mm}
+    main section{padding:6mm 0 0}
+    h2,h3{break-after:avoid}
+    h2::before,.gitter li,.foreninger li,.boks,ol.trin > li::before,.fod{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .gitter li,.boks,ol.trin > li,.sporg .q,.video{break-inside:avoid}
+    .videoer{display:block}
+    .video{margin-bottom:3mm;padding:3mm}
+    .fod{break-inside:avoid;margin-top:6mm;padding:4mm 0}
+    a{color:inherit}
+  }
+</style>
+</head>
+<body>
+<a class="spring" href="#indhold">Spring til indholdet</a>
+
+<header class="hoved">
+  <div class="wrap">
+    <p class="over">Lokalhistorier · foreningsudgaven</p>
+    <h1>Jeres historier i den fælles portal</h1>
+    <p class="lead">For lokalhistoriske foreninger og andre, der vil dele deres historier: byggere med jeres egne farver,
+    en plads i den fælles søgeportal og filer, der holder i mange år.</p>
+    <div class="knapper">
+      <a class="knap lys" href="https://sfbbilleder.eu/over/sbtv/forside.php">Se søgeportalen</a>
+      <a class="knap kant" href="https://pelovskov.github.io/clcode/bygger-dash.html">Åbn byggerne</a>
+      <a class="knap kant" href="forening-ark.html">Arket til print (én side)</a>
+    </div>
+  </div>
+</header>
+
+<nav class="indhold" aria-label="På denne side">
+  <ul>
+    <li><span>På siden:</span></li>
+    <li><a href="#faar">Det får I</a></li>
+    <li><a href="#med">Hvem er med</a></li>
+    <li><a href="#vejen">Fra fil til portal</a></li>
+    <li><a href="#videoer">Videoer</a></li>
+    <li><a href="#roller">Brugere</a></li>
+    <li><a href="#kommed">Sådan kommer I med</a></li>
+    <li><a href="#sporg">Spørgsmål og svar</a></li>
+  </ul>
+</nav>
+
+<main id="indhold">
+  <div class="wrap">
+
+    <section aria-labelledby="h-intro">
+      <h2 id="h-intro">Kort fortalt</h2>
+      <p class="ingress">Foreningen laver sine historier med byggerne: artikler, album, lydfortællinger, mediekort og meget mere.
+      Hver historie bliver <strong>én fil</strong> med billeder, lyd og tekst indeni. Filerne lægges op i den fælles søgeportal,
+      hvor alle kan finde dem, på tværs af foreningerne.</p>
+      <p>Idéen og værktøjerne udspringer fra Syd for Banen - Lokalhistorisk Forening. I dag er det et fælles projekt, hvor flere
+      foreninger deler søgeportalen. Læs mere om tanken bag i <a href="overblik.html">Historier, der kan klare sig selv</a>.</p>
+    </section>
+
+    <section id="faar" aria-labelledby="h-faar">
+      <h2 id="h-faar">Det får foreningen</h2>
+      <ul class="gitter">
+        <li><span class="ikon" aria-hidden="true">🎨</span><strong>Jeres egne farver og navn</strong><span class="t">Foreningen får sit eget farvetema i alle byggerne og står på listen over udgivere. Så kan man se, at historien er jeres.</span></li>
+        <li><span class="ikon" aria-hidden="true">🔎</span><strong>En plads i søgeportalen</strong><span class="t">Jeres historier kan findes sammen med de andre foreningers. Foreningen får sit eget kort på forsiden med logo og en visning med kun jeres materiale.</span></li>
+        <li><span class="ikon" aria-hidden="true">⬆️</span><strong>Læg selv filer op</strong><span class="t">Foreningens redaktører logger ind og lægger nye historier op. De kan findes med det samme.</span></li>
+        <li><span class="ikon" aria-hidden="true">🏷️</span><strong>Fælles emneord</strong><span class="t">En kort liste med fælles emneord, fx Musik og Arkitektur, gør, at man kan finde alt om et emne på tværs af foreningerne.</span></li>
+        <li><span class="ikon" aria-hidden="true">📊</span><strong>Statistik</strong><span class="t">Se, hvor mange der kommer forbi, hvilke historier der bliver åbnet, og hvad folk søger efter. Der gemmes kun tal, intet om hvem.</span></li>
+        <li><span class="ikon" aria-hidden="true">💾</span><strong>Filer, der holder</strong><span class="t">Hver historie virker også uden portalen: på jeres egen hjemmeside, et USB-stik eller i arkivet, også om mange år.</span></li>
+      </ul>
+    </section>
+
+    <section id="med" aria-labelledby="h-med">
+      <h2 id="h-med">Hvem er med</h2>
+      <p>Disse er med i den fælles søgeportal i dag:</p>
+      <ul class="foreninger">
+        <li><strong>Syd for Banen</strong><span>Lokalhistorisk forening</span></li>
+        <li><strong>Historisk Samfund for Roskilde Amt</strong><span>Historisk forening siden 1912</span></li>
+        <li><strong>Roskilde TV</strong><span>Lokal-tv</span></li>
+        <li><strong>Røde Kors Roskilde</strong><span>Frivillig organisation</span></li>
+        <li><strong>Roskilde Musik</strong><span>Musikforening</span></li>
+        <li><strong>cirkler</strong><span>Fællesskab for nye bekendtskaber</span></li>
+      </ul>
+    </section>
+
+    <section id="vejen" aria-labelledby="h-vejen">
+      <h2 id="h-vejen">Fra fil til portal</h2>
+      <p>Sådan kommer en ny historie fra idé til søgeportalen:</p>
+      <ol class="trin">
+        <li><strong class="top">Lav historien i en bygger</strong>Åbn byggerne fra dashboardet, og vælg den, der passer til stoffet. Udfyld felterne, og læg billeder og lyd ind. Formularen står til venstre, og til højre ser man historien blive til.</li>
+        <li><strong class="top">Vælg foreningen som udgiver</strong>Under <em>Udgiver</em> vælger I jeres forening, og under <em>Tema</em> jeres farver. Så får filen også jeres forkortelse i sin identifikator.</li>
+        <li><strong class="top">Skriv emneord</strong>Udgiveren står selv først. Skriv derefter et eller flere fælles emneord, fx <em>Arkitektur</em>, og til sidst jeres egne præcise ord. Brug siden <a href="https://pelovskov.github.io/clcode/tools/emneord.html">Fælles emneord</a>, hvor ordene kan kopieres.</li>
+        <li><strong class="top">Gem filen</strong>Tryk på knappen nederst i byggeren. Filen havner i <em>Overførsler</em>. Dobbeltklik på den for at se den færdige historie.</li>
+        <li><strong class="top">Læg den op i portalen</strong>Log ind i søgeportalen, og vælg <em>Læg filer op</em>. Vælg filen, eller træk den ind. Historien kan findes med det samme.</li>
+      </ol>
+      <div class="boks">
+        <h3>Når en historie skal rettes</h3>
+        <ul>
+          <li>Åbn filen i den samme bygger med <em>Indlæs eksisterende</em>. Alt kommer med.</li>
+          <li>Ret, og gem filen igen med <strong>samme filnavn</strong>.</li>
+          <li>Læg den op igen. Så erstatter den den gamle, og statistikken følger med.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="videoer" aria-labelledby="h-videoer">
+      <h2 id="h-videoer">Se, hvordan det gøres</h2>
+      <p>Tre korte videoer viser de byggere, foreningerne bruger mest.</p>
+      <div class="videoer">
+        <figure class="video" data-video="side">
+          <h3>Sidebygger: en artikel om en gade, et sted eller et menneske</h3>
+          <p class="om">Titel, billeder i toppen, selve artiklen med faktaboks og galleri, og til sidst emneord og gem.</p>
+          <div class="skaerm"></div>
+          <a class="ny" href="#" target="_blank" rel="noopener" hidden>Åbn videoen i et nyt vindue</a>
+          <p class="kun-print adresse"></p>
+        </figure>
+        <figure class="video" data-video="album">
+          <h3>Album: et fotoalbum</h3>
+          <p class="om">Vælg billederne, skriv billedtekster og alt-tekster, og sæt dem i den rigtige rækkefølge.</p>
+          <div class="skaerm"></div>
+          <a class="ny" href="#" target="_blank" rel="noopener" hidden>Åbn videoen i et nyt vindue</a>
+          <p class="kun-print adresse"></p>
+        </figure>
+        <figure class="video" data-video="mediekort">
+          <h3>Mediekort: video, podcast eller lyd med billede</h3>
+          <p class="om">Sæt en video eller en lydfil ind, skriv en beskrivelse og kapitler, så man kan springe rundt.</p>
+          <div class="skaerm"></div>
+          <a class="ny" href="#" target="_blank" rel="noopener" hidden>Åbn videoen i et nyt vindue</a>
+          <p class="kun-print adresse"></p>
+        </figure>
+      </div>
+    </section>
+
+    <section id="roller" aria-labelledby="h-roller">
+      <h2 id="h-roller">Brugere i søgeportalen</h2>
+      <p>Der er to slags brugere. Ingen af dem skal installere noget. Man logger ind i browseren.</p>
+      <ul class="gitter">
+        <li><span class="ikon" aria-hidden="true">✍️</span><strong>Redaktør</strong><span class="t">Lægger filer op, ser statistikken og skifter selv sin adgangskode. Hver forening kan have en eller flere redaktører.</span></li>
+        <li><span class="ikon" aria-hidden="true">🔑</span><strong>Superadmin</strong><span class="t">Passer portalen: opretter og lukker redaktører, sletter filer og retter overskriften. Det er de få, der driver portalen.</span></li>
+      </ul>
+      <p>En ny redaktør får en engangskode og vælger selv sin egen adgangskode første gang. Ingen andre kender den.</p>
+    </section>
+
+    <section id="kommed" aria-labelledby="h-kommed">
+      <h2 id="h-kommed">Sådan kommer I med</h2>
+      <ol class="trin">
+        <li><strong class="top">Skriv til os</strong>Fortæl kort om foreningen, og hvad I gerne vil dele. Kontakten står nederst på siden.</li>
+        <li><strong class="top">Vi aftaler det praktiske</strong>Foreningens navn, som det skal stå som udgiver, en kort forkortelse, et logo, en kort beskrivelse til forsiden og jeres farver.</li>
+        <li><strong class="top">Vi sætter jer ind</strong>Jeres farver og navn kommer ind i alle byggerne, og foreningen får sit kort på søgeportalens forside.</li>
+        <li><strong class="top">I får jeres brugere</strong>En eller flere redaktører får login, og så kan I gå i gang.</li>
+      </ol>
+      <div class="boks">
+        <h3>Godt at have klar</h3>
+        <ul>
+          <li>En kontaktperson i foreningen.</li>
+          <li>Logoet som billedfil, og gerne foreningens farver.</li>
+          <li>Et par historier at starte med. Det er nemmere at lære byggerne med noget, man kender.</li>
+          <li>Styr på rettighederne: Hvem ejer billederne, og må de vises offentligt?</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="sporg" class="sporg" aria-labelledby="h-sporg">
+      <h2 id="h-sporg">Spørgsmål og svar</h2>
+      <div class="q">
+        <h3>Hvem ejer historierne?</h3>
+        <p>Foreningen. I skriver selv under <em>Rettigheder</em>, hvad andre må med historien, fx at den må bruges med navngivelse, men ikke til kommercielle formål.</p>
+      </div>
+      <div class="q">
+        <h3>Hvad sker der, hvis portalen lukker?</h3>
+        <p>Så virker filerne stadig. Hver historie er én selvstændig fil, som kan ligge på jeres egen hjemmeside, et drev eller et USB-stik.
+        Portalen er den nemme vej ind, ikke det eneste sted, historien findes.</p>
+      </div>
+      <div class="q">
+        <h3>Kan vi også bruge filerne på vores egen hjemmeside?</h3>
+        <p>Ja. En fil kan lægges op alle steder, hvor man kan lægge en fil, og den kan sendes på mail. Den har alt indeni.</p>
+      </div>
+      <div class="q">
+        <h3>Vi har allerede et billedgalleri. Kan det bruges?</h3>
+        <p>Har foreningen et Piwigo-galleri, kan Piwigo Albumbyggeren hente et album direkte fra galleriet. Den skal ligge på galleriets adresse.
+        Ellers kan billederne hentes ned og lægges ind i Album.</p>
+      </div>
+      <div class="q">
+        <h3>Skal vi bruge de fælles emneord?</h3>
+        <p>Ja, så vidt det er muligt. Det er det, der gør det muligt at finde alt om fx Musik på tværs af foreningerne.
+        Udgiveren sættes selv ind først, og jeres egne præcise ord kan stå efter de fælles. Mangler der et emneord, aftaler vi det sammen.</p>
+      </div>
+      <div class="q">
+        <h3>Hvad med billeder af personer?</h3>
+        <p>Spørg, før I viser billeder af andre, især børn. Alt, der lægges i portalen, kan ses af alle. Læg kun det op, som må være offentligt.</p>
+      </div>
+      <div class="q">
+        <h3>Skal vi kunne noget særligt?</h3>
+        <p>Nej. Kan man skrive en mail og vedhæfte et billede, kan man bruge byggerne. Under hvert felt står en kort forklaring, og videoerne ovenfor viser vejen.</p>
+      </div>
+    </section>
+  </div>
+</main>
+
+<footer class="fod">
+  <div class="wrap">
+    <p class="stor"><strong>Vil I være med, eller har I spørgsmål?</strong> Skriv til Poul Erik Løvskov, <a href="mailto:pel@lovskov.com">pel@lovskov.com</a></p>
+    <p>Søgeportalen: <a href="https://sfbbilleder.eu/over/sbtv/forside.php">sfbbilleder.eu/over/sbtv</a> · Om hele projektet: <a href="overblik.html">Historier, der kan klare sig selv</a></p>
+    <p class="lille">Lokalhistorier udspringer fra Syd for Banen - Lokalhistorisk Forening, Roskilde.</p>
+  </div>
+</footer>
+
+<button type="button" class="optil" id="optil" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 14l6-6 6 6"/></svg>Til toppen</button>
+
+<script>
+/* =====================================================================
+   VIDEOERNE
+   Sæt adressen på hver video ind mellem anførselstegnene herunder.
+   - Fra pCloud: brug adressen fra indlejringskoden, altså det, der står
+     efter src=" i koden, eller et direkte link til en .mp4-fil.
+   - Adressen skal begynde med https://
+   Står der ingenting, viser siden "Videoen kommer snart".
+   ===================================================================== */
+var VIDEOER = {
+  side:      "",
+  album:     "",
+  mediekort: ""
+};
+
+(function(){
+  var FILM = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9l5 3-5 3z"/></svg>';
+  var figurer = document.querySelectorAll("figure.video");
+  for (var i = 0; i < figurer.length; i++) {
+    var fig = figurer[i];
+    var adr = String(VIDEOER[fig.getAttribute("data-video")] || "").trim();
+    var skaerm = fig.querySelector(".skaerm");
+    var titel = fig.querySelector("h3").textContent;
+    if (!/^https:\/\//i.test(adr)) {
+      skaerm.innerHTML = '<div class="snart">' + FILM + '<b>Videoen kommer snart</b><span>Den bliver sat ind her, når den er klar.</span></div>';
+      continue;
+    }
+    if (/\.(mp4|webm|m4v)(\?|#|$)/i.test(adr)) {
+      var v = document.createElement("video");
+      v.controls = true; v.preload = "metadata"; v.src = adr;
+      v.setAttribute("aria-label", titel);
+      skaerm.appendChild(v);
+    } else {
+      var f = document.createElement("iframe");
+      f.src = adr; f.title = "Video: " + titel; f.loading = "lazy";
+      f.setAttribute("allow", "autoplay; fullscreen; picture-in-picture");
+      f.setAttribute("allowfullscreen", "");
+      skaerm.appendChild(f);
+    }
+    var ny = fig.querySelector(".ny");
+    ny.href = adr; ny.hidden = false;
+    fig.querySelector(".adresse").textContent = "Se videoen på: " + adr;
+  }
+})();
+
+/* Knappen "Til toppen", når man er rullet langt ned. */
+(function(){
+  var knap = document.getElementById("optil");
+  function tjek(){ knap.hidden = window.scrollY < window.innerHeight * 1.5; }
+  window.addEventListener("scroll", tjek, {passive:true});
+  knap.addEventListener("click", function(){
+    window.scrollTo(0, 0);
+    var h = document.querySelector("h1"); h.setAttribute("tabindex", "-1"); h.focus({preventScroll:true});
+  });
+  tjek();
+})();
+</script>
+</body>
+</html>
