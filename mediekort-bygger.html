@@ -47,6 +47,12 @@
   .status.pending{ color:#7A6522; }
   .status.bad{ color:#7d2c1a; }
   .status a{ color:var(--rust); }
+  .mappeplan{ margin-top:12px; background:#fff; border:1px solid var(--line); border-left:4px solid var(--moss); border-radius:3px; padding:10px 13px; font-size:14px; line-height:1.55; }
+  .mappeplan ul{ list-style:none; margin:6px 0 0; padding:0; font-family:ui-monospace, Menlo, Consolas, monospace; font-size:14px; }
+  .mappeplan li{ margin:2px 0; }
+  .mappeplan li.l2{ padding-left:22px; }
+  .mappeplan li.l3{ padding-left:44px; }
+  .mappeplan small{ font-family:var(--sans, inherit); color:var(--hint); }
   .row2{ display:flex; gap:16px; }
   .row2 > div{ flex:1; }
   @media (max-width: 560px){ .row2{ flex-direction:column; } }
@@ -133,7 +139,7 @@
 
 <div class="topbar">
   <h1>Mediekort · Bygger</h1>
-  <span>Lav et kort til en video, en podcast eller et talende billede, med kapitler og udskrift · kører lokalt, ingen server · version 1.6</span>
+  <span>Lav et kort til en video, en podcast eller et talende billede, med kapitler og udskrift · kører lokalt, ingen server · version 1.7</span>
 </div>
 
 <div class="layout">
@@ -203,8 +209,8 @@
         </label>
         <label class="mode-option" data-mode="videofile">
           <input type="radio" name="mode" value="videofile">
-          <div class="tname">Videofil (link)</div>
-          <div class="tsub">En mp4-fil fra fx pCloud eller jeres webhotel, som ikke skal på YouTube.</div>
+          <div class="tname">Videofil</div>
+          <div class="tsub">En mp4-fil i en mappe ved siden af kortet – til møder uden internet – og/eller fra fx pCloud.</div>
         </label>
         <label class="mode-option" data-mode="audio">
           <input type="radio" name="mode" value="audio">
@@ -233,9 +239,19 @@
 
     <div id="videoFileFields" hidden>
       <div class="field">
-        <label for="fVideoFileUrl">Adresse på videofilen</label>
+        <label for="videoLocal">Videofil i mappen (til visning uden internet)</label>
+        <div class="filebox">
+          <input type="file" id="videoLocal" accept="video/mp4,.mp4,.m4v">
+          <div class="status" id="videoLocalStatus">Ingen fil valgt</div>
+          <div class="btnrow"><button type="button" class="sbtn" id="btnVideoLocalClear" disabled>Fjern videofilen fra kortet</button></div>
+        </div>
+        <div class="hint">Videoen lægges ikke ind i kortet, for videofiler er for store til det. Den skal ligge i mappen <code>media</code> ved siden af kortet. Så kan kortet vises fra en bærbar computer eller et USB-stik uden internet, fx til et møde. Brug MP4 med H.264 og AAC (Builder-standard 5.7).</div>
+        <div class="mappeplan" id="mappePlan" hidden></div>
+      </div>
+      <div class="field">
+        <label for="fVideoFileUrl" id="videoUrlLabel">Adresse på videofilen</label>
         <input type="url" id="fVideoFileUrl" placeholder="https://filedn.eu/…/film.mp4">
-        <div class="hint">Brug den direkte adresse til filen, fx et link fra en offentlig mappe i pCloud. Prøv adressen i browserens adresselinje: afspilles videoen der, virker den også i kortet. Værktøjet prøver videoen af og viser varighed og størrelse. Videoen lægges ikke ind i kortet, fordi videofiler er for store til det.</div>
+        <div class="hint" id="videoUrlHint">Brug den direkte adresse til filen, fx et link fra en offentlig mappe i pCloud. Prøv adressen i browserens adresselinje: afspilles videoen der, virker den også i kortet. Værktøjet prøver videoen af og viser varighed og størrelse.</div>
         <div class="status" id="videoFileStatus"></div>
       </div>
     </div>
@@ -462,8 +478,12 @@
 
 <script>
 /* =======================================================================
-   Mediekort · Bygger — version 1.6
+   Mediekort · Bygger — version 1.7
    1.1: videofil fra fx pCloud.
+   1.7: mappeformatet (Builder-standard 5.7): videofilen kan ligge i mappen
+        media/ ved siden af kortet, med adressen på nettet som reserve. Kortet
+        siger selv, hvilken fil der mangler. Listen "media" i kildedata.
+        Tilføjelse, så builderVersion er stadig 1.
    1.2: "Talende billede" (mode 'picture'): billedet i op til 2000 px i sin
         egen form, fuld skærm-visning, lille favicon, felt til billedets ophav,
         overskrift over beskrivelsen og "Gem filen"-tekst der passer til indholdet.
@@ -482,6 +502,7 @@ const state = {
   videoId:'',
   audioUrl:'', audioDuration:0,
   videoFileUrl:'', videoDuration:0,
+  localVideo:null, localVideoUrl:'',   // videofil i mappen media/ (5.7) og en blob-adresse til forhåndsvisningen
   audioBlob:null, audioName:'', audioBlobUrl:'',
   kicker:'', title:'', location:'', shareImage:'',
   poster:'', posterAlt:'',
@@ -1112,6 +1133,89 @@ $('btnOembed').addEventListener('click', () => {
     });
 });
 
+/* ---------- Videofil i mappen (Builder-standard 5.7) ----------
+   Filen lægges ikke ind i kortet. Kortet peger på media/<titel>.mp4 med en
+   relativ adresse, og byggeren viser, hvordan mappen skal se ud. */
+
+const VIDEO_TYPES = { mp4:'video/mp4', m4v:'video/mp4' };
+
+function videoExt(name){
+  const m = String(name || '').toLowerCase().match(/\.([a-z0-9]+)$/);
+  return m ? m[1] : '';
+}
+// Mappens og filernes navne følger titlen (5.6). Er kortet indlæst, beholdes den gamle sti.
+function folderName(s){ return slugify(s.title, 'mediekort'); }
+function localVideoPath(s){
+  const v = s.localVideo;
+  if (!v) return '';
+  if (v.fil) return v.fil;
+  const ext = VIDEO_TYPES[v.ext] ? (v.ext === 'm4v' ? 'mp4' : v.ext) : (v.ext || 'mp4');
+  return 'media/' + folderName(s) + '.' + ext;
+}
+
+function setLocalVideo(file){
+  if (state.localVideoUrl){ URL.revokeObjectURL(state.localVideoUrl); }
+  state.localVideoUrl = '';
+  state.localVideo = null;
+  const st = $('videoLocalStatus');
+  $('btnVideoLocalClear').disabled = !file;
+  if (!file){
+    st.textContent = 'Ingen fil valgt'; st.className = 'status';
+    renderPreview(); return;
+  }
+  const ext = videoExt(file.name);
+  state.localVideo = { name: file.name, ext: ext, type: VIDEO_TYPES[ext] || file.type || 'video/mp4', bytes: file.size, varighed: 0, fil: '' };
+  state.localVideoUrl = URL.createObjectURL(file);
+  const formatTxt = VIDEO_TYPES[ext] ? '' : ' Filen er ikke en MP4. Konvertér den til MP4 med H.264 og AAC, så den kan afspilles i alle browsere.';
+  st.textContent = 'Prøver videoen af …' + formatTxt; st.className = 'status pending';
+  const v = document.createElement('video');
+  v.preload = 'metadata'; v.muted = true;
+  v.onloadedmetadata = () => {
+    const d = isFinite(v.duration) ? v.duration : 0;
+    if (state.localVideo){ state.localVideo.varighed = Math.round(d); state.videoDuration = d; }
+    st.textContent = 'Videoen virker: ' + file.name + ' – ' + fmtBytes(file.size)
+      + (d ? ', varighed ' + fmtDuration(d) : '') + (v.videoWidth ? ', ' + v.videoWidth + ' × ' + v.videoHeight + ' pixel' : '') + '.' + formatTxt;
+    st.className = formatTxt ? 'status pending' : 'status';
+    v.removeAttribute('src'); v.load();
+    renderPreview();
+  };
+  v.onerror = () => {
+    st.textContent = 'Browseren kan ikke afspille ' + file.name + '. Den er måske optaget på en iPhone (HEVC), kommer fra en DVD eller er i et andet format. Konvertér den til MP4 med H.264 og AAC, og vælg den igen.';
+    st.className = 'status bad';
+    renderPreview();
+  };
+  v.src = state.localVideoUrl;
+  renderPreview();
+}
+
+// Viser, hvordan mappen skal se ud, og retter teksten ved adressefeltet.
+function updateMappePlan(){
+  const box = $('mappePlan');
+  const v = state.localVideo;
+  $('videoUrlLabel').textContent = v ? 'Reserveadresse på nettet (valgfri)' : 'Adresse på videofilen';
+  $('videoUrlHint').textContent = v
+    ? 'Ligger den samme video også på nettet, fx i pCloud, så skriv adressen her. Kortet prøver først filen i mappen og derefter adressen. Så virker kortet også alene, fx i søgeportalen eller på en hjemmeside.'
+    : 'Brug den direkte adresse til filen, fx et link fra en offentlig mappe i pCloud. Prøv adressen i browserens adresselinje: afspilles videoen der, virker den også i kortet. Værktøjet prøver videoen af og viser varighed og størrelse.';
+  if (!v){ box.hidden = true; box.innerHTML = ''; return; }
+  const mappe = folderName(state);
+  const path = localVideoPath(state);
+  const fil = path.split('/').pop();
+  box.hidden = false;
+  box.innerHTML = '<b>Sådan skal mappen se ud, når kortet er gemt:</b>'
+    + '<ul><li>📁 ' + escapeHtml(mappe) + '/</li>'
+    + '<li class="l2">📄 ' + escapeHtml(mappe) + '.html <small>– kortet, som du gemmer med knappen nederst</small></li>'
+    + '<li class="l2">📁 media/</li>'
+    + '<li class="l3">🎬 ' + escapeHtml(fil) + ' <small>– ' + (v.name && v.name !== fil ? 'din fil «' + escapeHtml(v.name) + '», omdøbt' : 'videofilen') + '</small></li></ul>'
+    + '<small>Kopiér altid hele mappen. Ændrer du titlen, ændres navnene også' + (v.fil ? ', men et indlæst kort beholder sit gamle filnavn' : '') + '.</small>';
+}
+
+$('videoLocal').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (file) setLocalVideo(file);
+  e.target.value = '';
+});
+$('btnVideoLocalClear').addEventListener('click', () => setLocalVideo(null));
+
 /* ---------- Lydfil lagt ind i kortet ---------- */
 
 function setAudioBlob(blob, name){
@@ -1230,9 +1334,15 @@ function buildDcMetaTags(dc){
   return '<link rel="schema.DC" href="http://purl.org/dc/elements/1.1/">\n' + lines.join('\n');
 }
 
-function buildDcSection(dc){
+function buildDcSection(dc, media){
   const rows = DC_FIELDS.filter(key => dc[key])
     .map(key => '<div class="meta-row"><dt>' + DC_LABELS[key] + ' <span class="dc-tag">dc.' + key + '</span></dt><dd>' + escapeHtml(dc[key]) + '</dd></div>');
+  // Mappeformatet (5.7): de filer, der skal ligge ved siden af denne fil.
+  (media || []).forEach(m => {
+    const dele = [m.fil, m.type, m.bytes ? fmtBytes(m.bytes) : '', m.varighed ? fmtDuration(m.varighed) : ''].filter(Boolean);
+    rows.push('<div class="meta-row"><dt>Hører til denne fil <span class="dc-tag">media</span></dt><dd>' + escapeHtml(dele.join(' · '))
+      + (m.reserve ? '<br>Reserve på nettet: ' + escapeHtml(m.reserve) : '') + '</dd></div>');
+  });
   if (!rows.length) return '';
   return '<details class="meta" id="omfilen">'
     + '<summary><span>Om denne fil</span><span class="chevron" aria-hidden="true">&#9662;</span></summary>'
@@ -1396,6 +1506,9 @@ function mediekortRuntime(C){
       });
     });
     audio.addEventListener("error", function(){ body.classList.add("media-error"); });
+    // Med flere kilder (mappeformatet) melder kun den sidste kilde, at intet virkede.
+    var kilder = audio.getElementsByTagName("source");
+    if (kilder.length) kilder[kilder.length - 1].addEventListener("error", function(){ body.classList.add("media-error"); });
   }
 
   /* --- Lydafspilleren (samme som i lydfortællingerne) --- */
@@ -1723,7 +1836,11 @@ function buildPageHTML(s, opts){
   const t = THEMES[s.theme] || THEMES.original;
   const dc = collectDublinCore();
   const dcMeta = buildDcMetaTags(dc);
-  const dcBlock = (s.visOmFil === false) ? '' : buildDcSection(dc);
+  const mediaList = (s.mode === 'videofile' && s.localVideo) ? [{
+    fil: localVideoPath(s), type: s.localVideo.type || 'video/mp4', bytes: s.localVideo.bytes || 0,
+    varighed: Math.round(s.localVideo.varighed || s.videoDuration || 0), reserve: s.videoFileUrl || ''
+  }] : [];
+  const dcBlock = (s.visOmFil === false) ? '' : buildDcSection(dc, mediaList);
   const pageLang = (dc.language || 'da').trim() || 'da';
   const pageTitle = s.title || 'Mediekort';
   const fileName = slugify(s.title, 'mediekort') + '.html';
@@ -1778,13 +1895,31 @@ function buildPageHTML(s, opts){
   const offlineTail = offlineRest.length ? ' Alt andet på dette kort – ' + joinDa(offlineRest) + ' – virker stadig.' : ' Resten af kortet virker stadig.';
   if (isFile){
     const posterSrc = s.poster || ('data:image/svg+xml;charset=utf-8,' + encodeURIComponent(drawnPoster(s, t)));
+    const lokal = localVideoPath(s);
+    // Mappeformatet (5.7): først filen i mappen, så reserven på nettet. I forhåndsvisningen
+    // bruges den valgte fil direkte, fordi den ikke ligger i en mappe endnu.
+    const lokalSrc = isPreview ? (opts.localVideoSrc || '') : lokal;
+    // Kun adresser på nettet (http eller https) bruges som reserve, aldrig fx javascript: (5.3).
+    const reserve = /^https?:\/\//i.test(s.videoFileUrl || '') ? s.videoFileUrl : '';
+    const kilder = [];
+    if (lokalSrc) kilder.push(lokalSrc);
+    if (reserve) kilder.push(reserve);
+    const vType = (s.localVideo && s.localVideo.type) || 'video/mp4';
+    const sourcesHtml = lokal
+      ? kilder.map(u => '<source src="' + escapeHtml(u) + '" type="' + escapeHtml(vType) + '">').join('')
+      : '';
+    const mangler = lokal
+      ? 'Videoen kunne ikke findes. Den skal ligge i filen <b>' + escapeHtml(lokal) + '</b> i samme mappe som denne fil. Kopiér altid hele mappen, ikke kun denne fil.'
+        + (reserve ? ' Reserven på nettet kunne heller ikke hentes lige nu.' : '') + ' '
+      : 'Videoen kunne ikke hentes lige nu. ';
+    const linkUrl = reserve || lokal;
     playerBlock = '<div class="player vidfile" id="player"><video id="vid" controls playsinline preload="metadata"'
       + ' aria-label="' + escapeHtml(pageTitle) + '" poster="' + escapeHtml(posterSrc) + '"'
-      + (s.videoFileUrl ? ' src="' + escapeHtml(s.videoFileUrl) + '"' : '')
-      + '>Din browser kan ikke afspille video.</video></div>'
-      + creditBlock + '<p class="fallback"><span class="media-err">Videoen kunne ikke hentes lige nu. </span>'
-      + (s.videoFileUrl ? '<a href="' + escapeHtml(s.videoFileUrl) + '" target="_blank" rel="noopener">Åbn videofilen for sig selv</a>' : '') + '</p>'
-      + '<div class="offline" role="status">Du er ikke på internettet, så videoen kan ikke afspilles lige nu.' + offlineTail + '</div>';
+      + ((!lokal && reserve) ? ' src="' + escapeHtml(reserve) + '"' : '')
+      + '>' + sourcesHtml + 'Din browser kan ikke afspille video.</video></div>'
+      + creditBlock + '<p class="fallback"><span class="media-err">' + mangler + '</span>'
+      + (linkUrl ? '<a href="' + escapeHtml(linkUrl) + '" target="_blank" rel="noopener">Åbn videofilen for sig selv</a>' : '') + '</p>'
+      + (lokal ? '' : '<div class="offline" role="status">Du er ikke på internettet, så videoen kan ikke afspilles lige nu.' + offlineTail + '</div>');
   } else if (isAudio){
     // Samme afspiller som i Lydfortælling · Bygger: rund afspil-knap, streg-bjælke,
     // tider og "Du er nået til …" med Start forfra.
@@ -1872,7 +2007,7 @@ function buildPageHTML(s, opts){
   const allParts = saveParts.concat(textParts);
   const kindTxt = isPic ? 'Et talende billede.' : isAudio ? 'Et mediekort med en podcast.' : 'Et mediekort med en video.';
   const whole = isAudio && embedded;
-  const remoteTxt = isFile ? ' Videoen hentes fra nettet.'
+  const remoteTxt = isFile ? (localVideoPath(s) ? ' Videoen ligger ved siden af i mappen media og skal kopieres med.' : ' Videoen hentes fra nettet.')
     : s.mode === 'video' ? ' Videoen bliver på YouTube.'
     : (isAudio && !embedded) ? ' Lyden hentes fra nettet.' : '';
   const saveNote = kindTxt + ' Gemmer ' + (whole ? 'det hele' : 'kortet') + ' som én fil på din egen computer'
@@ -1901,6 +2036,7 @@ function buildPageHTML(s, opts){
     theme: s.theme, mode: s.mode,
     videoId: s.mode === 'video' ? id : '', videoUrl: s.mode === 'video' ? watch : '',
     videoFileUrl: isFile ? s.videoFileUrl : '', videoDuration: isFile ? Math.round(s.videoDuration || 0) : 0,
+    media: mediaList,
     audioUrl: isAudio ? s.audioUrl : '', audioEmbedded: embedded, audioName: embedded ? s.audioName : '',
     audioDuration: isAudio ? Math.round(s.audioDuration || 0) : 0,
     kicker: s.kicker, title: s.title, location: s.location, shareImage: s.shareImage,
@@ -2175,7 +2311,7 @@ function readForm(){
 function hasMedia(){
   if (state.mode === 'picture') return !!((state.audioUrl || state.audioBlob) && state.poster);
   if (state.mode === 'audio') return !!(state.audioUrl || state.audioBlob);
-  if (state.mode === 'videofile') return !!state.videoFileUrl;
+  if (state.mode === 'videofile') return !!(state.videoFileUrl || state.localVideo);
   return !!state.videoId;
 }
 
@@ -2237,7 +2373,7 @@ function setMode(mode){
   $('previewNote').textContent = state.mode === 'video'
     ? 'I forhåndsvisningen åbner afspil og tidsstempler videoen på YouTube i et nyt vindue. Lagt på en hjemmeside afspiller kortet videoen direkte på siden.'
     : state.mode === 'videofile'
-    ? 'Videoen kan afspilles direkte her i forhåndsvisningen, og tidsstemplerne virker. Det gør de også, når kortet åbnes fra din egen computer — så længe der er internet.'
+    ? 'Videoen kan afspilles direkte her i forhåndsvisningen, og tidsstemplerne virker. Ligger videofilen i mappen ved siden af kortet, virker det også uden internet.'
     : isPic
     ? 'Tryk på billedet for at afspille fortællingen. Knappen Fuld skærm viser billedet stort, mens lyden spiller videre.'
     : 'Lyden kan afspilles direkte her i forhåndsvisningen, og tidsstemplerne virker. Det gør de også, når kortet åbnes fra din egen computer.';
@@ -2260,7 +2396,7 @@ let previewTimer = null;
 function schedulePreview(){
   clearTimeout(previewTimer);
   previewTimer = setTimeout(() => {
-    $('previewFrame').srcdoc = buildPageHTML(state, { preview:true, audioSrc: isAudioMode(state.mode) ? (state.audioBlobUrl || state.audioUrl) : '' });
+    $('previewFrame').srcdoc = buildPageHTML(state, { preview:true, audioSrc: isAudioMode(state.mode) ? (state.audioBlobUrl || state.audioUrl) : '', localVideoSrc: state.localVideoUrl });
   }, 200);
 }
 function renderPreview(){
@@ -2269,6 +2405,7 @@ function renderPreview(){
   updateSizeBar();
   updateTransCount();
   $('generateBtn').disabled = !(state.title.trim() && hasMedia());
+  updateMappePlan();
   $('btnOembed').disabled = !state.videoId;
   $('btnThumb').disabled = !state.videoId;
   $('btnShareYt').disabled = !state.videoId;
@@ -2282,7 +2419,7 @@ function onUrlInput(){
   state.videoId = id;
   if (!raw){ st.textContent = ''; st.className = 'status'; }
   else if (id){ st.textContent = 'Forstået — video-id ' + id + '.'; st.className = 'status'; }
-  else if (/\.(mp4|m4v|webm|mov)(\?|#|$)/i.test(raw)){ st.textContent = 'Det ligner en videofil og ikke YouTube. Vælg «Videofil (link)» øverst.'; st.className = 'status bad'; }
+  else if (/\.(mp4|m4v|webm|mov)(\?|#|$)/i.test(raw)){ st.textContent = 'Det ligner en videofil og ikke YouTube. Vælg «Videofil» øverst.'; st.className = 'status bad'; }
   else { st.textContent = 'Det ligner ikke en YouTube-adresse. Den skal indeholde youtube.com eller youtu.be.'; st.className = 'status bad'; }
   renderPreview();
 }
@@ -2392,6 +2529,13 @@ $('loadPage').addEventListener('change', async (e) => {
     $('fVideoFileUrl').value = data.videoFileUrl || '';
     state.videoFileUrl = data.videoFileUrl || '';
     state.videoDuration = data.videoDuration || 0;
+    // Mappeformatet: stien til filen i mappen beholdes, så kortet stadig passer til mappen.
+    if (state.localVideoUrl){ URL.revokeObjectURL(state.localVideoUrl); state.localVideoUrl = ''; }
+    const m0 = (Array.isArray(data.media) && data.media[0] && /^media\/[a-z0-9._-]+$/.test(String(data.media[0].fil || ''))) ? data.media[0] : null;
+    state.localVideo = m0 ? { name: '', ext: videoExt(m0.fil), type: m0.type || 'video/mp4', bytes: m0.bytes || 0, varighed: m0.varighed || 0, fil: m0.fil } : null;
+    $('btnVideoLocalClear').disabled = !m0;
+    $('videoLocalStatus').textContent = m0 ? 'Kortet peger på ' + m0.fil + '. Vælg filen igen, hvis du vil se videoen i forhåndsvisningen.' : 'Ingen fil valgt';
+    $('videoLocalStatus').className = 'status';
 
     $('fKicker').value = data.kicker || '';
     $('fTitle').value = data.title || '';
@@ -2499,7 +2643,7 @@ $('generateBtn').addEventListener('click', async () => {
     readForm(); syncAutoDc();
     if (!hasMedia()){
       msg.textContent = state.mode === 'picture' ? 'Et talende billede skal have både et billede og en lydfil.'
-        : state.mode === 'audio' ? 'Skriv adressen på lydfilen, eller vælg en lydfil, først.' : state.mode === 'videofile' ? 'Skriv adressen på videofilen først.' : 'Skriv adressen på YouTube-videoen først.';
+        : state.mode === 'audio' ? 'Skriv adressen på lydfilen, eller vælg en lydfil, først.' : state.mode === 'videofile' ? 'Vælg videofilen, eller skriv dens adresse på nettet, først.' : 'Skriv adressen på YouTube-videoen først.';
       msg.className = 'msg err';
       return;
     }
@@ -2525,7 +2669,9 @@ $('generateBtn').addEventListener('click', async () => {
     if (!dc.publisher) warn.push('udgiver');
     if (!dc.description) warn.push('beskrivelse');
     const noTrans = state.mode === 'picture' && !state.transcript.trim();
+    const lokal = (state.mode === 'videofile') ? localVideoPath(state) : '';
     msg.textContent = (state.mode === 'picture' ? 'Det talende billede' : 'Mediekortet') + ' er gemt som ' + name + ' (' + fmtBytes(blob.size) + '). Det kan åbnes direkte i browseren.'
+      + (lokal ? ' Læg det nu i mappen «' + folderName(state) + '», og læg videofilen i undermappen media med navnet ' + lokal.split('/').pop() + ', som vist under Videofil.' : '')
       + (warn.length ? ' Bemærk: uden ' + warn.join(' og ') + ' er kortet sværere at finde i søgesiden.' : '')
       + (noTrans ? ' Fortællingen er ikke skrevet ned under «Læs mere», så døve og hørehæmmede får den ikke med.' : '')
       + (state.taellerBlock ? ' Tællerkoden fra den indlæste fil står stadig i filen.' : '');
