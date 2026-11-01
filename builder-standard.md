@@ -1,7 +1,7 @@
 # Builder-standard
 
 **Fælles specifikation for værktøjskassen**
-Version 2.14 · november 2026
+Version 2.15 · november 2026
 
 Referenceimplementering: **Sidebygger** (`side-bygger.html`, version 1.5).
 Når noget er i tvivl, er det referencefilen der gælder.
@@ -667,6 +667,9 @@ Udgiverlisten i prompten skal altid svare til `PUBLISHERS` i 4.1. Kommer der en 
 
 ## 12. Ændringslog
 
+**Version 2.15 — november 2026.**
+- Mediekort · Bygger (v1.7) følger afsnit 5.7: Valget **Videofil** kan pege på en videofil i mappen `media/` ved siden af kortet og have en adresse på nettet som reserve. Byggeren viser, hvordan mappen skal se ud, og advarer, når browseren ikke kan afspille filen. Kortet siger selv, hvilken fil der mangler. Filformatet er udvidet med listen `media`, så `builderVersion` er stadig 1.
+
 **Version 2.14 — november 2026.**
 - Nyt afsnit 5.7 **Mappeformat**: Video og store lydfiler lægges i en mappe ved siden af HTML-filen med relative adresser, faste formater (MP4 med H.264/AAC og MP3), en reserveadresse online og en liste over mediefilerne i sedlen. HTML-filen skal kunne stå alene og sige, hvad der mangler. Grundprincip 1 nævner undtagelsen.
 - Ingen bygger er ændret endnu. Mediekort · Bygger tages op først (se afsnit 13).
@@ -803,7 +806,7 @@ Udgiverlisten i prompten skal altid svare til `PUBLISHERS` i 4.1. Kommer der en 
 ## 13. Åbne punkter
 
 **Mappeformatet (5.7), i denne rækkefølge:**
-1. Mediekort · Bygger: valget "Videofil" får en lokal fil i mappen plus en reserveadresse, beskeden når filen mangler, og listen `media` i kildedata. Prøves af med én film fra et rigtigt medlemsmøde.
+1. ~~Mediekort · Bygger: valget "Videofil" får en lokal fil i mappen plus en reserveadresse, beskeden når filen mangler, og listen `media` i kildedata.~~ Lavet i Mediekort 1.7 (version 2.15). Mangler at blive prøvet af med en film fra et rigtigt medlemsmøde.
 2. Byggeren laver hele mappen som en zip-fil uden komprimering, så brugeren ikke selv skal flytte filer på plads.
 3. Kontroltal (SHA-256) for store filer: Browserens indbyggede beregning kræver hele filen i hukommelsen. Afklares, om det skal laves i bidder eller udelades for de største filer.
 4. En serie med flere lydfiler, fx en podcastserie, som en samling med afspilningsliste. Samling · Bygger og Musikpakke · Bygger er forbilleder.
