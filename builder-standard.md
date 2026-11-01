@@ -1,7 +1,7 @@
 # Builder-standard
 
 **Fælles specifikation for værktøjskassen**
-Version 2.17 · november 2026
+Version 2.18 · november 2026
 
 Referenceimplementering: **Sidebygger** (`side-bygger.html`, version 1.5).
 Når noget er i tvivl, er det referencefilen der gælder.
@@ -24,6 +24,7 @@ Værktøjskassen består af flere små, uafhængige builder-apps:
 | Mediekort · Bygger | kort til en video (YouTube eller videofil), en podcast eller et talende billede, med kapitler og evt. transskription | MovingImage (video), Sound (podcast og talende billede) |
 | Præsentation · Bygger | billedshow til foredrag og oplæg, med pile, fuld skærm og automatisk visning | Image |
 | Samling · Bygger | forside der binder 2-6 færdige filer sammen til en kurateret samling | Collection |
+| Podcastserie · Bygger | én side med afspilningsliste til en serie på 2-6 lydafsnit, med lydfilerne i mappeformatet (5.7) | Sound |
 | Henvisning · Bygger | "skilt" der sender videre til en ekstern side | Text som standard; vælges efter det, der henvises til |
 | Vejledningsbygger | trin-for-trin vejledning | afklares |
 | PWA · Bygger | samler færdige filer til en app til hjemmeskærmen | afklares |
@@ -302,7 +303,7 @@ Værdierne gengives tegn for tegn, med **almindelig bindestreg**. Afvigende stav
 
 Indlæses en fil med en gammel værdi, rettes den til den gældende: tankestreg bliver til bindestreg, og "Røde Kors Roskilde" bliver til "Røde Kors". Status ved indlæsning nævner rettelsen. Står der et helt ukendt navn, vises det som ekstra valg markeret "ikke på listen", så det ikke går tabt, men kan rettes.
 
-**dc.identifier** foreslås automatisk som `PRÆFIKS-type-titelslug-år`, fx `SFB-side-astersvej-2026` eller `SFB-album-skomagervaerkstedet-paa-algade-2026`. Titelslug laves efter reglen i 5.6. `type` er et kort, fast ord for appen (side, lyd, album, bog, billede, foernu, video, podcast, talende, praesentation, samling, henvisning). Mediekort · Bygger bruger `video` til video og videofil, `podcast` til podcast og `talende` til et talende billede, fx `SFB-talende-bager-hansens-butik-2026`. Forslaget kan overskrives.
+**dc.identifier** foreslås automatisk som `PRÆFIKS-type-titelslug-år`, fx `SFB-side-astersvej-2026` eller `SFB-album-skomagervaerkstedet-paa-algade-2026`. Titelslug laves efter reglen i 5.6. `type` er et kort, fast ord for appen (side, lyd, album, bog, billede, foernu, video, podcast, talende, praesentation, samling, henvisning, serie). Mediekort · Bygger bruger `video` til video og videofil, `podcast` til podcast og `talende` til et talende billede, fx `SFB-talende-bager-hansens-butik-2026`. Forslaget kan overskrives.
 
 **dc.subject:** udgiveren står som første emneord. En app med faste serier (fx Sidebyggerens "Gader og veje" og "Steder, institutioner og mennesker") indsætter serien som andet emneord. Derefter kommer de fælles emneord fra `emneord.md`, som alle foreninger staver ens, og til sidst de mere præcise emneord.
 
@@ -668,6 +669,9 @@ Udgiverlisten i prompten skal altid svare til `PUBLISHERS` i 4.1. Kommer der en 
 
 ## 12. Ændringslog
 
+**Version 2.18 — november 2026.**
+- Ny bygger: **Podcastserie · Bygger** (`podcastserie-bygger.html`, v1.0, format `podcastserie`, builderVersion 1). Den laver én side med en afspilningsliste til en serie på 2-6 lydafsnit. Hvert afsnit har titel, beskrivelse, eget billede (16:9, højst 1200 px), en lydfil i mappen `media/` og en reserveadresse på nettet. Lydfilerne hedder som serien med løbenummer, fx `…-01.mp3`, og har kontroltal (5.7). Afspilleren går selv videre til næste afsnit og husker, hvor lytteren nåede til. Afsnit kan hentes fra færdige mediekort med lyd: Lyd, der ligger inde i et mediekort, bliver til en lydfil i mappen, og kortets adresse bliver reserve. dc.type er Sound, og identifikatoren får ordet `serie`.
+
 **Version 2.17 — november 2026.**
 - Afsnit 5.7, regel 6: Byggeren beregner altid et kontroltal (SHA-256) for mediefilerne i mappen og skriver det i listen `media` som `sha256`. Det beregnes i bidder, fordi browserens indbyggede beregning kræver hele filen i hukommelsen. Vælges filen igen til et indlæst kort, siger byggeren, om det er præcis den samme fil.
 - Mediekort · Bygger (v2.0) følger reglen. Zip-filens eget kontroltal beregnes i samme omgang, så filen kun læses én gang.
@@ -818,7 +822,7 @@ Udgiverlisten i prompten skal altid svare til `PUBLISHERS` i 4.1. Kommer der en 
 1. ~~Mediekort · Bygger: valget "Videofil" får en lokal fil i mappen plus en reserveadresse, beskeden når filen mangler, og listen `media` i kildedata.~~ Lavet i Mediekort 1.7 (version 2.15) og prøvet af med en rigtig film fra pCloud i november 2026.
 2. ~~Byggeren laver hele mappen som en zip-fil uden komprimering, så brugeren ikke selv skal flytte filer på plads.~~ Lavet i Mediekort 1.8 (version 2.16). Højst ca. 4 GB, fordi zip-filen laves uden ZIP64.
 3. ~~Kontroltal (SHA-256) for store filer.~~ Lavet i Mediekort 2.0 (version 2.17): beregnes i bidder, når filen vælges, og tjekkes, når filen vælges igen til et indlæst kort.
-4. En serie med flere lydfiler, fx en podcastserie, som en samling med afspilningsliste. Samling · Bygger og Musikpakke · Bygger er forbilleder.
+4. ~~En serie med flere lydfiler, fx en podcastserie, som en samling med afspilningsliste.~~ Lavet som Podcastserie · Bygger 1.0 (version 2.18).
 5. Søgeportalen tager imod en hel mappe som zip-fil og pakker den ud. Kræver kun tilladte filtyper (mp4, mp3 og billeder), beskyttelse mod filer uden for mappen og en løsning på webhotellets grænse for upload.
 
 **Afklares, når byggeren tages op:**

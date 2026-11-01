@@ -43,7 +43,7 @@ Projektet startede som "Lokalhistorie på tværs af generationer" i Syd for Bane
 
 ## Hvad findes nu?
 
-**11 byggere:**
+**12 byggere:**
 
 | Bygger | Laver |
 |---|---|
@@ -54,6 +54,7 @@ Projektet startede som "Lokalhistorie på tværs af generationer" i Syd for Bane
 | Bogbygger | e-bog med kapitler |
 | Lydfortælling | lydafspiller med billede og tekst |
 | Mediekort | kort til video, podcast eller et talende billede |
+| Podcastserie | én side med afspilningsliste til en serie på 2–6 lydafsnit |
 | Præsentation | billedshow til foredrag |
 | Henvisning | "skilt", der sender videre til en side på nettet |
 | Samling | forside, der binder flere filer sammen |
@@ -61,7 +62,7 @@ Projektet startede som "Lokalhistorie på tværs af generationer" i Syd for Bane
 
 **Værktøjer:** Feltoptager (optag lyd i marken), Lydlab og Fotolab (gør lyd og billeder klar), Metadata-hjælper (lader en AI foreslå metadata og kontrollerer svaret), Musikpakke, Skyggeramme, Billedarkiv (ordner billeder i albums) og et værktøj til sikre adgangskoder.
 
-**Fælles regler:** Builder-standarden (version 2.17) sørger for, at alle byggere ser ens ud, har de samme syv farvetemaer og de samme udgivere og håndterer metadata ens.
+**Fælles regler:** Builder-standarden (version 2.18) sørger for, at alle byggere ser ens ud, har de samme syv farvetemaer og de samme udgivere og håndterer metadata ens.
 
 ## Fri udgave til alle andre
 
