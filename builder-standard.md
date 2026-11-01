@@ -1,7 +1,7 @@
 # Builder-standard
 
 **Fælles specifikation for værktøjskassen**
-Version 2.16 · november 2026
+Version 2.17 · november 2026
 
 Referenceimplementering: **Sidebygger** (`side-bygger.html`, version 1.5).
 Når noget er i tvivl, er det referencefilen der gælder.
@@ -421,13 +421,14 @@ foraarsmoedet-2026/                  ← mappen hedder som HTML-filen (5.6)
 3. **HTML-filen kan stå alene.** Plakatbillede, tekst, kapitler og sedlen ligger stadig inde i HTML-filen. Kan mediefilen ikke findes, vises en tydelig besked i stedet for afspilleren, fx "Videoen ligger i filen *media/foraarsmoedet-2026.mp4* i samme mappe som denne fil." Siden må aldrig bare være tom.
 4. **Reserve online.** Hver mediefil kan have én reserveadresse, der begynder med `https://`, fx et link til samme fil i pCloud. Afspilleren prøver først den lokale fil og derefter reserven. Så virker den samme HTML-fil både fra mappen til et møde og alene på en hjemmeside eller i søgeportalen. Reserveadressen følger reglerne for adresser i 5.3: kun `https://`, aldrig `javascript:` eller `data:`.
 5. **Faste formater.** Video: **MP4 med H.264-billede og AAC-lyd**, som kan afspilles i alle almindelige browsere. Lyd: **MP3**. Videoer fra iPhone (HEVC eller .mov), DVD (VOB) og videobånd konverteres, før de bruges i byggeren. Byggeren advarer, når den kan se, at en fil ikke er i et af de faste formater.
-6. **Sedlen kender filerne.** Kildedata (5.1) får listen `media` med én post pr. mediefil: relativ adresse, MIME-type, størrelse i bytes, varighed i sekunder og eventuel reserveadresse. Panelet **Om denne fil** (5.4) viser listen som "Hører til denne fil". Et kontroltal (SHA-256) skrives med, hvor byggeren kan beregne det.
+6. **Sedlen kender filerne.** Kildedata (5.1) får listen `media` med én post pr. mediefil: relativ adresse, MIME-type, størrelse i bytes, varighed i sekunder og eventuel reserveadresse. Panelet **Om denne fil** (5.4) viser listen som "Hører til denne fil". Byggeren beregner et **kontroltal (SHA-256)**, filens "fingeraftryk", og skriver det med som `sha256`. Det beregnes i bidder, så også en film på flere GB kan klares uden at fylde hukommelsen. Vælger man mediefilen igen til et indlæst kort, sammenligner byggeren kontroltallene og siger, om det er præcis den samme fil.
 
    ```json
    "media": [
      { "fil": "media/foraarsmoedet-2026.mp4", "type": "video/mp4",
        "bytes": 1288490188, "varighed": 3725,
-       "reserve": "https://…/foraarsmoedet-2026.mp4" }
+       "reserve": "https://…/foraarsmoedet-2026.mp4",
+       "sha256": "b6721c22ff0219d7…" }
    ]
    ```
 7. **Udvalgte stykker** (blød klipning) virker på samme måde med en lokal fil som med en adresse på nettet.
@@ -667,6 +668,10 @@ Udgiverlisten i prompten skal altid svare til `PUBLISHERS` i 4.1. Kommer der en 
 
 ## 12. Ændringslog
 
+**Version 2.17 — november 2026.**
+- Afsnit 5.7, regel 6: Byggeren beregner altid et kontroltal (SHA-256) for mediefilerne i mappen og skriver det i listen `media` som `sha256`. Det beregnes i bidder, fordi browserens indbyggede beregning kræver hele filen i hukommelsen. Vælges filen igen til et indlæst kort, siger byggeren, om det er præcis den samme fil.
+- Mediekort · Bygger (v2.0) følger reglen. Zip-filens eget kontroltal beregnes i samme omgang, så filen kun læses én gang.
+
 **Version 2.16 — november 2026.**
 - Mediekort · Bygger (v1.8) har knappen **Gem hele mappen som zip-fil**: Mappen med kortet og videofilen, med de rigtige navne, gemmes som én zip-fil uden komprimering (5.7, regel 8). Videofilen læses kun én gang for at beregne zip-formatets kontroltal og kopieres ikke ind i hukommelsen. En zip-fil kan højst være ca. 4 GB.
 - Mediekort 1.7 er prøvet af med en rigtig film fra pCloud: Fra mappen afspilles den uden internet, og uden mappen bruges reserven.
@@ -812,7 +817,7 @@ Udgiverlisten i prompten skal altid svare til `PUBLISHERS` i 4.1. Kommer der en 
 **Mappeformatet (5.7), i denne rækkefølge:**
 1. ~~Mediekort · Bygger: valget "Videofil" får en lokal fil i mappen plus en reserveadresse, beskeden når filen mangler, og listen `media` i kildedata.~~ Lavet i Mediekort 1.7 (version 2.15) og prøvet af med en rigtig film fra pCloud i november 2026.
 2. ~~Byggeren laver hele mappen som en zip-fil uden komprimering, så brugeren ikke selv skal flytte filer på plads.~~ Lavet i Mediekort 1.8 (version 2.16). Højst ca. 4 GB, fordi zip-filen laves uden ZIP64.
-3. Kontroltal (SHA-256) for store filer: Browserens indbyggede beregning kræver hele filen i hukommelsen. Afklares, om det skal laves i bidder eller udelades for de største filer.
+3. ~~Kontroltal (SHA-256) for store filer.~~ Lavet i Mediekort 2.0 (version 2.17): beregnes i bidder, når filen vælges, og tjekkes, når filen vælges igen til et indlæst kort.
 4. En serie med flere lydfiler, fx en podcastserie, som en samling med afspilningsliste. Samling · Bygger og Musikpakke · Bygger er forbilleder.
 5. Søgeportalen tager imod en hel mappe som zip-fil og pakker den ud. Kræver kun tilladte filtyper (mp4, mp3 og billeder), beskyttelse mod filer uden for mappen og en løsning på webhotellets grænse for upload.
 

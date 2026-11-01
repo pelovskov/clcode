@@ -145,7 +145,7 @@
 
 <div class="topbar">
   <h1>Mediekort · Bygger</h1>
-  <span>Lav et kort til en video, en podcast eller et talende billede, med kapitler og udskrift · kører lokalt, ingen server · version 1.9</span>
+  <span>Lav et kort til en video, en podcast eller et talende billede, med kapitler og udskrift · kører lokalt, ingen server · version 2.0</span>
 </div>
 
 <div class="layout">
@@ -249,6 +249,7 @@
         <div class="filebox">
           <input type="file" id="videoLocal" accept="video/mp4,.mp4,.m4v">
           <div class="status" id="videoLocalStatus">Ingen fil valgt</div>
+          <div class="status" id="videoCheckStatus" hidden></div>
           <div class="btnrow"><button type="button" class="sbtn" id="btnVideoLocalClear" disabled>Fjern videofilen fra kortet</button></div>
         </div>
         <div class="hint">Videoen lægges ikke ind i kortet, for videofiler er for store til det. Den skal ligge i mappen <code>media</code> ved siden af kortet. Så kan kortet vises fra en bærbar computer eller et USB-stik uden internet, fx til et møde. Brug MP4 med H.264 og AAC (Builder-standard 5.7).</div>
@@ -488,7 +489,11 @@
 
 <script>
 /* =======================================================================
-   Mediekort · Bygger — version 1.9
+   Mediekort · Bygger — version 2.0
+   2.0: kontroltal (SHA-256) for videofilen i mappen (Builder-standard 5.7,
+        regel 6). Det beregnes i bidder, når filen vælges, og står i kortet.
+        Vælger man filen igen til et indlæst kort, tjekkes det, at den er
+        uændret. Zip-filens kontroltal beregnes samtidig.
    1.9: tydelig besked, mens zip-filen laves: knappen viser, hvor langt den er,
         og der står, at det tager lidt tid, før overførslen begynder.
    1.1: videofil fra fx pCloud.
@@ -516,7 +521,7 @@ const state = {
   videoId:'',
   audioUrl:'', audioDuration:0,
   videoFileUrl:'', videoDuration:0,
-  localVideo:null, localVideoUrl:'', localVideoFile:null,   // videofil i mappen media/ (5.7), blob-adresse til forhåndsvisningen og selve filen til zip
+  localVideo:null, localVideoUrl:'', localVideoFile:null, analyse:null,   // videofil i mappen media/ (5.7), blob-adresse til forhåndsvisningen og selve filen til zip
   audioBlob:null, audioName:'', audioBlobUrl:'',
   kicker:'', title:'', location:'', shareImage:'',
   poster:'', posterAlt:'',
@@ -1167,19 +1172,49 @@ function localVideoPath(s){
   return 'media/' + folderName(s) + '.' + ext;
 }
 
+let analyseToken = 0;
 function setLocalVideo(file){
+  // Et indlæst kort beholder sin sti, og dets kontroltal bruges til at tjekke den valgte fil.
+  const forrige = (state.localVideo && state.localVideo.fil && !state.localVideoFile) ? state.localVideo : null;
   if (state.localVideoUrl){ URL.revokeObjectURL(state.localVideoUrl); }
   state.localVideoUrl = '';
   state.localVideo = null;
   state.localVideoFile = file || null;
-  const st = $('videoLocalStatus');
+  state.analyse = null;
+  const token = ++analyseToken;
+  const st = $('videoLocalStatus'), ks = $('videoCheckStatus');
   $('btnVideoLocalClear').disabled = !file;
+  ks.hidden = !file; ks.textContent = ''; ks.className = 'status';
   if (!file){
     st.textContent = 'Ingen fil valgt'; st.className = 'status';
     renderPreview(); return;
   }
   const ext = videoExt(file.name);
-  state.localVideo = { name: file.name, ext: ext, type: VIDEO_TYPES[ext] || file.type || 'video/mp4', bytes: file.size, varighed: 0, fil: '' };
+  state.localVideo = { name: file.name, ext: ext, type: VIDEO_TYPES[ext] || file.type || 'video/mp4', bytes: file.size, varighed: 0,
+    fil: forrige ? forrige.fil : '', sha256: '', crc: null };
+  const forventet = forrige ? (forrige.sha256 || '') : '';
+  ks.textContent = 'Beregner kontroltal … 0 %'; ks.className = 'status pending';
+  state.analyse = analyserFil(file, n => {
+    if (token === analyseToken) ks.textContent = 'Beregner kontroltal … ' + Math.min(100, Math.floor(n / file.size * 100)) + ' %';
+  }).then(r => {
+    if (token !== analyseToken || !state.localVideo) return null;
+    state.localVideo.sha256 = r.sha256; state.localVideo.crc = r.crc;
+    if (forventet && forventet === r.sha256){
+      ks.textContent = '✓ Det er præcis den samme fil, som kortet blev lavet med. Kontroltal (SHA-256): ' + r.sha256.slice(0, 16) + ' …';
+      ks.className = 'status';
+    } else if (forventet){
+      ks.textContent = 'Filen er ikke den samme som den, kortet blev lavet med: Kontroltallet passer ikke. Er det den rigtige film, eller er den blevet ændret eller beskadiget? Gemmer du kortet igen, får det filens nye kontroltal.';
+      ks.className = 'status bad';
+    } else {
+      ks.textContent = 'Kontroltal (SHA-256): ' + r.sha256.slice(0, 16) + ' … Det skrives i kortet, så man senere kan tjekke, at filen er uændret.';
+      ks.className = 'status';
+    }
+    renderPreview();
+    return r;
+  }).catch(err => {
+    if (token === analyseToken){ ks.textContent = 'Kontroltallet kunne ikke beregnes: ' + err.message; ks.className = 'status bad'; }
+    return null;
+  });
   state.localVideoUrl = URL.createObjectURL(file);
   const formatTxt = VIDEO_TYPES[ext] ? '' : ' Filen er ikke en MP4. Konvertér den til MP4 med H.264 og AAC, så den kan afspilles i alle browsere.';
   st.textContent = 'Prøver videoen af …' + formatTxt; st.className = 'status pending';
@@ -1229,6 +1264,69 @@ function updateMappePlan(){
     + '<small>Knappen <b>Gem hele mappen som zip-fil</b> nederst laver mappen for dig. Du kan også gemme kortet og lægge filerne på plads selv. Kopiér altid hele mappen. Ændrer du titlen, ændres navnene også' + (v.fil ? ', men et indlæst kort beholder sit gamle filnavn' : '') + '.</small>';
 }
 
+/* ---------- Kontroltal (Builder-standard 5.7, regel 6) ----------
+   SHA-256 er videofilens "fingeraftryk". Det beregnes her i bidder, så også
+   en film på flere GB kan klares uden at fylde hukommelsen. Browserens egen
+   beregning kræver hele filen i hukommelsen på én gang. Zip-filens kontroltal
+   (CRC-32) beregnes i samme omgang, så filen kun læses én gang. */
+const SHA_K = new Uint32Array([
+  0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,
+  0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,
+  0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,
+  0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,
+  0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,
+  0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,
+  0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,
+  0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2]);
+function shaNy(){
+  return { h: new Uint32Array([0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19]),
+           w: new Uint32Array(64), rest: new Uint8Array(64), restN: 0, laengde: 0 };
+}
+function shaBlok(st, b, o){
+  const w = st.w, h = st.h;
+  for (let i = 0; i < 16; i++, o += 4) w[i] = (b[o] << 24) | (b[o+1] << 16) | (b[o+2] << 8) | b[o+3];
+  for (let i = 16; i < 64; i++){
+    const x = w[i-15], y = w[i-2];
+    const s0 = ((x >>> 7) | (x << 25)) ^ ((x >>> 18) | (x << 14)) ^ (x >>> 3);
+    const s1 = ((y >>> 17) | (y << 15)) ^ ((y >>> 19) | (y << 13)) ^ (y >>> 10);
+    w[i] = (w[i-16] + s0 + w[i-7] + s1) | 0;
+  }
+  let a = h[0], bb = h[1], c = h[2], d = h[3], e = h[4], f = h[5], g = h[6], hh = h[7];
+  for (let i = 0; i < 64; i++){
+    const S1 = ((e >>> 6) | (e << 26)) ^ ((e >>> 11) | (e << 21)) ^ ((e >>> 25) | (e << 7));
+    const t1 = (hh + S1 + ((e & f) ^ (~e & g)) + SHA_K[i] + w[i]) | 0;
+    const S0 = ((a >>> 2) | (a << 30)) ^ ((a >>> 13) | (a << 19)) ^ ((a >>> 22) | (a << 10));
+    const t2 = (S0 + ((a & bb) ^ (a & c) ^ (bb & c))) | 0;
+    hh = g; g = f; f = e; e = (d + t1) | 0; d = c; c = bb; bb = a; a = (t1 + t2) | 0;
+  }
+  h[0] = (h[0] + a) | 0; h[1] = (h[1] + bb) | 0; h[2] = (h[2] + c) | 0; h[3] = (h[3] + d) | 0;
+  h[4] = (h[4] + e) | 0; h[5] = (h[5] + f) | 0; h[6] = (h[6] + g) | 0; h[7] = (h[7] + hh) | 0;
+}
+function shaOpdater(st, b){
+  let i = 0;
+  st.laengde += b.length;
+  if (st.restN){
+    while (st.restN < 64 && i < b.length) st.rest[st.restN++] = b[i++];
+    if (st.restN < 64) return;
+    shaBlok(st, st.rest, 0); st.restN = 0;
+  }
+  for (; i + 64 <= b.length; i += 64) shaBlok(st, b, i);
+  while (i < b.length) st.rest[st.restN++] = b[i++];
+}
+function shaSlut(st){
+  const bits = st.laengde * 8;
+  const fyld = new Uint8Array(((st.restN < 56) ? 56 : 120) - st.restN + 8);
+  fyld[0] = 0x80;
+  const n = fyld.length;
+  const hoej = Math.floor(bits / 4294967296), lav = bits >>> 0;
+  fyld[n-8] = hoej >>> 24; fyld[n-7] = hoej >>> 16; fyld[n-6] = hoej >>> 8; fyld[n-5] = hoej;
+  fyld[n-4] = lav >>> 24; fyld[n-3] = lav >>> 16; fyld[n-2] = lav >>> 8; fyld[n-1] = lav;
+  const laengde = st.laengde;
+  shaOpdater(st, fyld);
+  st.laengde = laengde;
+  return Array.from(st.h, x => (x >>> 0).toString(16).padStart(8, '0')).join('');
+}
+
 /* ---------- Hele mappen som zip-fil (Builder-standard 5.7, regel 8) ----------
    Uden komprimering, for video er allerede pakket. Zip-formatet kræver et
    kontroltal (CRC-32) for hver fil. Videofilen læses derfor én gang i bidder;
@@ -1255,6 +1353,23 @@ async function crcBlob(blob, fremskridt){
   if (fremskridt) fremskridt(n);
   return (c ^ 0xFFFFFFFF) >>> 0;
 }
+// Læser filen én gang og giver både SHA-256 og zip-formatets CRC-32.
+async function analyserFil(blob, fremskridt){
+  const r = blob.stream().getReader();
+  const st = shaNy();
+  let c = 0xFFFFFFFF, n = 0, sidst = Date.now();
+  for (;;){
+    const { done, value } = await r.read();
+    if (done) break;
+    c = crcBid(c, value); shaOpdater(st, value); n += value.length;
+    if (Date.now() - sidst > 50){
+      if (fremskridt) fremskridt(n);
+      await pause();
+      sidst = Date.now();
+    }
+  }
+  return { crc: (c ^ 0xFFFFFFFF) >>> 0, sha256: shaSlut(st) };
+}
 const ZIP_MAKS = 0xFFFFFFFF;
 async function lavMappeZip(filer, fremskridt){
   const enc = new TextEncoder(), dele = [], central = [];
@@ -1266,7 +1381,8 @@ async function lavMappeZip(filer, fremskridt){
   let offset = 0, laest = 0;
   for (const f of filer){
     const navn = enc.encode(f.navn), str = f.data.size;
-    const crc = await crcBlob(f.data, n => fremskridt && fremskridt(laest + n, ialt));
+    // Er kontroltallet allerede beregnet, da filen blev valgt, læses filen ikke igen.
+    const crc = (typeof f.crc === 'number') ? f.crc : await crcBlob(f.data, n => fremskridt && fremskridt(laest + n, ialt));
     laest += str;
     const h = new DataView(new ArrayBuffer(30));
     h.setUint32(0, 0x04034b50, true); h.setUint16(4, 20, true); h.setUint16(6, 0x0800, true); h.setUint16(8, 0, true);
@@ -1420,7 +1536,8 @@ function buildDcSection(dc, media){
   (media || []).forEach(m => {
     const dele = [m.fil, m.type, m.bytes ? fmtBytes(m.bytes) : '', m.varighed ? fmtDuration(m.varighed) : ''].filter(Boolean);
     rows.push('<div class="meta-row"><dt>Hører til denne fil <span class="dc-tag">media</span></dt><dd>' + escapeHtml(dele.join(' · '))
-      + (m.reserve ? '<br>Reserve på nettet: ' + escapeHtml(m.reserve) : '') + '</dd></div>');
+      + (m.reserve ? '<br>Reserve på nettet: ' + escapeHtml(m.reserve) : '')
+      + (m.sha256 ? '<br>Kontroltal (SHA-256): <span style="word-break:break-all">' + escapeHtml(m.sha256) + '</span>' : '') + '</dd></div>');
   });
   if (!rows.length) return '';
   return '<details class="meta" id="omfilen">'
@@ -1917,8 +2034,9 @@ function buildPageHTML(s, opts){
   const dcMeta = buildDcMetaTags(dc);
   const mediaList = (s.mode === 'videofile' && s.localVideo) ? [{
     fil: localVideoPath(s), type: s.localVideo.type || 'video/mp4', bytes: s.localVideo.bytes || 0,
-    varighed: Math.round(s.localVideo.varighed || s.videoDuration || 0), reserve: s.videoFileUrl || ''
-  }] : [];
+    varighed: Math.round(s.localVideo.varighed || s.videoDuration || 0), reserve: s.videoFileUrl || '',
+    sha256: /^[0-9a-f]{64}$/.test(s.localVideo.sha256 || '') ? s.localVideo.sha256 : ''
+  }].map(m => { if (!m.sha256) delete m.sha256; return m; }) : [];
   const dcBlock = (s.visOmFil === false) ? '' : buildDcSection(dc, mediaList);
   const pageLang = (dc.language || 'da').trim() || 'da';
   const pageTitle = s.title || 'Mediekort';
@@ -2612,9 +2730,13 @@ $('loadPage').addEventListener('change', async (e) => {
     if (state.localVideoUrl){ URL.revokeObjectURL(state.localVideoUrl); state.localVideoUrl = ''; }
     const m0 = (Array.isArray(data.media) && data.media[0] && /^media\/[a-z0-9._-]+$/.test(String(data.media[0].fil || ''))) ? data.media[0] : null;
     state.localVideoFile = null;
-    state.localVideo = m0 ? { name: '', ext: videoExt(m0.fil), type: m0.type || 'video/mp4', bytes: m0.bytes || 0, varighed: m0.varighed || 0, fil: m0.fil } : null;
+    state.localVideo = m0 ? { name: '', ext: videoExt(m0.fil), type: m0.type || 'video/mp4', bytes: m0.bytes || 0, varighed: m0.varighed || 0, fil: m0.fil,
+      sha256: /^[0-9a-f]{64}$/.test(String(m0.sha256 || '')) ? m0.sha256 : '', crc: null } : null;
+    state.analyse = null; analyseToken++;
+    $('videoCheckStatus').hidden = true;
     $('btnVideoLocalClear').disabled = !m0;
-    $('videoLocalStatus').textContent = m0 ? 'Kortet peger på ' + m0.fil + '. Vælg filen igen, hvis du vil se videoen i forhåndsvisningen.' : 'Ingen fil valgt';
+    $('videoLocalStatus').textContent = m0 ? 'Kortet peger på ' + m0.fil + '. Vælg filen igen, hvis du vil se videoen i forhåndsvisningen'
+      + (state.localVideo.sha256 ? ' eller tjekke, at den er uændret.' : '.') : 'Ingen fil valgt';
     $('videoLocalStatus').className = 'status';
 
     $('fKicker').value = data.kicker || '';
@@ -2728,6 +2850,11 @@ $('generateBtn').addEventListener('click', async () => {
       msg.className = 'msg err';
       return;
     }
+    // Kontroltallet skal med i kortet. Er det ikke færdigt, ventes der på det.
+    if (state.mode === 'videofile' && state.analyse && state.localVideo && !state.localVideo.sha256){
+      msg.textContent = 'Venter på, at kontroltallet for videofilen bliver færdigt …'; msg.className = 'msg ok';
+      await state.analyse;
+    }
     // Sørg for, at det lille ikon er klar, før filen skrives.
     if (state.poster && !state.favicon){
       try { state.favicon = makeIcon(await loadImage(state.poster)); } catch(e){}
@@ -2775,6 +2902,10 @@ $('zipBtn').addEventListener('click', async () => {
       try { state.favicon = makeIcon(await loadImage(state.poster)); } catch(e){}
     }
     btn.disabled = true;
+    if (state.analyse && state.localVideo && !state.localVideo.sha256){
+      btn.textContent = 'Venter på kontroltallet …';
+      await state.analyse;
+    }
     btn.classList.add('arbejder');
     btn.style.setProperty('--pct', '0%');
     btn.textContent = 'Pakker mappen … 0 %';
@@ -2789,7 +2920,8 @@ $('zipBtn').addEventListener('click', async () => {
     const html = buildPageHTML(state, { preview:false, audioSrc:'' });
     const filer = [
       { navn: mappe + '/' + mappe + '.html', data: new Blob([html], { type:'text/html;charset=utf-8' }) },
-      { navn: mappe + '/' + localVideoPath(state), data: state.localVideoFile }
+      { navn: mappe + '/' + localVideoPath(state), data: state.localVideoFile,
+        crc: (state.localVideo && typeof state.localVideo.crc === 'number') ? state.localVideo.crc : undefined }
     ];
     let sidst = -1;
     const zip = await lavMappeZip(filer, (n, ialt) => {
