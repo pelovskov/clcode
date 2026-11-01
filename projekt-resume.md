@@ -61,7 +61,7 @@ Projektet startede som "Lokalhistorie på tværs af generationer" i Syd for Bane
 
 **Værktøjer:** Feltoptager (optag lyd i marken), Lydlab og Fotolab (gør lyd og billeder klar), Metadata-hjælper (lader en AI foreslå metadata og kontrollerer svaret), Musikpakke, Skyggeramme, Billedarkiv (ordner billeder i albums) og et værktøj til sikre adgangskoder.
 
-**Fælles regler:** Builder-standarden (version 2.13) sørger for, at alle byggere ser ens ud, har de samme syv farvetemaer og de samme udgivere og håndterer metadata ens.
+**Fælles regler:** Builder-standarden (version 2.14) sørger for, at alle byggere ser ens ud, har de samme syv farvetemaer og de samme udgivere og håndterer metadata ens.
 
 ## Fri udgave til alle andre
 
@@ -89,6 +89,7 @@ Den frie udgave laves automatisk ud fra foreningernes byggere, så forbedringer 
 - **Mørk tilstand:** Orange og rød tekst på mørk baggrund er lidt svag i de farvede temaer. Det kan rettes for alle temaer på én gang.
 - **Roskilde Musik i søgeportalen:** mangler hjemmeside og rettighedstekst, når foreningen har bestemt dem.
 - **Byggere, der er beskrevet i standarden, men ikke lavet endnu:** Vejledningsbygger og PWA-bygger.
+- **Video og store lydfiler (mappeformatet):** Film fra medlemsmøder, ofte digitaliserede videobånd og DVD'er på 10 minutter til over en time, og hele podcastserier er for store til at ligge inde i én fil. Standarden (afsnit 5.7) siger derfor nu: Én historie er én fil, når det kan lade sig gøre, og én mappe, når det skal. HTML-filen er stadig forsiden med sedlen, og mediefilerne ligger ved siden af med en reserve online. Det vigtigste er visning til møder uden at være afhængig af wifi. Mediekort tages op først.
 
 **Gode spørgsmål til sparring:**
 

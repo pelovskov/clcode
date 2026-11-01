@@ -1,7 +1,7 @@
 # Builder-standard
 
 **Fælles specifikation for værktøjskassen**
-Version 2.13 · oktober 2026
+Version 2.14 · november 2026
 
 Referenceimplementering: **Sidebygger** (`side-bygger.html`, version 1.5).
 Når noget er i tvivl, er det referencefilen der gælder.
@@ -51,7 +51,7 @@ Søgeindeks · Online lægger aldrig `config.php` og `data/` i repoet. Repoet er
 
 ### Grundprincipper
 
-1. **Én HTML-fil.** Builderen kører lokalt i browseren uden server. Outputfilen indeholder alt (billeder og lyd som base64) og kan åbnes uden internet.
+1. **Én HTML-fil.** Builderen kører lokalt i browseren uden server. Outputfilen indeholder alt (billeder og lyd som base64) og kan åbnes uden internet. Undtagelsen er mediefiler, der er for store til at ligge indeni, fx video og lange lydoptagelser. De lægges i en mappe ved siden af HTML-filen efter afsnit 5.7. Én historie er én fil, når det kan lade sig gøre, og én mappe, når det skal.
 2. **Målgruppen er ældre og ikke nødvendigvis teknisk øvede.** Stor skrift, høj kontrast, tydelige knapper.
 3. **Filerne skal kunne læses om 20 år.** Ren HTML, ingen eksterne afhængigheder, metadata efter Dublin Core.
 
@@ -399,6 +399,44 @@ Eksempel: "Skomagerværkstedet på Algade" → `skomagervaerkstedet-paa-algade.h
 
 Filer, der er lavet før version 1.2, beholder deres filnavn og identifikator. Reglen gælder kun nye filer, og en gammel identifikator overskrives ikke, når filen indlæses igen.
 
+### 5.7 Mappeformat: når mediefilerne er for store
+
+Video og lange lydoptagelser kan ikke ligge inde i HTML-filen. Base64 gør filen en tredjedel større, browseren skal have det hele i hukommelsen, og en time video fylder nemt 1-3 GB. Til dem bruges **mappeformatet**: HTML-filen er stadig forsiden og bærer stadig sedlen, men mediefilerne ligger ved siden af i en mappe.
+
+**Hvornår:** Video lægges altid i en mappe eller hentes online. Lyd lægges ind i filen som hidtil, så længe hver lydfil er under ca. **50 MB** (ca. 50 minutter mp3 i 128 kbit/s). Større lydfiler og serier med flere lydfiler, fx en podcastserie, bruger mappeformatet.
+
+**Opbygning:**
+
+```
+foraarsmoedet-2026/                  ← mappen hedder som HTML-filen (5.6)
+  foraarsmoedet-2026.html            ← forsiden: tekst, kapitler, plakatbillede og sedlen
+  media/
+    foraarsmoedet-2026.mp4           ← én mediefil, eller fx …-01.mp3, …-02.mp3 til en serie
+```
+
+**Regler:**
+
+1. **Relative adresser.** HTML-filen peger på mediefilerne med en relativ adresse, fx `media/foraarsmoedet-2026.mp4`. Aldrig en sti på computeren som `C:\…` eller `file://`. Så virker mappen alle steder: på en USB-nøgle, på et drev, på webhotellet og pakket ud af en zip-fil.
+2. **Filnavne efter 5.6:** små bogstaver, bindestreger, ingen æ, ø og å og ingen mellemrum. Mediefilerne hedder som HTML-filen, med et løbenummer, hvis der er flere.
+3. **HTML-filen kan stå alene.** Plakatbillede, tekst, kapitler og sedlen ligger stadig inde i HTML-filen. Kan mediefilen ikke findes, vises en tydelig besked i stedet for afspilleren, fx "Videoen ligger i filen *media/foraarsmoedet-2026.mp4* i samme mappe som denne fil." Siden må aldrig bare være tom.
+4. **Reserve online.** Hver mediefil kan have én reserveadresse, der begynder med `https://`, fx et link til samme fil i pCloud. Afspilleren prøver først den lokale fil og derefter reserven. Så virker den samme HTML-fil både fra mappen til et møde og alene på en hjemmeside eller i søgeportalen. Reserveadressen følger reglerne for adresser i 5.3: kun `https://`, aldrig `javascript:` eller `data:`.
+5. **Faste formater.** Video: **MP4 med H.264-billede og AAC-lyd**, som kan afspilles i alle almindelige browsere. Lyd: **MP3**. Videoer fra iPhone (HEVC eller .mov), DVD (VOB) og videobånd konverteres, før de bruges i byggeren. Byggeren advarer, når den kan se, at en fil ikke er i et af de faste formater.
+6. **Sedlen kender filerne.** Kildedata (5.1) får listen `media` med én post pr. mediefil: relativ adresse, MIME-type, størrelse i bytes, varighed i sekunder og eventuel reserveadresse. Panelet **Om denne fil** (5.4) viser listen som "Hører til denne fil". Et kontroltal (SHA-256) skrives med, hvor byggeren kan beregne det.
+
+   ```json
+   "media": [
+     { "fil": "media/foraarsmoedet-2026.mp4", "type": "video/mp4",
+       "bytes": 1288490188, "varighed": 3725,
+       "reserve": "https://…/foraarsmoedet-2026.mp4" }
+   ]
+   ```
+7. **Udvalgte stykker** (blød klipning) virker på samme måde med en lokal fil som med en adresse på nettet.
+8. **Transport.** Mappen kan pakkes som en zip-fil uden komprimering. Zip-filen hedder som mappen. Video og mp3 er allerede komprimeret, så pakningen går hurtigt og sparer ingen plads ved at komprimere.
+
+**Krav til den, der viser filen,** fx ved et medlemsmøde: Kopiér altid **hele mappen**, ikke kun HTML-filen. Åbn HTML-filen direkte fra mappen, og prøv afspilningen på den computer, der skal bruges, før mødet. Så afhænger visningen hverken af internet, wifi eller reklamer.
+
+**Søgeportalen** tager indtil videre kun imod HTML-filer. En historie i mappeformat lægges op som HTML-filen alene, og mediet afspilles fra reserveadressen. Uden reserve viser filen beskeden fra regel 3.
+
 ---
 
 ## 6. Markdown i tekstfelter
@@ -629,6 +667,10 @@ Udgiverlisten i prompten skal altid svare til `PUBLISHERS` i 4.1. Kommer der en 
 
 ## 12. Ændringslog
 
+**Version 2.14 — november 2026.**
+- Nyt afsnit 5.7 **Mappeformat**: Video og store lydfiler lægges i en mappe ved siden af HTML-filen med relative adresser, faste formater (MP4 med H.264/AAC og MP3), en reserveadresse online og en liste over mediefilerne i sedlen. HTML-filen skal kunne stå alene og sige, hvad der mangler. Grundprincip 1 nævner undtagelsen.
+- Ingen bygger er ændret endnu. Mediekort · Bygger tages op først (se afsnit 13).
+
 **Version 2.13 — oktober 2026.**
 - Alle byggere advarer nu, før man forlader siden med ugemte ændringer: Har man skrevet eller lagt noget ind, siden filen sidst blev gemt som .html, spørger browseren, om man vil forlade siden. At indlæse en fil tæller ikke som en ændring. Ny linje i tjeklisten (afsnit 10). Byggerne har fået et nyt versionsnummer; filformaterne er uændrede.
 
@@ -759,6 +801,13 @@ Udgiverlisten i prompten skal altid svare til `PUBLISHERS` i 4.1. Kommer der en 
 ---
 
 ## 13. Åbne punkter
+
+**Mappeformatet (5.7), i denne rækkefølge:**
+1. Mediekort · Bygger: valget "Videofil" får en lokal fil i mappen plus en reserveadresse, beskeden når filen mangler, og listen `media` i kildedata. Prøves af med én film fra et rigtigt medlemsmøde.
+2. Byggeren laver hele mappen som en zip-fil uden komprimering, så brugeren ikke selv skal flytte filer på plads.
+3. Kontroltal (SHA-256) for store filer: Browserens indbyggede beregning kræver hele filen i hukommelsen. Afklares, om det skal laves i bidder eller udelades for de største filer.
+4. En serie med flere lydfiler, fx en podcastserie, som en samling med afspilningsliste. Samling · Bygger og Musikpakke · Bygger er forbilleder.
+5. Søgeportalen tager imod en hel mappe som zip-fil og pakker den ud. Kræver kun tilladte filtyper (mp4, mp3 og billeder), beskyttelse mod filer uden for mappen og en løsning på webhotellets grænse for upload.
 
 **Afklares, når byggeren tages op:**
 - dc.type for Vejledning og PWA.
