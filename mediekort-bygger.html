@@ -111,6 +111,8 @@
   .generate-btn.zip{ background:var(--moss); }
   .generate-btn.zip:hover:not(:disabled){ background:#36412d; }
   .generate-btn.zip:disabled{ background:#c9beac; }
+  .generate-btn.zip.arbejder, .generate-btn.zip.arbejder:disabled{ background:#5c6a4d; color:#fdf8ee; cursor:progress;
+    background-image:linear-gradient(90deg, rgba(255,255,255,.22) var(--pct, 0%), transparent var(--pct, 0%)); }
   .zip-hint{ font-size:13.5px; color:var(--hint); line-height:1.5; margin:6px 0 0; }
   .msg{ margin-top:12px; font-size:14.5px; line-height:1.55; padding:10px 12px; border-radius:3px; display:none; }
   .msg.ok{ display:block; background:#e7ecdf; color:#3f4a34; }
@@ -143,7 +145,7 @@
 
 <div class="topbar">
   <h1>Mediekort · Bygger</h1>
-  <span>Lav et kort til en video, en podcast eller et talende billede, med kapitler og udskrift · kører lokalt, ingen server · version 1.8</span>
+  <span>Lav et kort til en video, en podcast eller et talende billede, med kapitler og udskrift · kører lokalt, ingen server · version 1.9</span>
 </div>
 
 <div class="layout">
@@ -470,7 +472,7 @@
     <button class="generate-btn" id="generateBtn" disabled>Generér mediekort (.html)</button>
     <div id="zipWrap" hidden>
       <button class="generate-btn zip" id="zipBtn" type="button" disabled>Gem hele mappen som zip-fil (kort + video)</button>
-      <p class="zip-hint" id="zipHint">Zip-filen indeholder mappen med kortet og videofilen med de rigtige navne. Pak den ud, fx på et USB-stik, og åbn kortet i mappen.</p>
+      <p class="zip-hint" id="zipHint">Zip-filen indeholder mappen med kortet og videofilen med de rigtige navne. Pak den ud, fx på et USB-stik, og åbn kortet i mappen. Med en stor video går der lidt tid, før overførslen begynder. Vent, til knappen bliver grøn igen.</p>
     </div>
     <div class="msg" id="msgBox"></div>
   </div>
@@ -486,7 +488,9 @@
 
 <script>
 /* =======================================================================
-   Mediekort · Bygger — version 1.8
+   Mediekort · Bygger — version 1.9
+   1.9: tydelig besked, mens zip-filen laves: knappen viser, hvor langt den er,
+        og der står, at det tager lidt tid, før overførslen begynder.
    1.1: videofil fra fx pCloud.
    1.8: "Gem hele mappen som zip-fil" laver mappen med kort og video som én
         zip-fil uden komprimering (Builder-standard 5.7, regel 8).
@@ -1211,7 +1215,7 @@ function updateMappePlan(){
   $('zipBtn').disabled = !(state.title.trim() && state.localVideoFile);
   $('zipHint').textContent = (v && !state.localVideoFile)
     ? 'Vælg videofilen igen under «Videofil i mappen», så kan byggeren lægge den i zip-filen.'
-    : 'Zip-filen indeholder mappen med kortet og videofilen med de rigtige navne. Pak den ud, fx på et USB-stik, og åbn kortet i mappen.';
+    : 'Zip-filen indeholder mappen med kortet og videofilen med de rigtige navne. Pak den ud, fx på et USB-stik, og åbn kortet i mappen. Med en stor video går der lidt tid, før overførslen begynder. Vent, til knappen bliver grøn igen.';
   if (!v){ box.hidden = true; box.innerHTML = ''; return; }
   const mappe = folderName(state);
   const path = localVideoPath(state);
@@ -1232,15 +1236,23 @@ function updateMappePlan(){
    ZIP64 kan en zip-fil højst være 4 GB. */
 const CRC_TABEL = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++){ let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
 function crcBid(c, b){ for (let i = 0; i < b.length; i++) c = CRC_TABEL[(c ^ b[i]) & 0xFF] ^ (c >>> 8); return c; }
+// Giver browseren et øjeblik til at tegne skærmen om, så knappen viser,
+// hvor langt den er. Ellers står siden stille, mens en stor fil læses.
+function pause(){ return new Promise(r => setTimeout(r, 0)); }
 async function crcBlob(blob, fremskridt){
   const r = blob.stream().getReader();
-  let c = 0xFFFFFFFF, n = 0;
+  let c = 0xFFFFFFFF, n = 0, sidst = Date.now();
   for (;;){
     const { done, value } = await r.read();
     if (done) break;
     c = crcBid(c, value); n += value.length;
-    if (fremskridt) fremskridt(n);
+    if (Date.now() - sidst > 50){
+      if (fremskridt) fremskridt(n);
+      await pause();
+      sidst = Date.now();
+    }
   }
+  if (fremskridt) fremskridt(n);
   return (c ^ 0xFFFFFFFF) >>> 0;
 }
 const ZIP_MAKS = 0xFFFFFFFF;
@@ -2763,18 +2775,34 @@ $('zipBtn').addEventListener('click', async () => {
       try { state.favicon = makeIcon(await loadImage(state.poster)); } catch(e){}
     }
     btn.disabled = true;
+    btn.classList.add('arbejder');
+    btn.style.setProperty('--pct', '0%');
+    btn.textContent = 'Pakker mappen … 0 %';
+    const stor = state.localVideoFile.size > 100e6;
+    msg.textContent = 'Pakker mappen med kortet og videoen. ' + (stor
+      ? 'Videoen fylder ' + fmtBytes(state.localVideoFile.size) + ', så det tager lidt tid, typisk fra et par sekunder til et minut. '
+      : '') + 'Overførslen begynder af sig selv, når den er færdig. Luk ikke siden imens.';
+    msg.className = 'msg ok';
+    msg.scrollIntoView({ block:'nearest' });
+    await pause();
     const mappe = folderName(state);
     const html = buildPageHTML(state, { preview:false, audioSrc:'' });
     const filer = [
       { navn: mappe + '/' + mappe + '.html', data: new Blob([html], { type:'text/html;charset=utf-8' }) },
       { navn: mappe + '/' + localVideoPath(state), data: state.localVideoFile }
     ];
-    msg.className = 'msg ok';
+    let sidst = -1;
     const zip = await lavMappeZip(filer, (n, ialt) => {
-      msg.textContent = 'Pakker mappen … ' + Math.min(100, Math.floor(n / ialt * 100)) + ' %';
+      const pct = Math.min(100, Math.floor(n / ialt * 100));
+      if (pct === sidst) return;
+      sidst = pct;
+      btn.textContent = 'Pakker mappen … ' + pct + ' %';
+      btn.style.setProperty('--pct', pct + '%');
     });
+    btn.textContent = 'Gemmer zip-filen …';
+    await pause();
     downloadBlob(zip, '', mappe + '.zip');
-    msg.textContent = 'Zip-filen er gemt som ' + mappe + '.zip (' + fmtBytes(zip.size) + '). Pak den ud, fx på et USB-stik. '
+    msg.textContent = 'Zip-filen ' + mappe + '.zip (' + fmtBytes(zip.size) + ') er sendt til Overførsler. Med en stor fil kan browseren bruge lidt tid, før den er helt gemt. Pak den ud, fx på et USB-stik. '
       + 'Så får du mappen «' + mappe + '» med kortet og videofilen. Åbn ' + mappe + '.html i mappen. '
       + 'Prøv det på den computer, der skal bruges, med wifi slået fra, så ved du, at videoen kommer fra mappen.';
     msg.className = 'msg ok';
@@ -2782,6 +2810,9 @@ $('zipBtn').addEventListener('click', async () => {
     msg.textContent = 'Zip-filen kunne ikke laves: ' + err.message;
     msg.className = 'msg err';
   } finally {
+    btn.classList.remove('arbejder');
+    btn.style.removeProperty('--pct');
+    btn.textContent = 'Gem hele mappen som zip-fil (kort + video)';
     btn.disabled = !(state.title.trim() && state.localVideoFile);
   }
 });
