@@ -145,7 +145,7 @@
 
 <div class="topbar">
   <h1>Mediekort · Bygger</h1>
-  <span>Lav et kort til en video, en podcast eller et talende billede, med kapitler og udskrift · kører lokalt, ingen server · version 2.0 · fri udgave</span>
+  <span>Lav et kort til en video, en podcast eller et talende billede, med kapitler og udskrift · kører lokalt, ingen server · version 2.1 · fri udgave</span>
 </div>
 
 <div class="layout">
@@ -464,7 +464,9 @@
 
 <script>
 /* =======================================================================
-   Mediekort · Bygger — version 2.0
+   Mediekort · Bygger — version 2.1
+   2.1: at gemme hele mappen som zip-fil tæller som at gemme kortet, så
+        browseren ikke advarer, når man lukker byggeren bagefter.
    2.0: kontroltal (SHA-256) for videofilen i mappen (Builder-standard 5.7,
         regel 6). Det beregnes i bidder, når filen vælges, og står i kortet.
         Vælger man filen igen til et indlæst kort, tjekkes det, at den er
@@ -2892,7 +2894,8 @@ setMode('video');
 /* ---- Advarsel, før man forlader siden uden at have gemt ----
    Har man skrevet eller lagt noget ind siden sidst, filen blev gemt, spørger
    browseren, om man vil forlade siden. Når filen gemmes (.html), forsvinder
-   advarslen igen. At indlæse en fil tæller ikke som en ændring. */
+   advarslen igen. Det gør den også, når hele mappen gemmes som zip-fil, for
+   kortet ligger i den. At indlæse en fil tæller ikke som en ændring. */
 (function(){
   var INDLAES = { loadPage:1, loadInput:1, loadPlayer:1 };
   var aendret = false;
@@ -2906,7 +2909,7 @@ setMode('video');
   document.addEventListener('drop', marker, true);
   document.addEventListener('click', function(e){
     var a = e.target && e.target.closest ? e.target.closest('a[download]') : null;
-    if (a && /\.html?$/i.test(a.getAttribute('download') || '')) aendret = false;
+    if (a && /\.(html?|zip)$/i.test(a.getAttribute('download') || '')) aendret = false;
   }, true);
   window.addEventListener('beforeunload', function(e){
     if (!aendret) return;
