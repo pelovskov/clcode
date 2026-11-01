@@ -1,7 +1,7 @@
 # Builder-standard
 
 **Fælles specifikation for værktøjskassen**
-Version 2.15 · november 2026
+Version 2.16 · november 2026
 
 Referenceimplementering: **Sidebygger** (`side-bygger.html`, version 1.5).
 Når noget er i tvivl, er det referencefilen der gælder.
@@ -667,6 +667,10 @@ Udgiverlisten i prompten skal altid svare til `PUBLISHERS` i 4.1. Kommer der en 
 
 ## 12. Ændringslog
 
+**Version 2.16 — november 2026.**
+- Mediekort · Bygger (v1.8) har knappen **Gem hele mappen som zip-fil**: Mappen med kortet og videofilen, med de rigtige navne, gemmes som én zip-fil uden komprimering (5.7, regel 8). Videofilen læses kun én gang for at beregne zip-formatets kontroltal og kopieres ikke ind i hukommelsen. En zip-fil kan højst være ca. 4 GB.
+- Mediekort 1.7 er prøvet af med en rigtig film fra pCloud: Fra mappen afspilles den uden internet, og uden mappen bruges reserven.
+
 **Version 2.15 — november 2026.**
 - Mediekort · Bygger (v1.7) følger afsnit 5.7: Valget **Videofil** kan pege på en videofil i mappen `media/` ved siden af kortet og have en adresse på nettet som reserve. Byggeren viser, hvordan mappen skal se ud, og advarer, når browseren ikke kan afspille filen. Kortet siger selv, hvilken fil der mangler. Filformatet er udvidet med listen `media`, så `builderVersion` er stadig 1.
 
@@ -806,8 +810,8 @@ Udgiverlisten i prompten skal altid svare til `PUBLISHERS` i 4.1. Kommer der en 
 ## 13. Åbne punkter
 
 **Mappeformatet (5.7), i denne rækkefølge:**
-1. ~~Mediekort · Bygger: valget "Videofil" får en lokal fil i mappen plus en reserveadresse, beskeden når filen mangler, og listen `media` i kildedata.~~ Lavet i Mediekort 1.7 (version 2.15). Mangler at blive prøvet af med en film fra et rigtigt medlemsmøde.
-2. Byggeren laver hele mappen som en zip-fil uden komprimering, så brugeren ikke selv skal flytte filer på plads.
+1. ~~Mediekort · Bygger: valget "Videofil" får en lokal fil i mappen plus en reserveadresse, beskeden når filen mangler, og listen `media` i kildedata.~~ Lavet i Mediekort 1.7 (version 2.15) og prøvet af med en rigtig film fra pCloud i november 2026.
+2. ~~Byggeren laver hele mappen som en zip-fil uden komprimering, så brugeren ikke selv skal flytte filer på plads.~~ Lavet i Mediekort 1.8 (version 2.16). Højst ca. 4 GB, fordi zip-filen laves uden ZIP64.
 3. Kontroltal (SHA-256) for store filer: Browserens indbyggede beregning kræver hele filen i hukommelsen. Afklares, om det skal laves i bidder eller udelades for de største filer.
 4. En serie med flere lydfiler, fx en podcastserie, som en samling med afspilningsliste. Samling · Bygger og Musikpakke · Bygger er forbilleder.
 5. Søgeportalen tager imod en hel mappe som zip-fil og pakker den ud. Kræver kun tilladte filtyper (mp4, mp3 og billeder), beskyttelse mod filer uden for mappen og en løsning på webhotellets grænse for upload.

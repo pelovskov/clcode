@@ -108,6 +108,10 @@
   }
   .generate-btn:disabled{ background:#c9beac; color:#4a4436; cursor:not-allowed; }
   .generate-btn:hover:not(:disabled){ background:#82392a; }
+  .generate-btn.zip{ background:var(--moss); }
+  .generate-btn.zip:hover:not(:disabled){ background:#36412d; }
+  .generate-btn.zip:disabled{ background:#c9beac; }
+  .zip-hint{ font-size:13.5px; color:var(--hint); line-height:1.5; margin:6px 0 0; }
   .msg{ margin-top:12px; font-size:14.5px; line-height:1.55; padding:10px 12px; border-radius:3px; display:none; }
   .msg.ok{ display:block; background:#e7ecdf; color:#3f4a34; }
   .msg.err{ display:block; background:#f4ded9; color:#7d2c1a; }
@@ -139,7 +143,7 @@
 
 <div class="topbar">
   <h1>Mediekort · Bygger</h1>
-  <span>Lav et kort til en video, en podcast eller et talende billede, med kapitler og udskrift · kører lokalt, ingen server · version 1.7 · fri udgave</span>
+  <span>Lav et kort til en video, en podcast eller et talende billede, med kapitler og udskrift · kører lokalt, ingen server · version 1.8 · fri udgave</span>
 </div>
 
 <div class="layout">
@@ -439,6 +443,10 @@
     <!-- 8. Generér -->
     <div class="sizebar" id="sizeBar">Indhold i filen: 0 KB</div>
     <button class="generate-btn" id="generateBtn" disabled>Generér mediekort (.html)</button>
+    <div id="zipWrap" hidden>
+      <button class="generate-btn zip" id="zipBtn" type="button" disabled>Gem hele mappen som zip-fil (kort + video)</button>
+      <p class="zip-hint" id="zipHint">Zip-filen indeholder mappen med kortet og videofilen med de rigtige navne. Pak den ud, fx på et USB-stik, og åbn kortet i mappen.</p>
+    </div>
     <div class="msg" id="msgBox"></div>
   </div>
 
@@ -453,8 +461,10 @@
 
 <script>
 /* =======================================================================
-   Mediekort · Bygger — version 1.7
+   Mediekort · Bygger — version 1.8
    1.1: videofil fra fx pCloud.
+   1.8: "Gem hele mappen som zip-fil" laver mappen med kort og video som én
+        zip-fil uden komprimering (Builder-standard 5.7, regel 8).
    1.7: mappeformatet (Builder-standard 5.7): videofilen kan ligge i mappen
         media/ ved siden af kortet, med adressen på nettet som reserve. Kortet
         siger selv, hvilken fil der mangler. Listen "media" i kildedata.
@@ -477,7 +487,7 @@ const state = {
   videoId:'',
   audioUrl:'', audioDuration:0,
   videoFileUrl:'', videoDuration:0,
-  localVideo:null, localVideoUrl:'',   // videofil i mappen media/ (5.7) og en blob-adresse til forhåndsvisningen
+  localVideo:null, localVideoUrl:'', localVideoFile:null,   // videofil i mappen media/ (5.7), blob-adresse til forhåndsvisningen og selve filen til zip
   audioBlob:null, audioName:'', audioBlobUrl:'',
   kicker:'', title:'', location:'', shareImage:'',
   poster:'', posterAlt:'',
@@ -1079,6 +1089,7 @@ function setLocalVideo(file){
   if (state.localVideoUrl){ URL.revokeObjectURL(state.localVideoUrl); }
   state.localVideoUrl = '';
   state.localVideo = null;
+  state.localVideoFile = file || null;
   const st = $('videoLocalStatus');
   $('btnVideoLocalClear').disabled = !file;
   if (!file){
@@ -1118,6 +1129,11 @@ function updateMappePlan(){
   $('videoUrlHint').textContent = v
     ? 'Ligger den samme video også på nettet, fx i pCloud, så skriv adressen her. Kortet prøver først filen i mappen og derefter adressen. Så virker kortet også alene, fx i søgeportalen eller på en hjemmeside.'
     : 'Brug den direkte adresse til filen, fx et link fra en offentlig mappe i pCloud. Prøv adressen i browserens adresselinje: afspilles videoen der, virker den også i kortet. Værktøjet prøver videoen af og viser varighed og størrelse.';
+  $('zipWrap').hidden = !(state.mode === 'videofile' && v);
+  $('zipBtn').disabled = !(state.title.trim() && state.localVideoFile);
+  $('zipHint').textContent = (v && !state.localVideoFile)
+    ? 'Vælg videofilen igen under «Videofil i mappen», så kan byggeren lægge den i zip-filen.'
+    : 'Zip-filen indeholder mappen med kortet og videofilen med de rigtige navne. Pak den ud, fx på et USB-stik, og åbn kortet i mappen.';
   if (!v){ box.hidden = true; box.innerHTML = ''; return; }
   const mappe = folderName(state);
   const path = localVideoPath(state);
@@ -1128,7 +1144,58 @@ function updateMappePlan(){
     + '<li class="l2">📄 ' + escapeHtml(mappe) + '.html <small>– kortet, som du gemmer med knappen nederst</small></li>'
     + '<li class="l2">📁 media/</li>'
     + '<li class="l3">🎬 ' + escapeHtml(fil) + ' <small>– ' + (v.name && v.name !== fil ? 'din fil «' + escapeHtml(v.name) + '», omdøbt' : 'videofilen') + '</small></li></ul>'
-    + '<small>Kopiér altid hele mappen. Ændrer du titlen, ændres navnene også' + (v.fil ? ', men et indlæst kort beholder sit gamle filnavn' : '') + '.</small>';
+    + '<small>Knappen <b>Gem hele mappen som zip-fil</b> nederst laver mappen for dig. Du kan også gemme kortet og lægge filerne på plads selv. Kopiér altid hele mappen. Ændrer du titlen, ændres navnene også' + (v.fil ? ', men et indlæst kort beholder sit gamle filnavn' : '') + '.</small>';
+}
+
+/* ---------- Hele mappen som zip-fil (Builder-standard 5.7, regel 8) ----------
+   Uden komprimering, for video er allerede pakket. Zip-formatet kræver et
+   kontroltal (CRC-32) for hver fil. Videofilen læses derfor én gang i bidder;
+   den kopieres ikke ind i hukommelsen, men lægges direkte i zip-filen. Uden
+   ZIP64 kan en zip-fil højst være 4 GB. */
+const CRC_TABEL = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++){ let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+function crcBid(c, b){ for (let i = 0; i < b.length; i++) c = CRC_TABEL[(c ^ b[i]) & 0xFF] ^ (c >>> 8); return c; }
+async function crcBlob(blob, fremskridt){
+  const r = blob.stream().getReader();
+  let c = 0xFFFFFFFF, n = 0;
+  for (;;){
+    const { done, value } = await r.read();
+    if (done) break;
+    c = crcBid(c, value); n += value.length;
+    if (fremskridt) fremskridt(n);
+  }
+  return (c ^ 0xFFFFFFFF) >>> 0;
+}
+const ZIP_MAKS = 0xFFFFFFFF;
+async function lavMappeZip(filer, fremskridt){
+  const enc = new TextEncoder(), dele = [], central = [];
+  const nu = new Date();
+  const tid = (nu.getHours() << 11) | (nu.getMinutes() << 5) | (nu.getSeconds() >> 1);
+  const dato = ((nu.getFullYear() - 1980) << 9) | ((nu.getMonth() + 1) << 5) | nu.getDate();
+  const ialt = filer.reduce((n, f) => n + f.data.size, 0);
+  if (ialt + 4096 > ZIP_MAKS) throw new Error('Videofilen er for stor til en zip-fil (højst ca. 4 GB). Gem kortet, og læg filerne i mappen selv.');
+  let offset = 0, laest = 0;
+  for (const f of filer){
+    const navn = enc.encode(f.navn), str = f.data.size;
+    const crc = await crcBlob(f.data, n => fremskridt && fremskridt(laest + n, ialt));
+    laest += str;
+    const h = new DataView(new ArrayBuffer(30));
+    h.setUint32(0, 0x04034b50, true); h.setUint16(4, 20, true); h.setUint16(6, 0x0800, true); h.setUint16(8, 0, true);
+    h.setUint16(10, tid, true); h.setUint16(12, dato, true); h.setUint32(14, crc, true);
+    h.setUint32(18, str, true); h.setUint32(22, str, true); h.setUint16(26, navn.length, true); h.setUint16(28, 0, true);
+    dele.push(h.buffer, navn, f.data);
+    const c = new DataView(new ArrayBuffer(46));
+    c.setUint32(0, 0x02014b50, true); c.setUint16(4, 20, true); c.setUint16(6, 20, true); c.setUint16(8, 0x0800, true);
+    c.setUint16(10, 0, true); c.setUint16(12, tid, true); c.setUint16(14, dato, true); c.setUint32(16, crc, true);
+    c.setUint32(20, str, true); c.setUint32(24, str, true); c.setUint16(28, navn.length, true);
+    c.setUint32(42, offset, true);
+    central.push(c.buffer, navn);
+    offset += 30 + navn.length + str;
+  }
+  const cdStr = central.reduce((n, d) => n + d.byteLength, 0);
+  const e = new DataView(new ArrayBuffer(22));
+  e.setUint32(0, 0x06054b50, true); e.setUint16(8, filer.length, true); e.setUint16(10, filer.length, true);
+  e.setUint32(12, cdStr, true); e.setUint32(16, offset, true);
+  return new Blob([...dele, ...central, e.buffer], { type:'application/zip' });
 }
 
 $('videoLocal').addEventListener('change', (e) => {
@@ -2454,6 +2521,7 @@ $('loadPage').addEventListener('change', async (e) => {
     // Mappeformatet: stien til filen i mappen beholdes, så kortet stadig passer til mappen.
     if (state.localVideoUrl){ URL.revokeObjectURL(state.localVideoUrl); state.localVideoUrl = ''; }
     const m0 = (Array.isArray(data.media) && data.media[0] && /^media\/[a-z0-9._-]+$/.test(String(data.media[0].fil || ''))) ? data.media[0] : null;
+    state.localVideoFile = null;
     state.localVideo = m0 ? { name: '', ext: videoExt(m0.fil), type: m0.type || 'video/mp4', bytes: m0.bytes || 0, varighed: m0.varighed || 0, fil: m0.fil } : null;
     $('btnVideoLocalClear').disabled = !m0;
     $('videoLocalStatus').textContent = m0 ? 'Kortet peger på ' + m0.fil + '. Vælg filen igen, hvis du vil se videoen i forhåndsvisningen.' : 'Ingen fil valgt';
@@ -2540,7 +2608,8 @@ function downloadBlob(content, type, filename){
   const a = document.createElement('a');
   a.href = url; a.download = filename;
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  setTimeout(() => URL.revokeObjectURL(url), 3000);
+  // Store filer, fx en zip-fil med video, får længere tid, før adressen fjernes.
+  setTimeout(() => URL.revokeObjectURL(url), blob.size > 50e6 ? 120000 : 3000);
 }
 
 $('metaJsonBtn').addEventListener('click', () => {
@@ -2603,6 +2672,39 @@ $('generateBtn').addEventListener('click', async () => {
     msg.className = 'msg err';
   } finally {
     btn.disabled = !(state.title.trim() && hasMedia());
+  }
+});
+
+$('zipBtn').addEventListener('click', async () => {
+  const msg = $('msgBox');
+  const btn = $('zipBtn');
+  try {
+    readForm(); syncAutoDc();
+    if (!state.localVideoFile){ msg.textContent = 'Vælg videofilen under «Videofil i mappen» først.'; msg.className = 'msg err'; return; }
+    if (state.poster && !state.favicon){
+      try { state.favicon = makeIcon(await loadImage(state.poster)); } catch(e){}
+    }
+    btn.disabled = true;
+    const mappe = folderName(state);
+    const html = buildPageHTML(state, { preview:false, audioSrc:'' });
+    const filer = [
+      { navn: mappe + '/' + mappe + '.html', data: new Blob([html], { type:'text/html;charset=utf-8' }) },
+      { navn: mappe + '/' + localVideoPath(state), data: state.localVideoFile }
+    ];
+    msg.className = 'msg ok';
+    const zip = await lavMappeZip(filer, (n, ialt) => {
+      msg.textContent = 'Pakker mappen … ' + Math.min(100, Math.floor(n / ialt * 100)) + ' %';
+    });
+    downloadBlob(zip, '', mappe + '.zip');
+    msg.textContent = 'Zip-filen er gemt som ' + mappe + '.zip (' + fmtBytes(zip.size) + '). Pak den ud, fx på et USB-stik. '
+      + 'Så får du mappen «' + mappe + '» med kortet og videofilen. Åbn ' + mappe + '.html i mappen. '
+      + 'Prøv det på den computer, der skal bruges, med wifi slået fra, så ved du, at videoen kommer fra mappen.';
+    msg.className = 'msg ok';
+  } catch(err){
+    msg.textContent = 'Zip-filen kunne ikke laves: ' + err.message;
+    msg.className = 'msg err';
+  } finally {
+    btn.disabled = !(state.title.trim() && state.localVideoFile);
   }
 });
 
