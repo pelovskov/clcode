@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<!-- SFB-afspiller · version 0.3 (prøveudgave, nov. 2026)
+<!-- SFB-afspiller · version 0.4 (prøveudgave, nov. 2026)
+     0.4: historier hentes i stykker på 4 MB og kontrolleres, før de gemmes; zip-læseren tåler en forskudt fil.
      0.3: historiehylden – historier på webhotellet hentes ind i appen med ét tryk.
      0.2: kan lægges på hjemmeskærmen som en app (PWA) og virker uden internet.
      Afspiller historier direkte fra zip-filer, uden at noget skal pakkes ud.
@@ -88,7 +89,7 @@
 </style>
 </head>
 <body>
-<header class="top"><div class="indre"><h1>SFB-afspiller</h1><span class="ver">version 0.3 · prøveudgave</span></div></header>
+<header class="top"><div class="indre"><h1>SFB-afspiller</h1><span class="ver">version 0.4 · prøveudgave</span></div></header>
 
 <main id="hoved">
   <div class="installer" id="installer" hidden>
@@ -126,7 +127,7 @@
 
 <script>
 /* =======================================================================
-   SFB-afspiller · version 0.3
+   SFB-afspiller · version 0.4
    ======================================================================= */
 const $ = id => document.getElementById(id);
 function escapeHtml(s){
@@ -162,9 +163,11 @@ async function laesBytes(fil, start, slut){
 function fjernKilde(url, size, name){
   return { name, size, url,
     async bytes(a, b){
-      const r = await fetch(url, { headers: { Range: 'bytes=' + a + '-' + (b - 1) } });
+      const r = await fetch(url, { headers: { Range: 'bytes=' + a + '-' + (b - 1) }, cache: 'no-store' });
       if (r.status !== 206) throw new Error('Webhotellet kan ikke sende dele af ' + name + '.');
-      return new Uint8Array(await r.arrayBuffer());
+      const bid = new Uint8Array(await r.arrayBuffer());
+      if (bid.length !== b - a) throw new Error('Webhotellet sendte en forkert del af ' + name + '.');
+      return bid;
     } };
 }
 function u16(b, o){ return b[o] | (b[o+1] << 8); }
@@ -178,7 +181,16 @@ async function laesZip(fil){
   if (e < 0) throw new Error('Det er ikke en zip-fil, der kan læses.');
   const antal = u16(t, e + 10), cdStr = u32(t, e + 12), cdStart = u32(t, e + 16);
   if (cdStart === 0xFFFFFFFF || antal === 0xFFFF) throw new Error('Zip-filen er over 4 GB, og det kan afspilleren ikke endnu.');
-  const cd = await laesBytes(fil, cdStart, cdStart + cdStr);
+  // Indholdsfortegnelsen ligger lige før slutningen. Er filen forskudt, fx fordi
+  // der er kommet noget foran den, rettes alle placeringer med forskellen.
+  const eAbs = fil.size - halen + e;
+  let skub = 0;
+  let cd = await laesBytes(fil, cdStart, cdStart + cdStr);
+  if (u32(cd, 0) !== 0x02014b50 && eAbs - cdStr >= 0){
+    skub = (eAbs - cdStr) - cdStart;
+    cd = await laesBytes(fil, eAbs - cdStr, eAbs);
+    if (u32(cd, 0) !== 0x02014b50) throw new Error('Zip-filens indholdsfortegnelse kan ikke læses. Filen er måske ikke kommet helt igennem.');
+  }
   const dek = new TextDecoder('utf-8');
   const filer = [];
   let p = 0;
@@ -189,7 +201,7 @@ async function laesZip(fil){
     const navn = dek.decode(cd.subarray(p + 46, p + 46 + navnL));
     p += 46 + navnL + ekstraL + kommL;
     if (navn.endsWith('/') || /(^|\/)(__MACOSX|\.)/.test(navn)) continue;
-    filer.push({ navn, metode, pakket, str, lokal });
+    filer.push({ navn, metode, pakket, str, lokal: lokal + skub });
   }
   return filer;
 }
@@ -513,28 +525,40 @@ async function hentTilAppen(i){
   try { if (navigator.storage && navigator.storage.persist) await navigator.storage.persist(); } catch(e){}
   p.henter = true; p.pct = 0; p.status = 'Henter …'; tegnHylde();
   try {
-    const r = await fetch(p.url, { cache: 'no-store' });
-    if (!r.ok || !r.body) throw new Error('Filen kunne ikke hentes (' + r.status + ').');
-    const ialt = +r.headers.get('Content-Length') || p.bytes || 1;
-    // Dataene løber direkte ind i appens lager. Undervejs tælles de, så bjælken
-    // kan vise, hvor langt den er – uden at filen samles i hukommelsen.
-    let n = 0, sidst = -1;
-    const taeller = new TransformStream({
-      transform(bid, ctl){
-        n += bid.length;
-        const pct = Math.min(100, Math.floor(n / ialt * 100));
-        if (pct !== sidst){
-          sidst = pct; p.pct = pct; p.status = 'Henter … ' + pct + ' %';
-          const kort = $('hylde').children[i];
-          if (kort){ const b = kort.querySelector('.bjaelke span'); if (b) b.style.width = pct + '%'; kort.querySelector('.tjek').textContent = p.status; }
-        }
-        ctl.enqueue(bid);
+    // Filen hentes i stykker på 4 MB, ligesom titlen og billedet blev læst.
+    // Hvert stykke tjekkes, og dataene løber direkte ind i appens lager,
+    // uden at filen samles i hukommelsen.
+    let ialt = p.bytes;
+    if (!ialt){
+      const h = await fetch(p.url, { method: 'HEAD', cache: 'no-store' });
+      ialt = +h.headers.get('Content-Length') || 0;
+    }
+    if (!ialt) throw new Error('Filens størrelse kunne ikke findes.');
+    const kilde = fjernKilde(p.url, ialt, p.navn);
+    const STYKKE = 4 * 1024 * 1024;
+    let pos = 0;
+    const strom = new ReadableStream({
+      async pull(ctl){
+        if (pos >= ialt){ ctl.close(); return; }
+        const slut = Math.min(ialt, pos + STYKKE);
+        ctl.enqueue(await kilde.bytes(pos, slut));
+        pos = slut;
+        const pct = Math.min(100, Math.floor(pos / ialt * 100));
+        p.pct = pct; p.status = 'Henter … ' + pct + ' %';
+        const kort = $('hylde').children[i];
+        if (kort){ const b = kort.querySelector('.bjaelke span'); if (b) b.style.width = pct + '%'; kort.querySelector('.tjek').textContent = p.status; }
       }
     });
     const lager = await caches.open(HYLDE_LAGER);
-    await lager.put(p.url, new Response(r.body.pipeThrough(taeller), { headers: { 'Content-Type': 'application/zip', 'Content-Length': String(ialt) } }));
+    await lager.put(p.url, new Response(strom, { headers: { 'Content-Type': 'application/zip', 'Content-Length': String(ialt) } }));
     const blob = await (await lager.match(p.url)).blob();
-    await tilfoejZip(new File([blob], p.navn, { type: 'application/zip' }), p.url);
+    // Er filen kommet helt og rigtigt igennem? Ellers slettes den igen.
+    if (blob.size !== ialt){
+      await lager.delete(p.url);
+      throw new Error('Filen kom ikke helt igennem (' + fmtBytes(blob.size) + ' af ' + fmtBytes(ialt) + ').');
+    }
+    try { await tilfoejZip(new File([blob], p.navn, { type: 'application/zip' }), p.url); }
+    catch(err){ await lager.delete(p.url); throw err; }
     tegnBibliotek();
     p.status = '';
     sig(p.historie ? '«' + p.historie.titel + '» er hentet til appen.' : p.navn + ' er hentet til appen.');
@@ -543,7 +567,9 @@ async function hentTilAppen(i){
     // eller browseren kører i privat tilstand, hvor lageret er lille.
     p.status = /cache|quota|put/i.test(err.message || '')
       ? 'Historien kunne ikke gemmes i appen. Der er måske ikke plads nok på enheden, eller browseren er i privat tilstand. Fjern evt. en anden historie, og prøv igen.'
-      : 'Det lykkedes ikke: ' + err.message + ' Prøv igen, når der er god forbindelse.';
+      : /fetch|network|netværk/i.test(err.message || '')
+      ? 'Forbindelsen blev afbrudt. Prøv igen, når der er god forbindelse.'
+      : 'Det lykkedes ikke: ' + err.message;
   }
   p.henter = false; tegnHylde(); visLager();
 }
