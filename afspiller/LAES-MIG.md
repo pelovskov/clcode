@@ -2,7 +2,7 @@
 
 En afspiller, der viser historier **direkte fra zip-filer**, uden at noget skal pakkes ud. Den er tænkt til film, podcastserier og senere store gallerier, som er for store til at ligge inde i én HTML-fil, og til de mange, der har svært ved zip-filer, især på telefoner og tablets.
 
-Status: **version 0.4, prøveudgave.** Den virker på computeren og som app på telefoner og tablets, og den har en **historiehylde**, hvor historier hentes ind i appen med ét tryk.
+Status: **version 0.5, prøveudgave.** Den virker på computeren og som app på telefoner og tablets, og den har en **historiehylde**, hvor historier hentes ind i appen med ét tryk.
 
 ## Sådan bruges den
 
@@ -18,7 +18,7 @@ Af sikkerhedsgrunde skal zip-filerne vælges igen, hver gang afspilleren åbnes.
 
 Når afspilleren ligger på webhotellet, viser den øverst **Historiehylden**: de historier, der ligger klar på webhotellet, med titel, billede, varighed og størrelse.
 
-- Tryk **Hent til appen**. En bjælke viser, hvor langt den er. Historien hentes i stykker på 4 MB og kontrolleres, før den gemmes, så en halv eller forkert fil aldrig havner i appen. Går det galt, siger beskeden hvorfor, fx «Filen kom ikke helt igennem».
+- Tryk **Hent til appen**. En bjælke viser, hvor langt den er. Historien hentes i stykker på 4 MB og kontrolleres, før den gemmes, så en halv eller forkert fil aldrig havner i appen. Er et stykke forkert, hentes det igen i små bidder. Går det alligevel galt, siger beskeden hvorfor, og bagefter står en «Teknisk besked», som kan sendes videre til den, der passer afspilleren.
 - Historien gemmes i appens eget lager og ligger derefter i **Dit bibliotek**, også næste gang appen åbnes og uden internet. Ingen skal lede efter en zip-fil.
 - **Fjern fra appen** sletter den igen. Den kan altid hentes igen fra hylden.
 
@@ -89,7 +89,7 @@ Mappen `afspiller/` bruger intet fra resten af repoet, og intet i repoet afhæng
 
 1. **Prototype på computeren** – lavet (version 0.1).
 2. **App på telefon og tablet (PWA)** – lavet (version 0.2). Skal prøves på Android-telefoner, en Android-tablet og iPads.
-3. **Historiehylden** – lavet (version 0.3, gjort mere robust i 0.4). Ligger på foreningens webhotel, fordi GitHub Pages har en grænse på 100 MB pr. fil.
+3. **Historiehylden** – lavet (version 0.3, gjort mere robust i 0.4 og 0.5). Ligger på foreningens webhotel, fordi GitHub Pages har en grænse på 100 MB pr. fil.
 4. **Medlemsmødet:** et program for aftenen, der kører én ting ad gangen i fuld skærm, mens den, der viser, trykker Næste.
 5. **Gallerier:** Album · Bygger kan lægge billederne i mappeformatet, så store gallerier kan vises fra en zip-fil.
 

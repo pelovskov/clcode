@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<!-- SFB-afspiller · version 0.4 (prøveudgave, nov. 2026)
+<!-- SFB-afspiller · version 0.5 (prøveudgave, nov. 2026)
+     0.5: hvert stykke tjekkes og hentes igen i små bidder, hvis det er forkert; ved fejl vises en teknisk besked.
      0.4: historier hentes i stykker på 4 MB og kontrolleres, før de gemmes; zip-læseren tåler en forskudt fil.
      0.3: historiehylden – historier på webhotellet hentes ind i appen med ét tryk.
      0.2: kan lægges på hjemmeskærmen som en app (PWA) og virker uden internet.
@@ -89,7 +90,7 @@
 </style>
 </head>
 <body>
-<header class="top"><div class="indre"><h1>SFB-afspiller</h1><span class="ver">version 0.4 · prøveudgave</span></div></header>
+<header class="top"><div class="indre"><h1>SFB-afspiller</h1><span class="ver">version 0.5 · prøveudgave</span></div></header>
 
 <main id="hoved">
   <div class="installer" id="installer" hidden>
@@ -127,7 +128,7 @@
 
 <script>
 /* =======================================================================
-   SFB-afspiller · version 0.4
+   SFB-afspiller · version 0.5
    ======================================================================= */
 const $ = id => document.getElementById(id);
 function escapeHtml(s){
@@ -161,14 +162,26 @@ async function laesBytes(fil, start, slut){
 /* En zip-fil på hylden læses i små stykker over nettet (HTTP Range), så titel
    og billede kan vises, uden at hele filen hentes. */
 function fjernKilde(url, size, name){
-  return { name, size, url,
+  const kilde = { name, size, url, sidst: '',
     async bytes(a, b){
       const r = await fetch(url, { headers: { Range: 'bytes=' + a + '-' + (b - 1) }, cache: 'no-store' });
+      // Svaret noteres, så en fejl kan forklares i den tekniske besked.
+      const cr = r.headers.get('Content-Range') || '';
+      kilde.sidst = 'svar ' + r.status + ', Content-Range ' + (cr || '–') + ', Content-Encoding ' + (r.headers.get('Content-Encoding') || '–')
+        + ', Content-Length ' + (r.headers.get('Content-Length') || '–') + ', Server ' + (r.headers.get('Server') || '–');
       if (r.status !== 206) throw new Error('Webhotellet kan ikke sende dele af ' + name + '.');
+      const m = cr.match(/bytes\s+(\d+)-(\d+)/);
+      if (m && (+m[1] !== a || +m[2] !== b - 1)) throw new Error('Webhotellet sendte en anden del af ' + name + ' end den, der blev bedt om.');
       const bid = new Uint8Array(await r.arrayBuffer());
       if (bid.length !== b - a) throw new Error('Webhotellet sendte en forkert del af ' + name + '.');
       return bid;
     } };
+  return kilde;
+}
+function ens(x, y){
+  if (x.length !== y.length) return false;
+  for (let i = 0; i < x.length; i++) if (x[i] !== y[i]) return false;
+  return true;
 }
 function u16(b, o){ return b[o] | (b[o+1] << 8); }
 function u32(b, o){ return (b[o] | (b[o+1] << 8) | (b[o+2] << 16) | (b[o+3] << 24)) >>> 0; }
@@ -524,6 +537,8 @@ async function hentTilAppen(i){
   if (!harLager){ sig('Appens lager kan ikke bruges her. Åbn afspilleren fra webhotellet.', true); return; }
   try { if (navigator.storage && navigator.storage.persist) await navigator.storage.persist(); } catch(e){}
   p.henter = true; p.pct = 0; p.status = 'Henter …'; tegnHylde();
+  const spor = [];
+  let kilde = null;
   try {
     // Filen hentes i stykker på 4 MB, ligesom titlen og billedet blev læst.
     // Hvert stykke tjekkes, og dataene løber direkte ind i appens lager,
@@ -534,14 +549,31 @@ async function hentTilAppen(i){
       ialt = +h.headers.get('Content-Length') || 0;
     }
     if (!ialt) throw new Error('Filens størrelse kunne ikke findes.');
-    const kilde = fjernKilde(p.url, ialt, p.navn);
-    const STYKKE = 4 * 1024 * 1024;
-    let pos = 0;
+    kilde = fjernKilde(p.url, ialt, p.navn);
+    const STYKKE = 4 * 1024 * 1024, BID = 256 * 1024;
+    // Et stykke tjekkes ved at læse dets sidste 32 bytes for sig. Passer de ikke,
+    // hentes stykket igen i små bidder på 256 KB.
+    async function hentStykke(a, b){
+      let bid = await kilde.bytes(a, b);
+      if (!spor.length) spor.push('første stykke: ' + kilde.sidst);
+      if (b - a > 64){
+        const hale = await kilde.bytes(b - 32, b);
+        if (!ens(bid.subarray(bid.length - 32), hale)){
+          spor.push('stykket ved ' + fmtBytes(a) + ' var forkert');
+          bid = new Uint8Array(b - a);
+          for (let x = a; x < b; x += BID) bid.set(await kilde.bytes(x, Math.min(b, x + BID)), x - a);
+          if (!ens(bid.subarray(bid.length - 32), hale)) throw new Error('Webhotellet sender forskellige data for den samme del af filen.');
+        }
+      }
+      return bid;
+    }
+    let pos = 0, stromFejl = null;
     const strom = new ReadableStream({
       async pull(ctl){
         if (pos >= ialt){ ctl.close(); return; }
         const slut = Math.min(ialt, pos + STYKKE);
-        ctl.enqueue(await kilde.bytes(pos, slut));
+        try { ctl.enqueue(await hentStykke(pos, slut)); }
+        catch(e){ stromFejl = e; throw e; }
         pos = slut;
         const pct = Math.min(100, Math.floor(pos / ialt * 100));
         p.pct = pct; p.status = 'Henter … ' + pct + ' %';
@@ -550,12 +582,22 @@ async function hentTilAppen(i){
       }
     });
     const lager = await caches.open(HYLDE_LAGER);
-    await lager.put(p.url, new Response(strom, { headers: { 'Content-Type': 'application/zip', 'Content-Length': String(ialt) } }));
+    // Går hentningen galt undervejs, melder lageret kun en almindelig fejl. Den
+    // egentlige grund er gemt i stromFejl.
+    try { await lager.put(p.url, new Response(strom, { headers: { 'Content-Type': 'application/zip', 'Content-Length': String(ialt) } })); }
+    catch(e){ throw stromFejl || e; }
     const blob = await (await lager.match(p.url)).blob();
     // Er filen kommet helt og rigtigt igennem? Ellers slettes den igen.
     if (blob.size !== ialt){
       await lager.delete(p.url);
       throw new Error('Filen kom ikke helt igennem (' + fmtBytes(blob.size) + ' af ' + fmtBytes(ialt) + ').');
+    }
+    // Slutningen af filen, hvor indholdsfortegnelsen ligger, sammenlignes med webhotellets.
+    const n = Math.min(ialt, 65557);
+    const netHale = await kilde.bytes(ialt - n, ialt);
+    if (!ens(new Uint8Array(await blob.slice(ialt - n).arrayBuffer()), netHale)){
+      await lager.delete(p.url);
+      throw new Error('Filen blev ændret, da den blev gemt i appen.');
     }
     try { await tilfoejZip(new File([blob], p.navn, { type: 'application/zip' }), p.url); }
     catch(err){ await lager.delete(p.url); throw err; }
@@ -570,6 +612,9 @@ async function hentTilAppen(i){
       : /fetch|network|netværk/i.test(err.message || '')
       ? 'Forbindelsen blev afbrudt. Prøv igen, når der er god forbindelse.'
       : 'Det lykkedes ikke: ' + err.message;
+    // En kort teknisk besked, som kan sendes videre, hvis fejlen bliver ved.
+    p.status += ' · Teknisk besked: version 0.5; ' + (err.message || err) + '; ' + spor.join('; ')
+      + (kilde && kilde.sidst ? '; sidste svar: ' + kilde.sidst : '') + '; ' + navigator.userAgent;
   }
   p.henter = false; tegnHylde(); visLager();
 }
