@@ -2,7 +2,7 @@
 
 En afspiller, der viser historier **direkte fra zip-filer**, uden at noget skal pakkes ud. Den er tænkt til film, podcastserier og senere store gallerier, som er for store til at ligge inde i én HTML-fil, og til de mange, der har svært ved zip-filer, især på telefoner og tablets.
 
-Status: **version 0.7, prøveudgave.** Den virker på computeren og som app på telefoner og tablets, og den har en **historiehylde**, hvor historier hentes ind i appen med ét tryk.
+Status: **version 0.8, prøveudgave.** Den virker på computeren og som app på telefoner og tablets, og den har en **historiehylde**, hvor historier hentes ind i appen med ét tryk.
 
 ## Sådan bruges den
 
@@ -104,8 +104,8 @@ Mappen `afspiller/` bruger intet fra resten af repoet, og intet i repoet afhæng
 
 Hylden kan bruges som foreningens egen kanal, fx til «Ugens lydhistorie» eller «Nye billeder», uden abonnement, platform eller reklamer. Album og de andre byggeres HTML-filer virker allerede, når de pakkes i en zip-fil. Disse ønsker er noteret, og de laves én ad gangen:
 
-1. **Fold hylden sammen**, så den ikke fylder så meget. Appen kan huske, om den var foldet sammen.
-2. **Albumkort:** Et album får et plakatbillede (det første billede eller et, man selv vælger), typen «Billedalbum», antal billeder og knappen «Åbn» i stedet for «Afspil».
+1. **Fold hylden sammen** – lavet (version 0.8). Tryk på overskriften «Historiehylden». Antallet af historier står ved overskriften, og appen husker, om hylden var foldet sammen.
+2. **Albumkort** – lavet (version 0.8). Et album får sit første billede på kortet, typen «Billedalbum», antal billeder og knappen «Åbn» i stedet for «Afspil». Senere måske: et forsidebillede, man selv vælger i Album · Bygger.
 3. **Mærket «Nyt»** på historier på hylden, som man ikke har set før. Appen holder selv styr på det, uden beskeder på telefonen.
 4. **Adminside** på webhotellet til at lægge zip-filer op og fjerne dem, med samme login som søgeportalen. Store film sendes i stykker. Senere måske: skift en historie ud med en rettet udgave, og se, hvor tit hver historie hentes.
 
