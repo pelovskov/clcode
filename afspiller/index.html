@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<!-- SFB-afspiller · version 0.6 (prøveudgave, nov. 2026)
+<!-- SFB-afspiller · version 0.7 (prøveudgave, nov. 2026)
+     0.7: lyden spiller videre med slukket skærm, med titel og knapper på den låste skærm; knappen «Hold skærmen tændt».
      0.6: retter fejl i nyere browsere (Chrome 132 og senere), hvor en gemt eller valgt zip-fil ikke kunne læses.
      0.5: hvert stykke tjekkes og hentes igen i små bidder, hvis det er forkert; ved fejl vises en teknisk besked.
      0.4: historier hentes i stykker på 4 MB og kontrolleres, før de gemmes; zip-læseren tåler en forskudt fil.
@@ -79,7 +80,9 @@
   .visning{position:fixed; inset:0; z-index:50; background:#000; display:flex; flex-direction:column}
   .visning .bar{background:var(--accent); color:#fff; display:flex; align-items:center; gap:12px; padding:8px 12px}
   .visning .bar button{background:transparent; color:#fff; border-color:#fff; min-height:42px; padding:4px 16px}
-  .visning .bar span{font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+  .visning .bar span{font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1 1 auto}
+  .visning .bar #vaagen{flex:0 0 auto}
+  .visning .bar #vaagen[aria-pressed="true"]{background:#fff; color:var(--accent)}
   .visning iframe{flex:1 1 auto; width:100%; border:0; background:#fff}
   .note{color:var(--muted); font-size:.92rem; margin-top:34px}
   .installer{margin:0 0 18px; background:var(--accent-lys); border-left:5px solid var(--accent); border-radius:0 10px 10px 0; padding:12px 16px; display:flex; flex-wrap:wrap; gap:10px 16px; align-items:center}
@@ -91,7 +94,7 @@
 </style>
 </head>
 <body>
-<header class="top"><div class="indre"><h1>SFB-afspiller</h1><span class="ver">version 0.6 · prøveudgave</span></div></header>
+<header class="top"><div class="indre"><h1>SFB-afspiller</h1><span class="ver">version 0.7 · prøveudgave</span></div></header>
 
 <main id="hoved">
   <div class="installer" id="installer" hidden>
@@ -123,13 +126,14 @@
 </main>
 
 <div class="visning" id="visning" hidden role="dialog" aria-modal="true" aria-labelledby="visTitel">
-  <div class="bar"><button type="button" id="tilbage">← Biblioteket</button><span id="visTitel"></span></div>
+  <div class="bar"><button type="button" id="tilbage">← Biblioteket</button><span id="visTitel"></span>
+    <button type="button" id="vaagen" aria-pressed="false" hidden>Hold skærmen tændt</button></div>
   <iframe id="ramme" title="Historien" allow="autoplay; fullscreen" allowfullscreen></iframe>
 </div>
 
 <script>
 /* =======================================================================
-   SFB-afspiller · version 0.6
+   SFB-afspiller · version 0.7
    ======================================================================= */
 const $ = id => document.getElementById(id);
 function escapeHtml(s){
@@ -404,6 +408,7 @@ async function aaben(i){
     html = html.split('"' + rel + '"').join('"' + url + '"');
   }
   html = html.replace('</head>', '<style>.save-wrap,.save-note,.homewrap{display:none !important}</style></head>');
+  $('ramme').onload = () => medieStart(b);
   $('ramme').srcdoc = html;
   $('visTitel').textContent = b.titel;
   $('visning').hidden = false;
@@ -412,11 +417,99 @@ async function aaben(i){
   sig('');
 }
 function luk(){
+  medieStop();
+  vaagenFra();
+  $('ramme').onload = null;
   $('ramme').srcdoc = '';
   $('visning').hidden = true;
   document.body.style.overflow = '';
   aabneAdresser.forEach(u => URL.revokeObjectURL(u));
   aabneAdresser = [];
+}
+
+/* ---------- Lyd med slukket skærm ----------
+   Telefonen får at vide, hvad der spiller (Media Session). Så vises titel og
+   billede på den låste skærm med knapperne Afspil/Pause, Forrige og Næste, også
+   i bilen via Bluetooth, og lyden må spille videre, når skærmen slukker.
+   Forrige og Næste trykker på historiens egne knapper, hvis den har dem. */
+const harMedieSession = 'mediaSession' in navigator && typeof MediaMetadata === 'function';
+let aktivtMedie = null, medieBog = null, sidstePos = 0;
+function medieStart(b){
+  if (!harMedieSession) return;
+  let doc;
+  try { doc = $('ramme').contentDocument; } catch(e){ return; }
+  if (!doc) return;
+  medieBog = b;
+  aktivtMedie = doc.querySelector('audio, video');
+  // Den lyd eller video i historien, der sidst er sat i gang, er den aktive.
+  doc.addEventListener('play', e => { aktivtMedie = e.target; medieOpdater(); }, true);
+  doc.addEventListener('pause', () => medieOpdater(), true);
+  doc.addEventListener('loadedmetadata', () => medieOpdater(), true);
+  doc.addEventListener('timeupdate', () => { const nu = Date.now(); if (nu - sidstePos > 5000){ sidstePos = nu; medieOpdater(); } }, true);
+  const ms = navigator.mediaSession;
+  const knap = id => { const k = doc.getElementById(id); return k && !k.disabled ? k : null; };
+  const saet = (handling, fn) => { try { ms.setActionHandler(handling, fn); } catch(e){} };
+  saet('play', () => { if (aktivtMedie) aktivtMedie.play(); });
+  saet('pause', () => { if (aktivtMedie) aktivtMedie.pause(); });
+  saet('previoustrack', () => { const k = knap('forrigeBtn'); if (k) k.click(); else if (aktivtMedie) aktivtMedie.currentTime = 0; });
+  saet('nexttrack', () => { const k = knap('naesteBtn'); if (k) k.click(); });
+  saet('seekbackward', d => { if (aktivtMedie) aktivtMedie.currentTime = Math.max(0, aktivtMedie.currentTime - ((d && d.seekOffset) || 15)); });
+  saet('seekforward', d => { if (aktivtMedie) aktivtMedie.currentTime = Math.min(aktivtMedie.duration || 1e9, aktivtMedie.currentTime + ((d && d.seekOffset) || 15)); });
+  saet('seekto', d => { if (aktivtMedie && d && typeof d.seekTime === 'number') aktivtMedie.currentTime = d.seekTime; });
+  medieOpdater();
+}
+function medieOpdater(){
+  if (!harMedieSession || !medieBog) return;
+  const ms = navigator.mediaSession;
+  let doc = null;
+  try { doc = $('ramme').contentDocument; } catch(e){}
+  // Titlen på afsnittet og dets billede, hvis historien viser dem; ellers historiens egne.
+  const afsnit = doc && doc.getElementById('nuTitel');
+  const titel = (afsnit && afsnit.textContent.trim()) || medieBog.titel;
+  const bill = doc && doc.getElementById('nuBillede');
+  let src = (bill && !bill.hidden && bill.getAttribute('src')) || medieBog.billede || '';
+  if (!/^(blob:|data:image\/|https?:)/.test(src)) src = '';
+  try {
+    ms.metadata = new MediaMetadata({ title: titel, artist: titel === medieBog.titel ? 'SFB-afspiller' : medieBog.titel,
+      album: 'SFB-afspiller', artwork: src ? [{ src, sizes: '512x512' }] : [{ src: 'ikon-512.png', sizes: '512x512', type: 'image/png' }] });
+  } catch(e){}
+  const m = aktivtMedie;
+  try { ms.playbackState = m ? (m.paused ? 'paused' : 'playing') : 'none'; } catch(e){}
+  if (m && ms.setPositionState && isFinite(m.duration) && m.duration > 0){
+    try { ms.setPositionState({ duration: m.duration, position: Math.min(m.currentTime, m.duration), playbackRate: m.playbackRate || 1 }); } catch(e){}
+  }
+}
+function medieStop(){
+  if (!harMedieSession) return;
+  const ms = navigator.mediaSession;
+  ['play', 'pause', 'previoustrack', 'nexttrack', 'seekbackward', 'seekforward', 'seekto'].forEach(h => { try { ms.setActionHandler(h, null); } catch(e){} });
+  try { ms.metadata = null; ms.playbackState = 'none'; } catch(e){}
+  aktivtMedie = null; medieBog = null;
+}
+
+/* ---------- Hold skærmen tændt ----------
+   En reserve, fx når telefonen sidder i en holder i bilen. Skærmen slukker ikke,
+   mens historien er åben. Det bruger mere strøm, så det slås fra, når historien
+   lukkes. Telefonen slipper selv låsen, hvis man skifter app; den tages igen,
+   når man kommer tilbage. */
+let vaagenLaas = null, vaagenOnsket = false;
+async function vaagenTil(){
+  try {
+    vaagenLaas = await navigator.wakeLock.request('screen');
+    vaagenLaas.addEventListener('release', () => { vaagenLaas = null; });
+    vaagenOnsket = true;
+  } catch(e){ vaagenOnsket = false; sig('Skærmen kan ikke holdes tændt her. Stil evt. pauseskærmen til en længere tid i telefonens indstillinger.', true); }
+  $('vaagen').setAttribute('aria-pressed', vaagenOnsket ? 'true' : 'false');
+}
+function vaagenFra(){
+  vaagenOnsket = false;
+  if (vaagenLaas){ try { vaagenLaas.release(); } catch(e){} vaagenLaas = null; }
+  $('vaagen').setAttribute('aria-pressed', 'false');
+}
+if ('wakeLock' in navigator){
+  $('vaagen').hidden = false;
+  $('vaagen').addEventListener('click', () => { if (vaagenOnsket) vaagenFra(); else vaagenTil(); });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && vaagenOnsket && !vaagenLaas && !$('visning').hidden) vaagenTil(); });
 }
 
 /* ---------- Tjek, at filerne er hele ---------- */
@@ -616,7 +709,7 @@ async function hentTilAppen(i){
       ? 'Forbindelsen blev afbrudt. Prøv igen, når der er god forbindelse.'
       : 'Det lykkedes ikke: ' + err.message;
     // En kort teknisk besked, som kan sendes videre, hvis fejlen bliver ved.
-    p.status += ' · Teknisk besked: version 0.6; ' + (err.message || err) + '; ' + spor.join('; ')
+    p.status += ' · Teknisk besked: version 0.7; ' + (err.message || err) + '; ' + spor.join('; ')
       + (kilde && kilde.sidst ? '; sidste svar: ' + kilde.sidst : '') + '; ' + navigator.userAgent;
   }
   p.henter = false; tegnHylde(); visLager();

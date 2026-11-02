@@ -2,7 +2,7 @@
 
 En afspiller, der viser historier **direkte fra zip-filer**, uden at noget skal pakkes ud. Den er tænkt til film, podcastserier og senere store gallerier, som er for store til at ligge inde i én HTML-fil, og til de mange, der har svært ved zip-filer, især på telefoner og tablets.
 
-Status: **version 0.6, prøveudgave.** Den virker på computeren og som app på telefoner og tablets, og den har en **historiehylde**, hvor historier hentes ind i appen med ét tryk.
+Status: **version 0.7, prøveudgave.** Den virker på computeren og som app på telefoner og tablets, og den har en **historiehylde**, hvor historier hentes ind i appen med ét tryk.
 
 ## Sådan bruges den
 
@@ -50,6 +50,12 @@ Afspilleren skal hentes fra en hjemmeside (https) for at kunne blive en app, fx 
 Derefter ligger SFB-afspilleren som et ikon og åbner i fuld skærm. Den virker også uden internet, fordi hjælpefilen `sw.js` har gemt den på enheden. Zip-filerne vælges som før, fx fra *Overførsler*, *Filer* eller Google Drev.
 
 Åbnes `index.html` direkte fra computeren, virker afspilleren som før, bare ikke som app.
+
+### Lyd med slukket skærm, fx i bilen
+
+- Lyden spiller videre, når skærmen slukker. Afspilleren fortæller telefonen, hvad der spiller, så titel og billede vises på den låste skærm med knapperne Afspil/Pause, Forrige og Næste. I mange biler med Bluetooth kan man også styre med bilens egne knapper.
+- Knappen **Hold skærmen tændt** øverst i en åben historie sørger for, at skærmen ikke slukker, fx når telefonen sidder i en holder. Den bruger mere strøm og slås fra, når historien lukkes. Knappen vises kun, hvor browseren kan det.
+- iPhone og iPad er mere strikse end Android. Stopper lyden dér, når skærmen slukker, så brug **Hold skærmen tændt**.
 
 ### Filerne i mappen
 
