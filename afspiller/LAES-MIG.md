@@ -98,5 +98,15 @@ Mappen `afspiller/` bruger intet fra resten af repoet, og intet i repoet afhæng
 3. **Historiehylden** – lavet (version 0.3, gjort mere robust i 0.4 og 0.5, og i 0.6 rettet, så den virker i nyere browsere). Ligger på foreningens webhotel, fordi GitHub Pages har en grænse på 100 MB pr. fil.
 4. **Medlemsmødet:** et program for aftenen, der kører én ting ad gangen i fuld skærm, mens den, der viser, trykker Næste.
 5. **Gallerier:** Album · Bygger kan lægge billederne i mappeformatet, så store gallerier kan vises fra en zip-fil.
+6. **Lyd med slukket skærm** – lavet (version 0.7). Prøvet på Android og iOS. Mangler at blive prøvet i bilen med Bluetooth.
+
+### Ønsker til hylden og biblioteket
+
+Hylden kan bruges som foreningens egen kanal, fx til «Ugens lydhistorie» eller «Nye billeder», uden abonnement, platform eller reklamer. Album og de andre byggeres HTML-filer virker allerede, når de pakkes i en zip-fil. Disse ønsker er noteret, og de laves én ad gangen:
+
+1. **Fold hylden sammen**, så den ikke fylder så meget. Appen kan huske, om den var foldet sammen.
+2. **Albumkort:** Et album får et plakatbillede (det første billede eller et, man selv vælger), typen «Billedalbum», antal billeder og knappen «Åbn» i stedet for «Afspil».
+3. **Mærket «Nyt»** på historier på hylden, som man ikke har set før. Appen holder selv styr på det, uden beskeder på telefonen.
+4. **Adminside** på webhotellet til at lægge zip-filer op og fjerne dem, med samme login som søgeportalen. Store film sendes i stykker. Senere måske: skift en historie ud med en rettet udgave, og se, hvor tit hver historie hentes.
 
 Se også visionen i `projekt-resume.md` under «Åbne spørgsmål og idéer».
