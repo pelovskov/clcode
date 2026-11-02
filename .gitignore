@@ -9,3 +9,6 @@ sbtv/data/*
 !sbtv/data/foreninger.json
 sbtv/filer/*
 !sbtv/filer/.htaccess
+
+# Historiehylden: zip-filerne ligger kun på webhotellet
+afspiller/hylde/*.zip
