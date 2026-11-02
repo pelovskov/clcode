@@ -1,58 +1,100 @@
 <!DOCTYPE html>
 <html lang="da">
 <head>
-  <meta charset="UTF-8">
-  <title>Udtræk MP3 fra HTML</title>
-  <style>
-    body { font-family: sans-serif; padding: 40px; line-height: 1.6; }
-    .box { border: 2px dashed #ccc; padding: 30px; border-radius: 8px; max-width: 500px; text-align: center; }
-    input { margin-top: 15px; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Lydudtrækker · version 1.1 (nov. 2026)
+     Finder lyden, der ligger inde i en HTML-fil som base64 (data:audio/…),
+     fx i en lydfortælling eller et mediekort, og gemmer den som en almindelig
+     lydfil, når den oprindelige lydfil er væk.
+     1.1: træk og slip som i Billedudtrækker, samme udseende, besked på siden i
+          stedet for en pop-op, og lydfilen får navn efter HTML-filen.
+     Alt sker på din egen computer. Intet sendes nogen steder hen. -->
+<title>Lydudtrækker</title>
+<style>
+  :root{
+    --paper:#EDE7D8; --surface:#FBF8EF; --ink:#211E19; --rust:#9A4630; --rust-dark:#82392A;
+    --hint:#5F5A4B; --line:#cbc2a8;
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--paper); color:var(--ink); line-height:1.55;
+    font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size:17px}
+  :focus-visible{outline:3px solid var(--rust); outline-offset:2px}
+  .wrap{max-width:760px; margin:0 auto; padding:28px 18px 60px}
+  h1{font-size:1.8rem; margin:0 0 4px}
+  .sub{color:var(--hint); margin:0 0 22px}
+  .drop{display:block; border:3px dashed var(--line); border-radius:12px; background:var(--surface);
+    padding:30px 20px; text-align:center; cursor:pointer}
+  .drop.over{border-color:var(--rust); background:#fff}
+  .drop strong{display:block; font-size:1.2rem; margin-bottom:6px}
+  .drop input{display:block; margin:14px auto 0; font-size:1rem}
+  .status{margin:18px 0 0; font-weight:600}
+  .status.fejl{color:#9b1c1c}
+  .note{color:var(--hint); font-size:.95rem; margin-top:30px}
+</style>
 </head>
 <body>
-  <div class="box">
-    <h2>Træk MP3 ud af HTML-fil</h2>
-    <p>Vælg din HTML-fil med den indlejrede lyd:</p>
-    <input type="file" id="fileInput" accept=".html,.htm">
-  </div>
+<main class="wrap">
+  <h1>Lydudtrækker</h1>
+  <p class="sub">Henter lyden ud af en HTML-fil, fx en lydfortælling eller et mediekort, når den oprindelige lydfil er væk · version 1.1</p>
 
-  <script>
-    document.getElementById('fileInput').addEventListener('change', function(e) {
-      const file = e.target.files[0];
-      if (!file) return;
+  <label class="drop" id="drop">
+    <strong>Vælg en HTML-fil med lyd</strong>
+    eller træk den herind
+    <input type="file" id="fileInput" accept=".html,.htm,text/html">
+  </label>
+  <p class="status" id="status" role="status" aria-live="polite"></p>
 
-      const reader = new FileReader();
-      reader.onload = function(event) {
-        const text = event.target.result;
-        
-        // Søger efter data URI for lyd
-        const match = text.match(/data:audio\/[^;]+;base64,([A-Za-z0-9+/=]+)/);
-        
-        if (match) {
-          const base64Data = match[1];
-          const byteCharacters = atob(base64Data);
-          const byteNumbers = new Array(byteCharacters.length);
-          
-          for (let i = 0; i < byteCharacters.length; i++) {
-            byteNumbers[i] = byteCharacters.charCodeAt(i);
-          }
-          
-          const byteArray = new Uint8Array(byteNumbers);
-          const blob = new Blob([byteArray], { type: 'audio/mp3' });
-          
-          // Opret download-link
-          const link = document.createElement('a');
-          link.href = URL.createObjectURL(blob);
-          link.download = 'udtrukket_lyd.mp3';
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-        } else {
-          alert('Kunne ikke finde en indlejret base64-lydfil i den valgte fil.');
-        }
-      };
-      reader.readAsText(file);
-    });
-  </script>
+  <p class="note">Lydfilen havner i <em>Overførsler</em> og får samme navn som HTML-filen. Alt sker på din egen computer, og intet sendes nogen steder hen.</p>
+</main>
+
+<script>
+const status = document.getElementById('status');
+function sig(tekst, fejl){ status.textContent = tekst; status.className = 'status' + (fejl ? ' fejl' : ''); }
+
+// Filtypen følger lydens egen type, så fx en m4a-fil ikke kaldes mp3.
+const ENDELSER = { mpeg:'mp3', mp3:'mp3', mp4:'m4a', 'x-m4a':'m4a', aac:'aac', ogg:'ogg', wav:'wav', 'x-wav':'wav', webm:'webm', flac:'flac' };
+
+function udtraek(file){
+  if (!file) return;
+  if (!/\.html?$/i.test(file.name)){ sig('Vælg en HTML-fil (.html), fx en lydfortælling eller et mediekort.', true); return; }
+  sig('Leder efter lyd i ' + file.name + ' …');
+  const reader = new FileReader();
+  reader.onload = function(event){
+    const text = event.target.result;
+    // Søger efter data URI for lyd
+    const match = text.match(/data:audio\/([^;"']+);base64,([A-Za-z0-9+/=]+)/);
+    if (!match){ sig('Der er ingen indlejret lyd i ' + file.name + '. Lyden ligger måske på nettet eller i en mappe ved siden af filen.', true); return; }
+    const type = match[1].toLowerCase();
+    const byteCharacters = atob(match[2]);
+    const byteArray = new Uint8Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) byteArray[i] = byteCharacters.charCodeAt(i);
+    const blob = new Blob([byteArray], { type: 'audio/' + type });
+    const navn = file.name.replace(/\.html?$/i, '') + '.' + (ENDELSER[type] || 'mp3');
+
+    // Opret download-link
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = navn;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setTimeout(() => URL.revokeObjectURL(link.href), 3000);
+    sig('Lyden er gemt som ' + navn + ' (' + (blob.size / (1024 * 1024)).toFixed(1).replace('.', ',') + ' MB).');
+  };
+  reader.onerror = function(){ sig('Filen kunne ikke læses.', true); };
+  reader.readAsText(file);
+}
+
+document.getElementById('fileInput').addEventListener('change', function(e){
+  udtraek(e.target.files[0]);
+  e.target.value = '';
+});
+
+const drop = document.getElementById('drop');
+['dragenter', 'dragover'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.add('over'); }));
+['dragleave', 'drop'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.remove('over'); }));
+drop.addEventListener('drop', e => { if (e.dataTransfer && e.dataTransfer.files.length) udtraek(e.dataTransfer.files[0]); });
+</script>
 </body>
 </html>
