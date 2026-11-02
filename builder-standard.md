@@ -483,7 +483,7 @@ roskilde-domkirke/                ← hovedalbummet, navn efter 5.6
 4. **Billederne ligger som almindelige filer** og ikke som base64 i HTML-filen. Derfor kan et arkiv have tusindvis af billeder.
 5. **Siderne virker uden JavaScript.** Hver miniature er et link til billedet, så man altid kan se billederne. JavaScript tilføjer visning i stort format (lightbox) med pile og tastatur, men er ikke nødvendigt. Siderne har temaerne fra afsnit 3 og læsehjælpen fra 5.5: mørk tilstand, skriftstørrelse og op-pil.
 6. **Brødkrummer.** Øverst på hver side står vejen til albummet, fx *Roskilde Domkirke › Kongekapellet*, med links op til de overordnede album.
-7. **Kun de tekster, der betyder noget.** Med kommer albummets titel og beskrivelse og billedets titel og eventuelle beskrivelse. Datoer, fotograf, nøgleord (tags) og kommentarer fra Piwigo kommer ikke med, fordi de ikke er udfyldt ensartet i galleriet. Teksterne står på siden, så mennesker kan læse dem, og i `album.json`, så de kan flyttes til et andet galleri senere. Piwigos beskrivelser kan indeholde HTML. I `album.json` gemmes de uændret, men på siden vises kun almindelig tekst og links (`http(s)`, efter 5.3), aldrig scripts.
+7. **Kun de tekster, der betyder noget.** Med kommer albummets titel og beskrivelse og billedets titel, eventuelle beskrivelse og **fotograf** (Piwigos felt «Forfatter»), når det er udfyldt. Fotografen vises under billedet som «Foto: …». Datoer, nøgleord (tags) og kommentarer fra Piwigo kommer ikke med, fordi de ikke er udfyldt ensartet i galleriet. Teksterne står på siden, så mennesker kan læse dem, og i `album.json`, så de kan flyttes til et andet galleri senere. Piwigos beskrivelser kan indeholde HTML. I `album.json` gemmes de uændret, men på siden vises kun almindelig tekst og links (`http(s)`, efter 5.3), aldrig scripts.
 8. **Sedlen.** `index.html` har kildedata efter 5.1 med `"format": "galleriarkiv-album"` og de samme oplysninger som `album.json`. Så kan SFB-afspilleren og søgeindekset læse albummet på samme måde som byggernes filer.
 9. **Dublin Core** udfyldes én gang for hovedalbummet og gælder for alle underalbum. Kun title, description, identifier og source er forskellige fra album til album. dc.type er **Collection**, dc.source er albummets adresse i Piwigo, og dc.date er **den dag, arkivet er hentet**, fordi datoerne i galleriet ikke er til at stole på. dc.identifier følger 4.1 med typeordet `galleri`, fx `SFB-galleri-roskilde-domkirke-2026`. Panelet **Om denne fil** hedder her **Om dette arkiv**. Der er ingen knap **Gem filen**, fordi arkivet er en mappe.
 10. **Kontroltal.** Hvert billede får et kontroltal (SHA-256) i `album.json`, så man om mange år kan tjekke, at filerne stadig er hele.
@@ -500,7 +500,7 @@ roskilde-domkirke/                ← hovedalbummet, navn efter 5.6
   "underalbum": [ { "titel": "…", "mappe": "…", "antal": 64 } ],
   "billeder": [
     { "fil": "billeder/001-vestfacaden.jpg", "miniature": "miniaturer/001-vestfacaden.jpg",
-      "titel": "Vestfacaden", "beskrivelse": "…",
+      "titel": "Vestfacaden", "beskrivelse": "…", "fotograf": "…",
       "bredde": 1656, "hoejde": 1242, "bytes": 412345,
       "sha256": "…", "piwigo": { "id": 4567, "fil": "IMG_2588.jpg" } } ],
   "dublinCore": { … } }
@@ -511,7 +511,7 @@ roskilde-domkirke/                ← hovedalbummet, navn efter 5.6
 **Afgjort i november 2026:**
 - Navnet er **Galleriarkiv**.
 - dc.date er den dag, arkivet er hentet.
-- Kun titler og beskrivelser kommer med, se regel 7.
+- Kun titler, beskrivelser og fotograf kommer med, se regel 7.
 - SFB-afspilleren skal kunne vise et galleriarkiv som zip-fil, hvis det kan lade sig gøre (afspillerens plan, punkt 5, «Gallerier»).
 
 ---
@@ -745,7 +745,7 @@ Udgiverlisten i prompten skal altid svare til `PUBLISHERS` i 4.1. Kommer der en 
 ## 12. Ændringslog
 
 **Version 2.19 — november 2026.**
-- Nyt afsnit 5.8 **Galleriarkiv**: Et helt album fra Piwigo med underalbum gemmes som en mappe med HTML-sider, billeder i 1600-2000 px, miniaturer, `album.json` og `LAES-MIG.txt`, så galleriet kan leve videre uden PHP og database. Kun titler og beskrivelser kommer med, og dc.date er hentedatoen. Afsnittet beskriver også de tre lag: sikkerhedskopi af Piwigo (FTP og database), galleriarkiv og online-galleri. Værktøjet er ikke lavet endnu.
+- Nyt afsnit 5.8 **Galleriarkiv**: Et helt album fra Piwigo med underalbum gemmes som en mappe med HTML-sider, billeder i 1600-2000 px, miniaturer, `album.json` og `LAES-MIG.txt`, så galleriet kan leve videre uden PHP og database. Kun titler, beskrivelser og fotograf kommer med, og dc.date er hentedatoen. Afsnittet beskriver også de tre lag: sikkerhedskopi af Piwigo (FTP og database), galleriarkiv og online-galleri. Værktøjet er ikke lavet endnu.
 
 **Version 2.18 — november 2026.**
 - Ny bygger: **Podcastserie · Bygger** (`podcastserie-bygger.html`, v1.0, format `podcastserie`, builderVersion 1). Den laver én side med en afspilningsliste til en serie på 2-6 lydafsnit. Hvert afsnit har titel, beskrivelse, eget billede (16:9, højst 1200 px), en lydfil i mappen `media/` og en reserveadresse på nettet. Lydfilerne hedder som serien med løbenummer, fx `…-01.mp3`, og har kontroltal (5.7). Afspilleren går selv videre til næste afsnit og husker, hvor lytteren nåede til. Afsnit kan hentes fra færdige mediekort med lyd: Lyd, der ligger inde i et mediekort, bliver til en lydfil i mappen, og kortets adresse bliver reserve. dc.type er Sound, og identifikatoren får ordet `serie`.
