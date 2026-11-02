@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<!-- SFB-afspiller · version 0.5 (prøveudgave, nov. 2026)
+<!-- SFB-afspiller · version 0.6 (prøveudgave, nov. 2026)
+     0.6: retter fejl i nyere browsere (Chrome 132 og senere), hvor en gemt eller valgt zip-fil ikke kunne læses.
      0.5: hvert stykke tjekkes og hentes igen i små bidder, hvis det er forkert; ved fejl vises en teknisk besked.
      0.4: historier hentes i stykker på 4 MB og kontrolleres, før de gemmes; zip-læseren tåler en forskudt fil.
      0.3: historiehylden – historier på webhotellet hentes ind i appen med ét tryk.
@@ -90,7 +91,7 @@
 </style>
 </head>
 <body>
-<header class="top"><div class="indre"><h1>SFB-afspiller</h1><span class="ver">version 0.5 · prøveudgave</span></div></header>
+<header class="top"><div class="indre"><h1>SFB-afspiller</h1><span class="ver">version 0.6 · prøveudgave</span></div></header>
 
 <main id="hoved">
   <div class="installer" id="installer" hidden>
@@ -128,7 +129,7 @@
 
 <script>
 /* =======================================================================
-   SFB-afspiller · version 0.5
+   SFB-afspiller · version 0.6
    ======================================================================= */
 const $ = id => document.getElementById(id);
 function escapeHtml(s){
@@ -156,8 +157,10 @@ function pause(){ return new Promise(r => setTimeout(r, 0)); }
    Pakkede filer (fx fra Finders «Komprimer») pakkes ud med browserens egen
    DecompressionStream. ZIP64 (over 4 GB) understøttes ikke. */
 async function laesBytes(fil, start, slut){
-  if (fil.bytes) return fil.bytes(start, slut);
-  return new Uint8Array(await fil.slice(start, slut).arrayBuffer());
+  // En almindelig fil (eller en gemt historie) læses med slice. Nyere browsere har
+  // også en indbygget bytes() på filer, men den giver hele filen, så den må ikke bruges.
+  if (fil instanceof Blob) return new Uint8Array(await fil.slice(start, slut).arrayBuffer());
+  return fil.bytes(start, slut);
 }
 /* En zip-fil på hylden læses i små stykker over nettet (HTTP Range), så titel
    og billede kan vises, uden at hele filen hentes. */
@@ -223,7 +226,7 @@ async function hentFil(zip, f, type){
   const h = await laesBytes(zip, f.lokal, f.lokal + 30);
   if (u32(h, 0) !== 0x04034b50) throw new Error('Zip-filen er beskadiget ved ' + f.navn + '.');
   const start = f.lokal + 30 + u16(h, 26) + u16(h, 28);
-  const del = zip.slice ? zip.slice(start, start + f.pakket) : new Blob([await zip.bytes(start, start + f.pakket)]);
+  const del = zip instanceof Blob ? zip.slice(start, start + f.pakket) : new Blob([await zip.bytes(start, start + f.pakket)]);
   if (f.metode === 0) return type ? new Blob([del], { type }) : del;
   if (f.metode === 8 && typeof DecompressionStream === 'function'){
     const ud = del.stream().pipeThrough(new DecompressionStream('deflate-raw'));
@@ -613,7 +616,7 @@ async function hentTilAppen(i){
       ? 'Forbindelsen blev afbrudt. Prøv igen, når der er god forbindelse.'
       : 'Det lykkedes ikke: ' + err.message;
     // En kort teknisk besked, som kan sendes videre, hvis fejlen bliver ved.
-    p.status += ' · Teknisk besked: version 0.5; ' + (err.message || err) + '; ' + spor.join('; ')
+    p.status += ' · Teknisk besked: version 0.6; ' + (err.message || err) + '; ' + spor.join('; ')
       + (kilde && kilde.sidst ? '; sidste svar: ' + kilde.sidst : '') + '; ' + navigator.userAgent;
   }
   p.henter = false; tegnHylde(); visLager();
