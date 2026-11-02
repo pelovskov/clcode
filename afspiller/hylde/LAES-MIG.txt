@@ -1,0 +1,9 @@
+Læg zip-filerne til historiehylden i denne mappe på webhotellet.
+
+Zip-filerne laves med knappen "Gem hele mappen som zip-fil" i
+Mediekort · Bygger og Podcastserie · Bygger.
+
+Filnavne: små bogstaver, tal og bindestreger, fx
+syd-for-banen-fortaeller.zip
+
+Zip-filerne lægges ikke i repoet på GitHub, kun på webhotellet.

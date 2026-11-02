@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<!-- SFB-afspiller · version 0.2 (prøveudgave, nov. 2026)
+<!-- SFB-afspiller · version 0.3 (prøveudgave, nov. 2026)
+     0.3: historiehylden – historier på webhotellet hentes ind i appen med ét tryk.
      0.2: kan lægges på hjemmeskærmen som en app (PWA) og virker uden internet.
      Afspiller historier direkte fra zip-filer, uden at noget skal pakkes ud.
      En zip-fil fra fx Mediekort · Bygger eller Podcastserie · Bygger indeholder
@@ -80,16 +81,33 @@
   .note{color:var(--muted); font-size:.92rem; margin-top:34px}
   .installer{margin:0 0 18px; background:var(--accent-lys); border-left:5px solid var(--accent); border-radius:0 10px 10px 0; padding:12px 16px; display:flex; flex-wrap:wrap; gap:10px 16px; align-items:center}
   .installer p{margin:0; flex:1 1 16em}
+  .kort .gemt{font-size:.85rem; font-weight:700; color:var(--ok)}
+  .kort .bjaelke{height:10px; border-radius:5px; background:var(--accent-lys); overflow:hidden}
+  .kort .bjaelke span{display:block; height:100%; width:0; background:var(--accent)}
+  .lager{color:var(--muted); font-size:.9rem; margin:10px 0 0}
 </style>
 </head>
 <body>
-<header class="top"><div class="indre"><h1>SFB-afspiller</h1><span class="ver">version 0.2 · prøveudgave</span></div></header>
+<header class="top"><div class="indre"><h1>SFB-afspiller</h1><span class="ver">version 0.3 · prøveudgave</span></div></header>
 
 <main id="hoved">
   <div class="installer" id="installer" hidden>
     <p id="installerTekst">Læg afspilleren på hjemmeskærmen som en app. Så er den altid ved hånden og virker også uden internet.</p>
     <button type="button" class="hoved" id="installerKnap" hidden>Installér som app</button>
   </div>
+  <section id="hyldeSektion" hidden aria-labelledby="h-hylde">
+    <h2 id="h-hylde" style="margin-top:0">Historiehylden</h2>
+    <p class="hjaelp" style="margin:0 0 12px">Tryk <strong>Hent til appen</strong>. Så gemmes historien her i appen og kan afspilles, også uden internet.</p>
+    <ul class="bibliotek" id="hylde"></ul>
+    <p class="lager" id="lager"></p>
+  </section>
+
+  <section id="bibSektion" hidden aria-labelledby="h-bib">
+    <h2 id="h-bib">Dit bibliotek</h2>
+    <ul class="bibliotek" id="bibliotek"></ul>
+  </section>
+
+  <h2 id="h-egne">Dine egne zip-filer</h2>
   <label class="drop" id="drop">
     <strong>Vælg en eller flere zip-filer</strong>
     eller træk dem herind
@@ -98,12 +116,7 @@
   <p class="status" id="status" role="status" aria-live="polite"></p>
   <p class="hjaelp">Zip-filerne laves med knappen <strong>Gem hele mappen som zip-fil</strong> i Mediekort · Bygger og Podcastserie · Bygger. De skal ikke pakkes ud. Afspilleren henter lyd og video direkte fra dem.</p>
 
-  <section id="bibSektion" hidden aria-labelledby="h-bib">
-    <h2 id="h-bib">Dit bibliotek</h2>
-    <ul class="bibliotek" id="bibliotek"></ul>
-  </section>
-
-  <p class="note">Alt sker på din egen computer eller telefon. Intet sendes nogen steder hen. Af sikkerhedsgrunde skal zip-filerne vælges igen, hver gang afspilleren åbnes.</p>
+  <p class="note">Alt sker på din egen computer eller telefon. Intet sendes nogen steder hen. Historier fra hylden bliver i appen, til du fjerner dem. Zip-filer, du selv vælger, skal af sikkerhedsgrunde vælges igen, hver gang afspilleren åbnes.</p>
 </main>
 
 <div class="visning" id="visning" hidden role="dialog" aria-modal="true" aria-labelledby="visTitel">
@@ -113,7 +126,7 @@
 
 <script>
 /* =======================================================================
-   SFB-afspiller · version 0.1
+   SFB-afspiller · version 0.3
    ======================================================================= */
 const $ = id => document.getElementById(id);
 function escapeHtml(s){
@@ -140,7 +153,20 @@ function pause(){ return new Promise(r => setTimeout(r, 0)); }
    så en video kan hentes som et udsnit af zip-filen – uden at læse resten.
    Pakkede filer (fx fra Finders «Komprimer») pakkes ud med browserens egen
    DecompressionStream. ZIP64 (over 4 GB) understøttes ikke. */
-async function laesBytes(fil, start, slut){ return new Uint8Array(await fil.slice(start, slut).arrayBuffer()); }
+async function laesBytes(fil, start, slut){
+  if (fil.bytes) return fil.bytes(start, slut);
+  return new Uint8Array(await fil.slice(start, slut).arrayBuffer());
+}
+/* En zip-fil på hylden læses i små stykker over nettet (HTTP Range), så titel
+   og billede kan vises, uden at hele filen hentes. */
+function fjernKilde(url, size, name){
+  return { name, size, url,
+    async bytes(a, b){
+      const r = await fetch(url, { headers: { Range: 'bytes=' + a + '-' + (b - 1) } });
+      if (r.status !== 206) throw new Error('Webhotellet kan ikke sende dele af ' + name + '.');
+      return new Uint8Array(await r.arrayBuffer());
+    } };
+}
 function u16(b, o){ return b[o] | (b[o+1] << 8); }
 function u32(b, o){ return (b[o] | (b[o+1] << 8) | (b[o+2] << 16) | (b[o+3] << 24)) >>> 0; }
 
@@ -172,7 +198,7 @@ async function hentFil(zip, f, type){
   const h = await laesBytes(zip, f.lokal, f.lokal + 30);
   if (u32(h, 0) !== 0x04034b50) throw new Error('Zip-filen er beskadiget ved ' + f.navn + '.');
   const start = f.lokal + 30 + u16(h, 26) + u16(h, 28);
-  const del = zip.slice(start, start + f.pakket);
+  const del = zip.slice ? zip.slice(start, start + f.pakket) : new Blob([await zip.bytes(start, start + f.pakket)]);
   if (f.metode === 0) return type ? new Blob([del], { type }) : del;
   if (f.metode === 8 && typeof DecompressionStream === 'function'){
     const ud = del.stream().pipeThrough(new DecompressionStream('deflate-raw'));
@@ -259,10 +285,10 @@ function varighedAf(d){
   return d.videoDuration || d.audioDuration || 0;
 }
 
-async function tilfoejZip(zip){
+async function laesHistorier(zip){
   const filer = await laesZip(zip);
+  const ud = [];
   const sider = filer.filter(f => /\.html?$/i.test(f.navn) && f.navn.split('/').length <= 2);
-  let fundet = 0;
   for (const side of sider){
     const html = await (await hentFil(zip, side)).text();
     const doc = new DOMParser().parseFromString(html, 'text/html');
@@ -275,13 +301,17 @@ async function tilfoejZip(zip){
     const pImg = doc.getElementById('poster') || doc.querySelector('img[id^="billede-"]');
     const vid = doc.querySelector('video[poster^="data:image/"]');
     const billede = pImg && /^data:image\//.test(pImg.getAttribute('src') || '') ? pImg.getAttribute('src') : (vid ? vid.getAttribute('poster') : '');
-    bibliotek.push({ zip, zipNavn: zip.name, html, mappe, filer, data,
+    ud.push({ zip, zipNavn: zip.name, html, mappe, filer, data,
       titel: data.title || dc.title || zip.name, beskr: dc.description || '', billede,
       media: Array.isArray(data.media) ? data.media : [] });
-    fundet++;
   }
-  if (!fundet) throw new Error(zip.name + ' indeholder ingen historie fra byggerne.');
-  return fundet;
+  if (!ud.length) throw new Error(zip.name + ' indeholder ingen historie fra byggerne.');
+  return ud;
+}
+async function tilfoejZip(zip, gemtUrl){
+  const nye = await laesHistorier(zip);
+  nye.forEach(h => { h.gemtUrl = gemtUrl || ''; bibliotek.push(h); });
+  return nye.length;
 }
 
 function tegnBibliotek(){
@@ -295,9 +325,11 @@ function tegnBibliotek(){
     li.innerHTML = '<div class="billede">' + (b.billede ? '<img alt="">' : '<span aria-hidden="true">' + ikonFor(b.data) + '</span>') + '</div>'
       + '<div class="indhold"><span class="type">' + escapeHtml(typeTekst(b.data)) + '</span>'
       + '<h3></h3><span class="info"></span><p class="beskr"></p>'
+      + (b.gemtUrl ? '<span class="gemt">✓ Gemt i appen</span>' : '')
       + '<span class="tjek" role="status"></span>'
       + '<div class="knapper"><button type="button" class="hoved" data-aaben="' + i + '">Afspil</button>'
-      + (b.media.some(m => m.sha256) ? '<button type="button" data-tjek="' + i + '">Tjek filerne</button>' : '') + '</div></div>';
+      + (b.media.some(m => m.sha256) ? '<button type="button" data-tjek="' + i + '">Tjek filerne</button>' : '')
+      + (b.gemtUrl ? '<button type="button" data-fjern="' + i + '">Fjern fra appen</button>' : '') + '</div></div>';
     if (b.billede) li.querySelector('img').src = b.billede;
     li.querySelector('h3').textContent = b.titel;
     li.querySelector('.info').textContent = [antalAfsnit, tid, b.zipNavn + ' · ' + fmtBytes(b.zip.size)].filter(Boolean).join(' · ');
@@ -401,9 +433,151 @@ const drop = $('drop');
 drop.addEventListener('drop', e => { if (e.dataTransfer && e.dataTransfer.files.length) vaelgFiler(e.dataTransfer.files); });
 $('bibliotek').addEventListener('click', e => {
   const a = e.target.closest('button[data-aaben]'); if (a){ aaben(+a.dataset.aaben).catch(err => sig(err.message, true)); return; }
-  const t = e.target.closest('button[data-tjek]'); if (t){ tjek(+t.dataset.tjek, t).catch(err => sig(err.message, true)); }
+  const t = e.target.closest('button[data-tjek]'); if (t){ tjek(+t.dataset.tjek, t).catch(err => sig(err.message, true)); return; }
+  const f = e.target.closest('button[data-fjern]'); if (f){ fjernFraAppen(+f.dataset.fjern).catch(err => sig(err.message, true)); }
 });
 $('tilbage').addEventListener('click', luk);
+
+/* ---------- Historiehylden ----------
+   På webhotellet ligger zip-filerne i mappen hylde/, og hylde.php laver en liste
+   over dem (eller en håndskrevet hylde.json). Afspilleren læser titel og billede
+   direkte fra zip-filerne over nettet. «Hent til appen» gemmer zip-filen i
+   appens eget lager (Cache Storage), så historien ligger i biblioteket, også
+   næste gang og uden internet. Findes der ingen hylde, fx når afspilleren er
+   åbnet direkte fra computeren, vises afsnittet ikke. */
+const HYLDE_LAGER = 'sfb-hylde';
+const hylde = [];   // { url, navn, bytes, historie, status }
+const harLager = typeof caches !== 'undefined' && /^https?:$/.test(location.protocol);
+
+async function hentHyldeliste(){
+  for (const adr of ['hylde.php', 'hylde.json']){
+    try {
+      const r = await fetch(adr, { cache: 'no-store' });
+      if (!r.ok) continue;
+      const d = await r.json();
+      if (d && Array.isArray(d.hylde)) return d.hylde;
+    } catch(e){}
+  }
+  return null;
+}
+async function visHylde(){
+  if (!/^https?:$/.test(location.protocol)) return;
+  const liste = await hentHyldeliste();
+  if (!liste || !liste.length) return;
+  $('hyldeSektion').hidden = false;
+  for (const p of liste){
+    const fil = String(p.fil || '');
+    if (!/^hylde\/[^\/]+\.zip$/i.test(fil)) continue;
+    const url = new URL(fil, location.href).href;
+    const navn = decodeURIComponent(fil.split('/').pop());
+    const post = { url, navn, bytes: +p.bytes || 0, historie: null, status: '' };
+    hylde.push(post);
+    try { post.historie = (await laesHistorier(fjernKilde(url, post.bytes, navn)))[0]; }
+    catch(e){ post.status = 'Titlen kunne ikke læses: ' + e.message; }
+    tegnHylde();
+  }
+  visLager();
+}
+function erGemt(url){ return bibliotek.some(b => b.gemtUrl === url); }
+function tegnHylde(){
+  const ul = $('hylde');
+  ul.innerHTML = '';
+  hylde.forEach((p, i) => {
+    const h = p.historie;
+    const li = document.createElement('li');
+    li.className = 'kort';
+    const d = h ? h.data : {};
+    li.innerHTML = '<div class="billede">' + (h && h.billede ? '<img alt="">' : '<span aria-hidden="true">' + (h ? ikonFor(d) : '📦') + '</span>') + '</div>'
+      + '<div class="indhold"><span class="type">' + escapeHtml(h ? typeTekst(d) : 'Zip-fil') + '</span>'
+      + '<h3></h3><span class="info"></span><p class="beskr"></p>'
+      + (p.henter ? '<div class="bjaelke" aria-hidden="true"><span></span></div>' : '')
+      + '<span class="tjek" role="status"></span>'
+      + '<div class="knapper">' + (erGemt(p.url)
+          ? '<span class="gemt">✓ Hentet til appen</span>'
+          : '<button type="button" class="hoved" data-hent="' + i + '"' + (p.henter ? ' disabled' : '') + '>' + (p.henter ? 'Henter …' : 'Hent til appen') + '</button>')
+      + '</div></div>';
+    if (h && h.billede) li.querySelector('img').src = h.billede;
+    li.querySelector('h3').textContent = h ? h.titel : p.navn;
+    const tid = h ? fmtTid(varighedAf(d)) : '';
+    const afsnit = h && d.format === 'podcastserie' ? (d.afsnit || []).length + ' afsnit' : '';
+    li.querySelector('.info').textContent = [afsnit, tid, fmtBytes(p.bytes)].filter(Boolean).join(' · ');
+    li.querySelector('.beskr').textContent = h ? (h.beskr.length > 160 ? h.beskr.slice(0, 159) + '…' : h.beskr) : '';
+    li.querySelector('.tjek').textContent = p.status;
+    if (p.henter) li.querySelector('.bjaelke span').style.width = (p.pct || 0) + '%';
+    ul.appendChild(li);
+  });
+}
+async function hentTilAppen(i){
+  const p = hylde[i];
+  if (!harLager){ sig('Appens lager kan ikke bruges her. Åbn afspilleren fra webhotellet.', true); return; }
+  try { if (navigator.storage && navigator.storage.persist) await navigator.storage.persist(); } catch(e){}
+  p.henter = true; p.pct = 0; p.status = 'Henter …'; tegnHylde();
+  try {
+    const r = await fetch(p.url, { cache: 'no-store' });
+    if (!r.ok || !r.body) throw new Error('Filen kunne ikke hentes (' + r.status + ').');
+    const ialt = +r.headers.get('Content-Length') || p.bytes || 1;
+    // Dataene løber direkte ind i appens lager. Undervejs tælles de, så bjælken
+    // kan vise, hvor langt den er – uden at filen samles i hukommelsen.
+    let n = 0, sidst = -1;
+    const taeller = new TransformStream({
+      transform(bid, ctl){
+        n += bid.length;
+        const pct = Math.min(100, Math.floor(n / ialt * 100));
+        if (pct !== sidst){
+          sidst = pct; p.pct = pct; p.status = 'Henter … ' + pct + ' %';
+          const kort = $('hylde').children[i];
+          if (kort){ const b = kort.querySelector('.bjaelke span'); if (b) b.style.width = pct + '%'; kort.querySelector('.tjek').textContent = p.status; }
+        }
+        ctl.enqueue(bid);
+      }
+    });
+    const lager = await caches.open(HYLDE_LAGER);
+    await lager.put(p.url, new Response(r.body.pipeThrough(taeller), { headers: { 'Content-Type': 'application/zip', 'Content-Length': String(ialt) } }));
+    const blob = await (await lager.match(p.url)).blob();
+    await tilfoejZip(new File([blob], p.navn, { type: 'application/zip' }), p.url);
+    tegnBibliotek();
+    p.status = '';
+    sig(p.historie ? '«' + p.historie.titel + '» er hentet til appen.' : p.navn + ' er hentet til appen.');
+  } catch(err){
+    p.status = 'Det lykkedes ikke: ' + err.message + ' Prøv igen, når der er god forbindelse.';
+  }
+  p.henter = false; tegnHylde(); visLager();
+}
+async function fjernFraAppen(i){
+  const b = bibliotek[i];
+  if (!b || !b.gemtUrl) return;
+  if (!confirm('Vil du fjerne «' + b.titel + '» fra appen? Du kan hente den igen fra hylden.')) return;
+  try { await (await caches.open(HYLDE_LAGER)).delete(b.gemtUrl); } catch(e){}
+  const url = b.gemtUrl;
+  for (let j = bibliotek.length - 1; j >= 0; j--) if (bibliotek[j].gemtUrl === url) bibliotek.splice(j, 1);
+  tegnBibliotek(); tegnHylde(); visLager();
+  sig('«' + b.titel + '» er fjernet fra appen.');
+}
+// De historier, der er hentet til appen, lægges i biblioteket, når appen åbner.
+async function indlaesGemte(){
+  if (!harLager) return;
+  try {
+    const lager = await caches.open(HYLDE_LAGER);
+    for (const req of await lager.keys()){
+      const svar = await lager.match(req);
+      if (!svar) continue;
+      const navn = decodeURIComponent(new URL(req.url).pathname.split('/').pop());
+      try { await tilfoejZip(new File([await svar.blob()], navn, { type: 'application/zip' }), req.url); } catch(e){}
+    }
+    tegnBibliotek();
+  } catch(e){}
+}
+async function visLager(){
+  if (!navigator.storage || !navigator.storage.estimate) return;
+  try {
+    const e = await navigator.storage.estimate();
+    if (e && e.quota) $('lager').textContent = 'Appen bruger ' + fmtBytes(e.usage || 0) + ' af ca. ' + fmtBytes(e.quota) + ' på denne enhed.';
+  } catch(err){}
+}
+$('hylde').addEventListener('click', e => {
+  const k = e.target.closest('button[data-hent]'); if (k) hentTilAppen(+k.dataset.hent);
+});
+indlaesGemte().then(visHylde);
 
 /* ---------- App på hjemmeskærmen (PWA) ----------
    Hjælpefilen sw.js gemmer afspilleren, så den virker uden internet. Det kræver,
