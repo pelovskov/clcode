@@ -11,7 +11,7 @@ Værktøjerne bruges af frivillige og ældre brugere, så de skal være enkle, r
 ## Grundregler
 
 - **Én fil pr. builder.** HTML, CSS og JavaScript ligger i samme fil.
-- **Ingen eksterne afhængigheder.** Ingen CDN-links, ingen frameworks, ingen byggeprocesser, ingen internetforbindelse nødvendig. Alt skal virke offline. Undtagelserne er det, et værktøj selv skal hente eller vise: Piwigo Albumbygger henter fra galleriet og skal ligge på dets adresse, Mediekort viser YouTube-videoer, og Søgeindeks · Online (`sbtv/`) kører med PHP på webhotellet.
+- **Ingen eksterne afhængigheder.** Ingen CDN-links, ingen frameworks, ingen byggeprocesser, ingen internetforbindelse nødvendig. Alt skal virke offline. Undtagelserne er det, et værktøj selv skal hente eller vise: Piwigo Albumbygger og Galleriarkiv (`tools/galleriarkiv.html`) henter fra galleriet og skal ligge på dets adresse, Mediekort viser YouTube-videoer, og Søgeindeks · Online (`sbtv/`) kører med PHP på webhotellet.
 - **Langtidsholdbarhed først.** Brug almindelig, standardiseret HTML, CSS og JavaScript. Undgå nye eller eksperimentelle funktioner, som måske forsvinder. Filerne skal kunne åbnes om mange år.
 - **Tilgængelighed.** Stor og letlæselig skrift, høj kontrast, tydelige knapper, god tastaturnavigation, meningsfulde alt-tekster og semantisk HTML. Sigt mod WCAG 2.2 AA.
 - **Følg `builder-standard.md`.** Den er den fælles specifikation. Hvis en opgave strider mod standarden, så sig det, før du ændrer noget.
