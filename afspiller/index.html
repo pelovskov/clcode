@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<!-- SFB-afspiller · version 0.7 (prøveudgave, nov. 2026)
+<!-- SFB-afspiller · version 0.8 (prøveudgave, nov. 2026)
+     0.8: historiehylden kan foldes sammen; et album får sit første billede på kortet, antal billeder og knappen «Åbn».
      0.7: lyden spiller videre med slukket skærm, med titel og knapper på den låste skærm; knappen «Hold skærmen tændt».
      0.6: retter fejl i nyere browsere (Chrome 132 og senere), hvor en gemt eller valgt zip-fil ikke kunne læses.
      0.5: hvert stykke tjekkes og hentes igen i små bidder, hvis det er forkert; ved fejl vises en teknisk besked.
@@ -91,10 +92,18 @@
   .kort .bjaelke{height:10px; border-radius:5px; background:var(--accent-lys); overflow:hidden}
   .kort .bjaelke span{display:block; height:100%; width:0; background:var(--accent)}
   .lager{color:var(--muted); font-size:.9rem; margin:10px 0 0}
+  /* Hylden kan foldes sammen med et tryk på overskriften. */
+  .fold > summary{list-style:none; cursor:pointer; display:flex; align-items:baseline; flex-wrap:wrap; gap:4px 12px; margin:0 0 12px; min-height:46px}
+  .fold > summary::-webkit-details-marker{display:none}
+  .fold > summary h2{margin:0; display:inline}
+  .fold > summary::before{content:"▾"; font-size:1.3rem; color:var(--accent); width:1em; flex:0 0 auto}
+  .fold:not([open]) > summary::before{content:"▸"}
+  .fold > summary .antal{color:var(--muted); font-size:.95rem}
+  .fold > summary:hover h2{text-decoration:underline}
 </style>
 </head>
 <body>
-<header class="top"><div class="indre"><h1>SFB-afspiller</h1><span class="ver">version 0.7 · prøveudgave</span></div></header>
+<header class="top"><div class="indre"><h1>SFB-afspiller</h1><span class="ver">version 0.8 · prøveudgave</span></div></header>
 
 <main id="hoved">
   <div class="installer" id="installer" hidden>
@@ -102,10 +111,12 @@
     <button type="button" class="hoved" id="installerKnap" hidden>Installér som app</button>
   </div>
   <section id="hyldeSektion" hidden aria-labelledby="h-hylde">
-    <h2 id="h-hylde" style="margin-top:0">Historiehylden</h2>
-    <p class="hjaelp" style="margin:0 0 12px">Tryk <strong>Hent til appen</strong>. Så gemmes historien her i appen og kan afspilles, også uden internet.</p>
-    <ul class="bibliotek" id="hylde"></ul>
-    <p class="lager" id="lager"></p>
+    <details class="fold" id="hyldeFold" open>
+      <summary><h2 id="h-hylde">Historiehylden</h2> <span class="antal" id="hyldeAntal"></span></summary>
+      <p class="hjaelp" style="margin:0 0 12px">Tryk <strong>Hent til appen</strong>. Så gemmes historien her i appen og kan afspilles, også uden internet.</p>
+      <ul class="bibliotek" id="hylde"></ul>
+      <p class="lager" id="lager"></p>
+    </details>
   </section>
 
   <section id="bibSektion" hidden aria-labelledby="h-bib">
@@ -133,7 +144,7 @@
 
 <script>
 /* =======================================================================
-   SFB-afspiller · version 0.7
+   SFB-afspiller · version 0.8
    ======================================================================= */
 const $ = id => document.getElementById(id);
 function escapeHtml(s){
@@ -309,9 +320,20 @@ const bibliotek = [];   // { zip, zipNavn, html, mappe, filer, data, titel, ... 
 function typeTekst(d){
   if (d.format === 'podcastserie') return 'Podcastserie';
   if (d.format === 'mediekort') return d.mode === 'videofile' ? 'Video' : d.mode === 'picture' ? 'Talende billede' : d.mode === 'audio' ? 'Lyd' : 'Video på YouTube';
+  if (d.format === 'billedalbum') return 'Billedalbum';
   return d.format || 'Historie';
 }
-function ikonFor(d){ return d.format === 'podcastserie' || d.mode === 'audio' || d.mode === 'picture' ? '🎧' : '🎬'; }
+function ikonFor(d){
+  if (d.format === 'billedalbum') return '🖼️';
+  return d.format === 'podcastserie' || d.mode === 'audio' || d.mode === 'picture' ? '🎧' : '🎬';
+}
+// Lyd og video afspilles; et album og andre historier åbnes.
+function knapTekst(d){ return d.format === 'podcastserie' || d.format === 'mediekort' ? 'Afspil' : 'Åbn'; }
+function antalTekst(d){
+  if (d.format === 'podcastserie') return (d.afsnit || []).length + ' afsnit';
+  if (d.format === 'billedalbum' && Array.isArray(d.images)) return d.images.length === 1 ? '1 billede' : d.images.length + ' billeder';
+  return '';
+}
 function varighedAf(d){
   if (d.format === 'podcastserie') return (d.afsnit || []).reduce((n, a) => n + (a.varighed || 0), 0);
   return d.videoDuration || d.audioDuration || 0;
@@ -332,7 +354,12 @@ async function laesHistorier(zip){
     const dc = data.dublinCore || {};
     const pImg = doc.getElementById('poster') || doc.querySelector('img[id^="billede-"]');
     const vid = doc.querySelector('video[poster^="data:image/"]');
-    const billede = pImg && /^data:image\//.test(pImg.getAttribute('src') || '') ? pImg.getAttribute('src') : (vid ? vid.getAttribute('poster') : '');
+    let billede = pImg && /^data:image\//.test(pImg.getAttribute('src') || '') ? pImg.getAttribute('src') : (vid ? vid.getAttribute('poster') : '');
+    // Et album har ikke sit eget forsidebillede. Så bruges det første fotografi i filen.
+    if (!billede){
+      const foto = doc.querySelector('img[src^="data:image/jpeg"], img[src^="data:image/png"], img[src^="data:image/webp"]');
+      if (foto) billede = foto.getAttribute('src');
+    }
     ud.push({ zip, zipNavn: zip.name, html, mappe, filer, data,
       titel: data.title || dc.title || zip.name, beskr: dc.description || '', billede,
       media: Array.isArray(data.media) ? data.media : [] });
@@ -353,13 +380,13 @@ function tegnBibliotek(){
     const li = document.createElement('li');
     li.className = 'kort';
     const tid = fmtTid(varighedAf(b.data));
-    const antalAfsnit = b.data.format === 'podcastserie' ? (b.data.afsnit || []).length + ' afsnit' : '';
+    const antalAfsnit = antalTekst(b.data);
     li.innerHTML = '<div class="billede">' + (b.billede ? '<img alt="">' : '<span aria-hidden="true">' + ikonFor(b.data) + '</span>') + '</div>'
       + '<div class="indhold"><span class="type">' + escapeHtml(typeTekst(b.data)) + '</span>'
       + '<h3></h3><span class="info"></span><p class="beskr"></p>'
       + (b.gemtUrl ? '<span class="gemt">✓ Gemt i appen</span>' : '')
       + '<span class="tjek" role="status"></span>'
-      + '<div class="knapper"><button type="button" class="hoved" data-aaben="' + i + '">Afspil</button>'
+      + '<div class="knapper"><button type="button" class="hoved" data-aaben="' + i + '">' + knapTekst(b.data) + '</button>'
       + (b.media.some(m => m.sha256) ? '<button type="button" data-tjek="' + i + '">Tjek filerne</button>' : '')
       + (b.gemtUrl ? '<button type="button" data-fjern="' + i + '">Fjern fra appen</button>' : '') + '</div></div>';
     if (b.billede) li.querySelector('img').src = b.billede;
@@ -620,14 +647,23 @@ function tegnHylde(){
     if (h && h.billede) li.querySelector('img').src = h.billede;
     li.querySelector('h3').textContent = h ? h.titel : p.navn;
     const tid = h ? fmtTid(varighedAf(d)) : '';
-    const afsnit = h && d.format === 'podcastserie' ? (d.afsnit || []).length + ' afsnit' : '';
+    const afsnit = h ? antalTekst(d) : '';
     li.querySelector('.info').textContent = [afsnit, tid, fmtBytes(p.bytes)].filter(Boolean).join(' · ');
     li.querySelector('.beskr').textContent = h ? (h.beskr.length > 160 ? h.beskr.slice(0, 159) + '…' : h.beskr) : '';
     li.querySelector('.tjek').textContent = p.status;
     if (p.henter) li.querySelector('.bjaelke span').style.width = (p.pct || 0) + '%';
     ul.appendChild(li);
   });
+  // Antallet står ved overskriften, så det kan ses, også når hylden er foldet sammen.
+  const hentet = hylde.filter(p => erGemt(p.url)).length;
+  $('hyldeAntal').textContent = (hylde.length === 1 ? '1 historie' : hylde.length + ' historier') + (hentet ? ', ' + hentet + ' hentet' : '');
 }
+// Appen husker, om hylden var foldet sammen.
+const FOLD_NOEGLE = 'sfb-afspiller-hylde-foldet';
+try { if (localStorage.getItem(FOLD_NOEGLE) === 'ja') $('hyldeFold').open = false; } catch(e){}
+$('hyldeFold').addEventListener('toggle', () => {
+  try { localStorage.setItem(FOLD_NOEGLE, $('hyldeFold').open ? 'nej' : 'ja'); } catch(e){}
+});
 async function hentTilAppen(i){
   const p = hylde[i];
   if (!harLager){ sig('Appens lager kan ikke bruges her. Åbn afspilleren fra webhotellet.', true); return; }
@@ -709,7 +745,7 @@ async function hentTilAppen(i){
       ? 'Forbindelsen blev afbrudt. Prøv igen, når der er god forbindelse.'
       : 'Det lykkedes ikke: ' + err.message;
     // En kort teknisk besked, som kan sendes videre, hvis fejlen bliver ved.
-    p.status += ' · Teknisk besked: version 0.7; ' + (err.message || err) + '; ' + spor.join('; ')
+    p.status += ' · Teknisk besked: version 0.8; ' + (err.message || err) + '; ' + spor.join('; ')
       + (kilde && kilde.sidst ? '; sidste svar: ' + kilde.sidst : '') + '; ' + navigator.userAgent;
   }
   p.henter = false; tegnHylde(); visLager();
