@@ -113,5 +113,7 @@ Hylden kan bruges som foreningens egen kanal, fx til «Ugens lydhistorie» eller
 2. **Albumkort** – lavet (version 0.8). Et album får sit første billede på kortet, typen «Billedalbum», antal billeder og knappen «Åbn» i stedet for «Afspil». Senere måske: et forsidebillede, man selv vælger i Album · Bygger.
 3. **Mærket «Nyt»** på historier på hylden, som man ikke har set før. Appen holder selv styr på det, uden beskeder på telefonen.
 4. **Adminside** på webhotellet til at lægge zip-filer op og fjerne dem, med samme login som søgeportalen. Store film sendes i stykker. Senere måske: skift en historie ud med en rettet udgave, og se, hvor tit hver historie hentes.
+5. **Tydeligere pil** til at folde hylden sammen, fx større og i en rund knap, eller med teksten «Vis» og «Skjul».
+6. **«Dine egne zip-filer»** bruges mest til at prøve ting af. Afsnittet kan foldes sammen som standard ligesom hylden, så det ikke fylder for dem, der kun bruger hylden. Det skal blive, fordi det er nyttigt til medlemsmøder med zip-filer på et USB-stik, til zip-filer sendt med mail eller lagt i Google Drev og til historier, der ikke skal på den offentlige hylde. Samtidig kan kortene vise, hvor historien kommer fra: «✓ Gemt i appen» eller «Fra din computer – vælges igen næste gang».
 
 Se også visionen i `projekt-resume.md` under «Åbne spørgsmål og idéer».
