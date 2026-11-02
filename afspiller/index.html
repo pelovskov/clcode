@@ -539,7 +539,11 @@ async function hentTilAppen(i){
     p.status = '';
     sig(p.historie ? '«' + p.historie.titel + '» er hentet til appen.' : p.navn + ' er hentet til appen.');
   } catch(err){
-    p.status = 'Det lykkedes ikke: ' + err.message + ' Prøv igen, når der er god forbindelse.';
+    // Kan historien ikke gemmes, er der som regel ikke plads nok i appens lager,
+    // eller browseren kører i privat tilstand, hvor lageret er lille.
+    p.status = /cache|quota|put/i.test(err.message || '')
+      ? 'Historien kunne ikke gemmes i appen. Der er måske ikke plads nok på enheden, eller browseren er i privat tilstand. Fjern evt. en anden historie, og prøv igen.'
+      : 'Det lykkedes ikke: ' + err.message + ' Prøv igen, når der er god forbindelse.';
   }
   p.henter = false; tegnHylde(); visLager();
 }
