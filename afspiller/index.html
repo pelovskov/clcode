@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<!-- SFB-afspiller · version 0.1 (prototype, nov. 2026)
+<!-- SFB-afspiller · version 0.2 (prøveudgave, nov. 2026)
+     0.2: kan lægges på hjemmeskærmen som en app (PWA) og virker uden internet.
      Afspiller historier direkte fra zip-filer, uden at noget skal pakkes ud.
      En zip-fil fra fx Mediekort · Bygger eller Podcastserie · Bygger indeholder
      en HTML-side med sedlen (Dublin Core og kildedata) og mediefilerne i mappen
@@ -14,6 +15,13 @@
      så den senere kan blive sit eget projekt. Se LAES-MIG.md.
      Alt sker på din egen computer eller telefon. Intet sendes nogen steder hen. -->
 <title>SFB-afspiller</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#8E1F49">
+<link rel="icon" href="ikon-192.png">
+<link rel="apple-touch-icon" href="ikon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="SFB-afspiller">
 <style>
   :root{
     --accent:#8E1F49; --accent-mork:#6E1638; --accent-lys:#F1E7EC;
@@ -70,12 +78,18 @@
   .visning .bar span{font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
   .visning iframe{flex:1 1 auto; width:100%; border:0; background:#fff}
   .note{color:var(--muted); font-size:.92rem; margin-top:34px}
+  .installer{margin:0 0 18px; background:var(--accent-lys); border-left:5px solid var(--accent); border-radius:0 10px 10px 0; padding:12px 16px; display:flex; flex-wrap:wrap; gap:10px 16px; align-items:center}
+  .installer p{margin:0; flex:1 1 16em}
 </style>
 </head>
 <body>
-<header class="top"><div class="indre"><h1>SFB-afspiller</h1><span class="ver">version 0.1 · prøveudgave</span></div></header>
+<header class="top"><div class="indre"><h1>SFB-afspiller</h1><span class="ver">version 0.2 · prøveudgave</span></div></header>
 
 <main id="hoved">
+  <div class="installer" id="installer" hidden>
+    <p id="installerTekst">Læg afspilleren på hjemmeskærmen som en app. Så er den altid ved hånden og virker også uden internet.</p>
+    <button type="button" class="hoved" id="installerKnap" hidden>Installér som app</button>
+  </div>
   <label class="drop" id="drop">
     <strong>Vælg en eller flere zip-filer</strong>
     eller træk dem herind
@@ -390,6 +404,38 @@ $('bibliotek').addEventListener('click', e => {
   const t = e.target.closest('button[data-tjek]'); if (t){ tjek(+t.dataset.tjek, t).catch(err => sig(err.message, true)); }
 });
 $('tilbage').addEventListener('click', luk);
+
+/* ---------- App på hjemmeskærmen (PWA) ----------
+   Hjælpefilen sw.js gemmer afspilleren, så den virker uden internet. Det kræver,
+   at afspilleren er hentet fra en hjemmeside (https). Åbnet direkte fra
+   computeren virker afspilleren som hidtil, bare ikke som app. */
+const somApp = (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')){
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+// Android og computere med Chrome eller Edge: browseren tilbyder selv at installere.
+let installering = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  installering = e;
+  $('installer').hidden = false;
+  $('installerKnap').hidden = false;
+});
+$('installerKnap').addEventListener('click', async () => {
+  if (!installering) return;
+  installering.prompt();
+  try { await installering.userChoice; } catch(e){}
+  installering = null;
+  $('installer').hidden = true;
+});
+window.addEventListener('appinstalled', () => { $('installer').hidden = true; });
+// iPhone og iPad: der er ingen knap, så det forklares i stedet.
+if (!somApp && /iPad|iPhone|iPod/.test(navigator.userAgent || '') || (!somApp && navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)){
+  if (location.protocol === 'https:'){
+    $('installerTekst').innerHTML = 'Læg afspilleren på hjemmeskærmen: Tryk på <strong>Del</strong> (firkanten med pilen) og vælg <strong>Føj til hjemmeskærm</strong>. Så virker den også uden internet.';
+    $('installer').hidden = false;
+  }
+}
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('visning').hidden) luk(); });
 </script>
 </body>

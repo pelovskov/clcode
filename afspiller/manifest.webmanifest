@@ -1,0 +1,16 @@
+{
+  "name": "SFB-afspiller",
+  "short_name": "SFB-afspiller",
+  "description": "Afspiller lokalhistorier direkte fra zip-filer, uden at noget skal pakkes ud.",
+  "lang": "da",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#FAF9F5",
+  "theme_color": "#8E1F49",
+  "icons": [
+    { "src": "ikon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "ikon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "ikon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
