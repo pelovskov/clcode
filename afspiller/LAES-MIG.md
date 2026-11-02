@@ -2,7 +2,7 @@
 
 En afspiller, der viser historier **direkte fra zip-filer**, uden at noget skal pakkes ud. Den er tænkt til film, podcastserier og senere store gallerier, som er for store til at ligge inde i én HTML-fil, og til de mange, der har svært ved zip-filer, især på telefoner og tablets.
 
-Status: **version 0.8, prøveudgave.** Den virker på computeren og som app på telefoner og tablets, og den har en **historiehylde**, hvor historier hentes ind i appen med ét tryk.
+Status: **version 0.9, prøveudgave.** Den virker på computeren og som app på telefoner og tablets, og den har en **historiehylde**, hvor historier hentes ind i appen med ét tryk.
 
 ## Sådan bruges den
 
@@ -79,6 +79,11 @@ historien/
     historien.mp4    ← eller historien-01.mp3, historien-02.mp3 …
 ```
 
+Desuden kan den åbne:
+
+- **Album og de andre byggeres HTML-filer**, når de er pakket i en zip-fil. Billederne ligger inde i HTML-filen.
+- **Et galleriarkiv** fra værktøjet Galleriarkiv (standardens afsnit 5.8): et helt album fra Piwigo med underalbum. Zip-filen kan komme fra Galleriarkiv selv, eller man kan selv pakke mappen, fx med Finders «Komprimer». Hovedalbummet bliver ét kort i biblioteket med den første miniature og antal billeder. Når det åbnes, kan man trykke sig ind i underalbummene og tilbage med brødkrummerne øverst, og billederne vises i stort format. Links til nettet åbner i en ny fane.
+
 Vores zip-filer er lavet **uden komprimering**. Derfor kan afspilleren hente en video som et udsnit af zip-filen uden at læse resten, også når filen er stor. Zip-filer, som man selv har lavet med fx Finders «Komprimer», kan også åbnes, men så skal browseren pakke filerne ud i hukommelsen, og det tager længere tid. Zip-filer over 4 GB kan ikke åbnes endnu.
 
 ## Sådan virker den
@@ -97,7 +102,7 @@ Mappen `afspiller/` bruger intet fra resten af repoet, og intet i repoet afhæng
 2. **App på telefon og tablet (PWA)** – lavet (version 0.2). Skal prøves på Android-telefoner, en Android-tablet og iPads.
 3. **Historiehylden** – lavet (version 0.3, gjort mere robust i 0.4 og 0.5, og i 0.6 rettet, så den virker i nyere browsere). Ligger på foreningens webhotel, fordi GitHub Pages har en grænse på 100 MB pr. fil.
 4. **Medlemsmødet:** et program for aftenen, der kører én ting ad gangen i fuld skærm, mens den, der viser, trykker Næste.
-5. **Gallerier:** Album · Bygger kan lægge billederne i mappeformatet, så store gallerier kan vises fra en zip-fil.
+5. **Gallerier** – lavet (version 0.9) med galleriarkivet fra værktøjet Galleriarkiv, som gemmer et helt album fra Piwigo med underalbum. Prøvet med en testudgave; prøves med Roskilde Domkirke.
 6. **Lyd med slukket skærm** – lavet (version 0.7). Prøvet på Android og iOS. Mangler at blive prøvet i bilen med Bluetooth.
 
 ### Ønsker til hylden og biblioteket

@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<!-- SFB-afspiller · version 0.8 (prøveudgave, nov. 2026)
+<!-- SFB-afspiller · version 0.9 (prøveudgave, nov. 2026)
+     0.9: viser et galleriarkiv (standardens 5.8) fra en zip-fil, med underalbum og billeder i stort format.
      0.8: historiehylden kan foldes sammen; et album får sit første billede på kortet, antal billeder og knappen «Åbn».
      0.7: lyden spiller videre med slukket skærm, med titel og knapper på den låste skærm; knappen «Hold skærmen tændt».
      0.6: retter fejl i nyere browsere (Chrome 132 og senere), hvor en gemt eller valgt zip-fil ikke kunne læses.
@@ -103,7 +104,7 @@
 </style>
 </head>
 <body>
-<header class="top"><div class="indre"><h1>SFB-afspiller</h1><span class="ver">version 0.8 · prøveudgave</span></div></header>
+<header class="top"><div class="indre"><h1>SFB-afspiller</h1><span class="ver">version 0.9 · prøveudgave</span></div></header>
 
 <main id="hoved">
   <div class="installer" id="installer" hidden>
@@ -144,7 +145,7 @@
 
 <script>
 /* =======================================================================
-   SFB-afspiller · version 0.8
+   SFB-afspiller · version 0.9
    ======================================================================= */
 const $ = id => document.getElementById(id);
 function escapeHtml(s){
@@ -321,10 +322,11 @@ function typeTekst(d){
   if (d.format === 'podcastserie') return 'Podcastserie';
   if (d.format === 'mediekort') return d.mode === 'videofile' ? 'Video' : d.mode === 'picture' ? 'Talende billede' : d.mode === 'audio' ? 'Lyd' : 'Video på YouTube';
   if (d.format === 'billedalbum') return 'Billedalbum';
+  if (d.format === 'galleriarkiv-album') return 'Galleriarkiv';
   return d.format || 'Historie';
 }
 function ikonFor(d){
-  if (d.format === 'billedalbum') return '🖼️';
+  if (d.format === 'billedalbum' || d.format === 'galleriarkiv-album') return '🖼️';
   return d.format === 'podcastserie' || d.mode === 'audio' || d.mode === 'picture' ? '🎧' : '🎬';
 }
 // Lyd og video afspilles; et album og andre historier åbnes.
@@ -332,6 +334,10 @@ function knapTekst(d){ return d.format === 'podcastserie' || d.format === 'medie
 function antalTekst(d){
   if (d.format === 'podcastserie') return (d.afsnit || []).length + ' afsnit';
   if (d.format === 'billedalbum' && Array.isArray(d.images)) return d.images.length === 1 ? '1 billede' : d.images.length + ' billeder';
+  if (d.format === 'galleriarkiv-album'){
+    const n = +d.antalIalt || 0, u = Array.isArray(d.underalbum) ? d.underalbum.length : 0;
+    return (n === 1 ? '1 billede' : n + ' billeder') + (u ? ' · ' + (u === 1 ? '1 underalbum' : u + ' underalbum') : '');
+  }
   return '';
 }
 function varighedAf(d){
@@ -350,11 +356,19 @@ async function laesHistorier(zip){
     let data = null;
     try { data = ds ? JSON.parse(ds.textContent) : null; } catch(e){ data = null; }
     if (!data) continue;
+    // I et galleriarkiv er det kun hovedalbummet, der bliver et kort. Underalbummene åbnes inde fra det.
+    if (data.format === 'galleriarkiv-album' && data.overordnet) continue;
     const mappe = side.navn.indexOf('/') > -1 ? side.navn.slice(0, side.navn.lastIndexOf('/') + 1) : '';
     const dc = data.dublinCore || {};
     const pImg = doc.getElementById('poster') || doc.querySelector('img[id^="billede-"]');
     const vid = doc.querySelector('video[poster^="data:image/"]');
     let billede = pImg && /^data:image\//.test(pImg.getAttribute('src') || '') ? pImg.getAttribute('src') : (vid ? vid.getAttribute('poster') : '');
+    // Et galleriarkiv har billederne som filer i zip-filen. Kortet får den første miniature.
+    if (!billede && data.format === 'galleriarkiv-album'){
+      const img = doc.querySelector('.cell img, ul.album img');
+      const zf = img && findZipFil(filer, mappe, img.getAttribute('src'));
+      if (zf){ try { billede = URL.createObjectURL(await hentFil(zip, zf, typeAf(zf.navn))); } catch(e){} }
+    }
     // Et album har ikke sit eget forsidebillede. Så bruges det første fotografi i filen.
     if (!billede){
       const foto = doc.querySelector('img[src^="data:image/jpeg"], img[src^="data:image/png"], img[src^="data:image/webp"]');
@@ -366,6 +380,16 @@ async function laesHistorier(zip){
   }
   if (!ud.length) throw new Error(zip.name + ' indeholder ingen historie fra byggerne.');
   return ud;
+}
+// En relativ adresse på en side i zip-filen (fx miniaturer/001.jpg eller ../index.html)
+// laves om til filens navn i zip-filen. Adresser med fx https: eller blob: er ikke i zip-filen.
+function stiI(mappe, rel){
+  try { return decodeURIComponent(new URL(rel, 'http://zip.invalid/' + mappe).pathname.slice(1)); } catch(e){ return ''; }
+}
+function findZipFil(filer, mappe, rel){
+  if (!rel || /^[a-z][a-z0-9+.-]*:/i.test(rel) || rel.charAt(0) === '#') return null;
+  const n = stiI(mappe, rel);
+  return filer.find(f => f.navn === n) || null;
 }
 async function tilfoejZip(zip, gemtUrl){
   const nye = await laesHistorier(zip);
@@ -421,6 +445,7 @@ async function vaelgFiler(liste){
 let aabneAdresser = [];
 async function aaben(i){
   const b = bibliotek[i];
+  if (b.data.format === 'galleriarkiv-album') return aabenGalleri(b, b.mappe);
   sig('Åbner ' + b.titel + ' …');
   aabneAdresser.forEach(u => URL.revokeObjectURL(u));
   aabneAdresser = [];
@@ -443,7 +468,77 @@ async function aaben(i){
   $('tilbage').focus();
   sig('');
 }
+/* ---------- Et galleriarkiv ----------
+   Hvert album er en side i zip-filen. Miniaturerne hentes fra zip-filen, før siden
+   vises, og de store billeder i baggrunden bagefter. Trykker man på et underalbum
+   eller en brødkrumme, vises den side fra zip-filen. Links til nettet åbner i en ny fane. */
+let galleriNr = 0;
+async function aabenGalleri(b, dir){
+  const nr = ++galleriNr;
+  const f = b.filer.find(x => x.navn === dir + 'index.html');
+  if (!f) throw new Error('Albumsiden ' + dir + 'index.html findes ikke i zip-filen.');
+  sig('Åbner ' + b.titel + ' …');
+  const html = await (await hentFil(b.zip, f)).text();
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const gamle = aabneAdresser;
+  aabneAdresser = [];
+  for (const img of doc.querySelectorAll('img[src]')){
+    const zf = findZipFil(b.filer, dir, img.getAttribute('src'));
+    if (!zf) continue;
+    const url = URL.createObjectURL(await hentFil(b.zip, zf, typeAf(zf.navn)));
+    aabneAdresser.push(url);
+    img.setAttribute('src', url);
+  }
+  if (nr !== galleriNr){ aabneAdresser.forEach(u => URL.revokeObjectURL(u)); aabneAdresser = gamle; return; }
+  doc.querySelectorAll('a[href]').forEach(a => { if (/^https?:/i.test(a.getAttribute('href'))){ a.setAttribute('target', '_blank'); a.setAttribute('rel', 'noopener'); } });
+  $('ramme').onload = () => galleriKlar(b, dir, nr);
+  $('ramme').srcdoc = '<!DOCTYPE html>\n' + doc.documentElement.outerHTML;
+  gamle.forEach(u => URL.revokeObjectURL(u));
+  const h1 = doc.querySelector('h1');
+  $('visTitel').textContent = h1 ? h1.textContent : b.titel;
+  if ($('visning').hidden){
+    $('visning').hidden = false;
+    document.body.style.overflow = 'hidden';
+    $('tilbage').focus();
+  }
+  sig('');
+}
+function galleriKlar(b, dir, nr){
+  let doc;
+  try { doc = $('ramme').contentDocument; } catch(e){ return; }
+  if (!doc || nr !== galleriNr) return;
+  doc.addEventListener('click', e => {
+    const a = e.target.closest ? e.target.closest('a[href]') : null;
+    if (!a || a.classList.contains('cell')) return;
+    const h = a.getAttribute('href');
+    if (/^[a-z][a-z0-9+.-]*:/i.test(h) || h.charAt(0) === '#') return;
+    const sti = stiI(dir, h);
+    if (!/(^|\/)index\.html$/.test(sti)) return;
+    e.preventDefault();
+    aabenGalleri(b, sti.replace(/index\.html$/, '')).catch(err => sig(err.message, true));
+  }, true);
+  // De store billeder hentes ét ad gangen i baggrunden. Er et billede allerede vist
+  // stort, før det er klar, skiftes det ud, så snart det er hentet.
+  (async () => {
+    for (const a of doc.querySelectorAll('a.cell[href]')){
+      if (nr !== galleriNr) return;
+      const rel = a.getAttribute('href');
+      const zf = findZipFil(b.filer, dir, rel);
+      if (!zf) continue;
+      try {
+        const url = URL.createObjectURL(await hentFil(b.zip, zf, typeAf(zf.navn)));
+        if (nr !== galleriNr){ URL.revokeObjectURL(url); return; }
+        aabneAdresser.push(url);
+        a.setAttribute('href', url);
+        const stor = doc.getElementById('lbimg');
+        if (stor && stor.getAttribute('src') === rel) stor.setAttribute('src', url);
+      } catch(e){}
+    }
+  })();
+}
+
 function luk(){
+  galleriNr++;
   medieStop();
   vaagenFra();
   $('ramme').onload = null;
@@ -745,7 +840,7 @@ async function hentTilAppen(i){
       ? 'Forbindelsen blev afbrudt. Prøv igen, når der er god forbindelse.'
       : 'Det lykkedes ikke: ' + err.message;
     // En kort teknisk besked, som kan sendes videre, hvis fejlen bliver ved.
-    p.status += ' · Teknisk besked: version 0.8; ' + (err.message || err) + '; ' + spor.join('; ')
+    p.status += ' · Teknisk besked: version 0.9; ' + (err.message || err) + '; ' + spor.join('; ')
       + (kilde && kilde.sidst ? '; sidste svar: ' + kilde.sidst : '') + '; ' + navigator.userAgent;
   }
   p.henter = false; tegnHylde(); visLager();

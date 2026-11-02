@@ -1,6 +1,6 @@
 # Oversigt over byggere og værktøjer
 
-Status: 18. oktober 2026 · Builder-standard version 2.20 (`builder-standard.md`)
+Status: 18. oktober 2026 · Builder-standard version 2.21 (`builder-standard.md`)
 
 Versionsnummeret står i byggerens eller værktøjets topbar (eller, hvor der ikke er en topbar, i en kommentar øverst i filen). **Filformat** er det tal, en bygger skriver i sine færdige filer som `builderVersion`. Det tælles op, når formatet ændres, og en bygger afviser filer med et lavere tal end sit eget.
 
@@ -71,9 +71,9 @@ I mappen `fri/` ligger **Lokalhistorier · fri udgave** til enkeltpersoner, skol
 | Dashboard | `bygger-dash.html` | forside med links til byggere og værktøjer |
 | Roskilde TV · videoarkiv | `roskilde-tv-videoarkiv.html` | den offentlige liste over Roskilde TV's 3.048 udsendelser, uden knapper. Kan linkes fra portalen |
 | Søgeindeks · Online | `sbtv/` | den samme søgeside som Søgeside · Bygger, men med login, upload, administration og en enkel statistik over besøg, klik og søgeord på et webhotel med PHP. Se `sbtv/LAES-MIG.md` |
-| SFB-afspiller | `afspiller/` | afspiller historier direkte fra zip-filer (mappeformatet), uden udpakning. Kan lægges på hjemmeskærmen som en app (PWA) og virker uden internet. Historiehylden på webhotellet henter historier ind i appen med ét tryk. Version 0.8, prøveudgave. Mappen er selvstændig og kan blive sit eget projekt. Se `afspiller/LAES-MIG.md` |
+| SFB-afspiller | `afspiller/` | afspiller historier direkte fra zip-filer (mappeformatet), uden udpakning. Kan lægges på hjemmeskærmen som en app (PWA) og virker uden internet. Historiehylden på webhotellet henter historier ind i appen med ét tryk. Version 0.9, prøveudgave. Kan også vise et galleriarkiv. Mappen er selvstændig og kan blive sit eget projekt. Se `afspiller/LAES-MIG.md` |
 | Formidling | `formidling/` | præsentationsmateriale, der kan ses på skærmen og printes som ét A4-ark. `fri-til-skoler.html` er et ark til skoler om den frie udgave, `fri-udgave.html` er den grundige side med trin, forløb og spørgsmål og svar, `forening.html` og `forening-ark.html` er den grundige side og arket til foreninger, med pladser til tre videoer, og `overblik.html` fortæller om hele projektet og idéen bag (afløser de ældre sider start.html og index.html fra Syd for Banen) |
-| Builder-standarden | `builder-standard.md` | fælles regler for byggerne, version 2.20 |
+| Builder-standarden | `builder-standard.md` | fælles regler for byggerne, version 2.21 |
 | Projektresumé | `projekt-resume.md` | kort fortælling om hele projektet til idéudvikling og sparring med mennesker og Claude |
 | Fælles emneord | `emneord.md` | emneord, som alle foreninger staver ens, fx Musik og Arkitektur, så man kan finde et emne på tværs af foreningerne |
 | Husregler | `CLAUDE.md` | regler for samarbejdet med Claude |

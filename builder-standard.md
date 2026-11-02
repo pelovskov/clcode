@@ -1,7 +1,7 @@
 # Builder-standard
 
 **Fælles specifikation for værktøjskassen**
-Version 2.20 · november 2026
+Version 2.21 · november 2026
 
 Referenceimplementering: **Sidebygger** (`side-bygger.html`, version 1.5).
 Når noget er i tvivl, er det referencefilen der gælder.
@@ -512,7 +512,7 @@ roskilde-domkirke/                ← hovedalbummet, navn efter 5.6
 - Navnet er **Galleriarkiv**.
 - dc.date er den dag, arkivet er hentet.
 - Kun titler, beskrivelser og fotograf kommer med, se regel 7.
-- SFB-afspilleren skal kunne vise et galleriarkiv som zip-fil, hvis det kan lade sig gøre (afspillerens plan, punkt 5, «Gallerier»).
+- SFB-afspilleren skal kunne vise et galleriarkiv som zip-fil. Det kan den fra version 0.9: Hovedalbummet bliver ét kort, og underalbummene åbnes inde fra det. Zip-filen må være lavet med Galleriarkiv eller med fx Finders «Komprimer».
 
 ---
 
@@ -744,6 +744,10 @@ Udgiverlisten i prompten skal altid svare til `PUBLISHERS` i 4.1. Kommer der en 
 
 ## 12. Ændringslog
 
+**Version 2.21 — november 2026.**
+- Afsnit 5.8: SFB-afspilleren (v0.9) viser et galleriarkiv fra en zip-fil. Kun hovedalbummet bliver et kort; sider med `overordnet` springes over, også når zip-filen er lavet uden den øverste mappe. Prøven med Roskilde Domkirke er gennemført.
+- `CLAUDE.md` nævner Galleriarkiv som et værktøj, der skal ligge på galleriets adresse.
+
 **Version 2.20 — november 2026.**
 - Nyt værktøj: **Galleriarkiv** (`tools/galleriarkiv.html`, v1.0, format `galleriarkiv-album`, builderVersion 1) følger afsnit 5.8. Det finder albummet og alle underalbum i Piwigo, henter billederne i Piwigos XXL-størrelse og miniaturerne ét ad gangen og skriver albumsider, `album.json` og `LAES-MIG.txt`. Er man logget ind i galleriet uden at have valgt private album, stopper værktøjet, så private billeder ikke kommer med ved et uheld. Beskrivelser fra Piwigo vises kun som tekst og links til http(s).
 - Afsnit 5.8, regel 11: Browsere, der ikke kan gemme en mappe, får hele arkivet som én zip-fil i stedet for én pr. album, så arkivet kan pakkes ud i ét stykke.
@@ -909,8 +913,8 @@ Udgiverlisten i prompten skal altid svare til `PUBLISHERS` i 4.1. Kommer der en 
 
 **Galleriarkivet (5.8), i denne rækkefølge:**
 1. ~~Forslaget drøftes, og de åbne spørgsmål afgøres.~~ Afgjort i november 2026 (se 5.8).
-2. Værktøjet `tools/galleriarkiv.html` er lavet (v1.0, version 2.20). Det prøves nu på Roskilde Domkirke (`index.php?/category/48`, hovedalbum med 8 underalbum, 572 billeder): Hvor lang tid tager det, hvor meget fylder det, og hvordan ser det ud fra en disk?
-3. Derefter afgøres det, om flere album skal med, og om SFB-afspilleren skal kunne vise et galleriarkiv.
+2. ~~Værktøjet laves og prøves på Roskilde Domkirke (`index.php?/category/48`, hovedalbum med 8 underalbum, 572 billeder).~~ `tools/galleriarkiv.html` er lavet (v1.0, version 2.20). Domkirken med alle underalbum blev hentet uden problemer i november 2026 over en 5G-forbindelse, og arkivet ser fint ud fra disken.
+3. SFB-afspilleren viser et galleriarkiv fra version 0.9. Tilbage står at afgøre, om flere album skal med.
 
 **Afklares, når byggeren tages op:**
 - dc.type for Vejledning og PWA.
