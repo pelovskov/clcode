@@ -29,7 +29,7 @@ Værktøjskassen består af flere små, uafhængige builder-apps:
 | Vejledningsbygger | trin-for-trin vejledning | afklares |
 | PWA · Bygger | samler færdige filer til en app til hjemmeskærmen | afklares |
 | Metadata-hjælper | ingen fil; laver en AI-prompt til Dublin Core og kontrollerer svaret (se afsnit 11) | - |
-| Galleriarkiv (forslag, se 5.8) | en mappe med et helt album fra Piwigo, med underalbum, billeder og tekster | Collection |
+| Galleriarkiv (se 5.8, værktøjet er ikke lavet endnu) | en mappe med et helt album fra Piwigo, med underalbum, billeder og tekster | Collection |
 
 Bragt i overensstemmelse med standarden: Sidebygger (v1.5, `side-bygger.html`), Album · Bygger (v3.1, `album-bygger.html`, følger 2.3), Enkeltbillede · Bygger (v3.0, `enkeltbillede-bygger.html`, følger 1.9), Præsentation · Bygger (v1.0, `praesentation-bygger.html`, følger 2.1), Samling · Bygger (v2.0, `samling-bygger.html`, følger 1.5), Mediekort · Bygger (v1.2, `mediekort-bygger.html`, følger 1.6), Piwigo Albumbygger (v2.0, `piwigo-album-bygger.html`, følger 1.6), Henvisning · Bygger (v2.0, `henvisning-bygger.html`, følger 1.8), Bogbygger (v4.0, `bog-bygger.html`, følger 1.9), Før og Nu · Bygger (v2.0, `foer-og-nu-bygger.html`, følger 2.4) og Lydfortælling · Bygger (v4.0, `lydfortaelling-bygger.html`, følger 1.9).
 
@@ -440,9 +440,9 @@ foraarsmoedet-2026/                  ← mappen hedder som HTML-filen (5.6)
 
 **Søgeportalen** tager indtil videre kun imod HTML-filer. En historie i mappeformat lægges op som HTML-filen alene, og mediet afspilles fra reserveadressen. Uden reserve viser filen beskeden fra regel 3.
 
-### 5.8 Galleriarkiv: et helt album fra Piwigo i en mappe (forslag)
+### 5.8 Galleriarkiv: et helt album fra Piwigo i en mappe
 
-**Status: forslag til drøftelse.** Intet værktøj er lavet endnu. Afsnittet beskriver, hvordan mappen skal se ud, så den kan læses og bruges om mange år, også af andre end dem, der har lavet den.
+**Status: vedtaget i november 2026. Værktøjet er ikke lavet endnu.** Det prøves først på albummet Roskilde Domkirke (https://sfbbilleder.eu/index.php?/category/48) med 8 underalbum og 572 billeder. Afsnittet beskriver, hvordan mappen skal se ud, så den kan læses og bruges om mange år, også af andre end dem, der har lavet den.
 
 **Formål.** Galleriet i Piwigo skal kunne leve videre, også når ingen kan passe webhotellet. Piwigo kræver PHP, en database og løbende opdateringer. Et galleriarkiv kræver ingenting: Det er en almindelig mappe med billeder og HTML-sider, som alle kan åbne med et dobbeltklik, lægge på et USB-stik eller en disk og lægge på et hvilket som helst webhotel med FTP. Det er en **redningsbåd** og ikke en sikkerhedskopi af selve Piwigo.
 
@@ -483,9 +483,9 @@ roskilde-domkirke/                ← hovedalbummet, navn efter 5.6
 4. **Billederne ligger som almindelige filer** og ikke som base64 i HTML-filen. Derfor kan et arkiv have tusindvis af billeder.
 5. **Siderne virker uden JavaScript.** Hver miniature er et link til billedet, så man altid kan se billederne. JavaScript tilføjer visning i stort format (lightbox) med pile og tastatur, men er ikke nødvendigt. Siderne har temaerne fra afsnit 3 og læsehjælpen fra 5.5: mørk tilstand, skriftstørrelse og op-pil.
 6. **Brødkrummer.** Øverst på hver side står vejen til albummet, fx *Roskilde Domkirke › Kongekapellet*, med links op til de overordnede album.
-7. **Tekster to steder.** Titel, beskrivelse, dato og fotograf til hvert billede står på siden, så mennesker kan læse dem, og i `album.json`, så de kan flyttes til et andet galleri senere. Piwigos beskrivelser kan indeholde HTML. I `album.json` gemmes de uændret, men på siden vises kun almindelig tekst og links (`http(s)`, efter 5.3), aldrig scripts.
+7. **Kun de tekster, der betyder noget.** Med kommer albummets titel og beskrivelse og billedets titel og eventuelle beskrivelse. Datoer, fotograf, nøgleord (tags) og kommentarer fra Piwigo kommer ikke med, fordi de ikke er udfyldt ensartet i galleriet. Teksterne står på siden, så mennesker kan læse dem, og i `album.json`, så de kan flyttes til et andet galleri senere. Piwigos beskrivelser kan indeholde HTML. I `album.json` gemmes de uændret, men på siden vises kun almindelig tekst og links (`http(s)`, efter 5.3), aldrig scripts.
 8. **Sedlen.** `index.html` har kildedata efter 5.1 med `"format": "galleriarkiv-album"` og de samme oplysninger som `album.json`. Så kan SFB-afspilleren og søgeindekset læse albummet på samme måde som byggernes filer.
-9. **Dublin Core** udfyldes én gang for hovedalbummet og gælder for alle underalbum. Kun title, description, identifier og source er forskellige fra album til album. dc.type er **Collection**, og dc.source er albummets adresse i Piwigo. dc.identifier følger 4.1 med typeordet `galleri`, fx `SFB-galleri-roskilde-domkirke-2026`. Panelet **Om denne fil** hedder her **Om dette arkiv**. Der er ingen knap **Gem filen**, fordi arkivet er en mappe.
+9. **Dublin Core** udfyldes én gang for hovedalbummet og gælder for alle underalbum. Kun title, description, identifier og source er forskellige fra album til album. dc.type er **Collection**, dc.source er albummets adresse i Piwigo, og dc.date er **den dag, arkivet er hentet**, fordi datoerne i galleriet ikke er til at stole på. dc.identifier følger 4.1 med typeordet `galleri`, fx `SFB-galleri-roskilde-domkirke-2026`. Panelet **Om denne fil** hedder her **Om dette arkiv**. Der er ingen knap **Gem filen**, fordi arkivet er en mappe.
 10. **Kontroltal.** Hvert billede får et kontroltal (SHA-256) i `album.json`, så man om mange år kan tjekke, at filerne stadig er hele.
 11. **Hentning.** Billederne hentes ét ad gangen, så webhotellet ikke belastes, og værktøjet viser, hvor langt det er. Mappen gemmes direkte på computeren, hvor browseren kan det (Chrome, Edge og Vivaldi). Bliver hentningen afbrudt, springes de billeder over, der allerede er hentet, når man starter igen. Andre browsere får i stedet én zip-fil uden komprimering pr. album (5.7, regel 8).
 12. **Kun det, der er offentligt.** Værktøjet henter som udgangspunkt kun album og billeder, som alle kan se i galleriet. Er man logget ind i Piwigo og vil have private album med, skal man vælge det selv, og så står der *Privat* på albumsiden og i `album.json`.
@@ -500,19 +500,19 @@ roskilde-domkirke/                ← hovedalbummet, navn efter 5.6
   "underalbum": [ { "titel": "…", "mappe": "…", "antal": 64 } ],
   "billeder": [
     { "fil": "billeder/001-vestfacaden.jpg", "miniature": "miniaturer/001-vestfacaden.jpg",
-      "titel": "Vestfacaden", "beskrivelse": "…", "dato": "1968-08-26", "fotograf": "…",
-      "noegleord": ["…"], "bredde": 1656, "hoejde": 1242, "bytes": 412345,
+      "titel": "Vestfacaden", "beskrivelse": "…",
+      "bredde": 1656, "hoejde": 1242, "bytes": 412345,
       "sha256": "…", "piwigo": { "id": 4567, "fil": "IMG_2588.jpg" } } ],
   "dublinCore": { … } }
 ```
 
 **`LAES-MIG.txt`** forklarer kort, i almindelig tekst: Hvad arkivet er, hvor det kommer fra, hvornår det er hentet, og at man åbner `index.html`. Det skal kunne læses, også hvis ingen browser kan vise HTML.
 
-**Til drøftelse:**
-- Navnet «Galleriarkiv».
-- Om dc.date skal være den periode, billederne er fra, eller datoen for, hvornår arkivet er hentet. Hentedatoen står under alle omstændigheder i `album.json`.
-- Om Piwigos nøgleord (tags) og kommentarer skal med. Forslaget tager nøgleordene med og lader kommentarerne blive.
-- Om SFB-afspilleren skal kunne vise et galleriarkiv som zip-fil (planens punkt 5, «Gallerier»).
+**Afgjort i november 2026:**
+- Navnet er **Galleriarkiv**.
+- dc.date er den dag, arkivet er hentet.
+- Kun titler og beskrivelser kommer med, se regel 7.
+- SFB-afspilleren skal kunne vise et galleriarkiv som zip-fil, hvis det kan lade sig gøre (afspillerens plan, punkt 5, «Gallerier»).
 
 ---
 
@@ -745,7 +745,7 @@ Udgiverlisten i prompten skal altid svare til `PUBLISHERS` i 4.1. Kommer der en 
 ## 12. Ændringslog
 
 **Version 2.19 — november 2026.**
-- Nyt afsnit 5.8 **Galleriarkiv** (forslag til drøftelse): Et helt album fra Piwigo med underalbum gemmes som en mappe med HTML-sider, billeder i 1600-2000 px, miniaturer, `album.json` og `LAES-MIG.txt`, så galleriet kan leve videre uden PHP og database. Afsnittet beskriver også de tre lag: sikkerhedskopi af Piwigo (FTP og database), galleriarkiv og online-galleri. Intet værktøj er lavet endnu.
+- Nyt afsnit 5.8 **Galleriarkiv**: Et helt album fra Piwigo med underalbum gemmes som en mappe med HTML-sider, billeder i 1600-2000 px, miniaturer, `album.json` og `LAES-MIG.txt`, så galleriet kan leve videre uden PHP og database. Kun titler og beskrivelser kommer med, og dc.date er hentedatoen. Afsnittet beskriver også de tre lag: sikkerhedskopi af Piwigo (FTP og database), galleriarkiv og online-galleri. Værktøjet er ikke lavet endnu.
 
 **Version 2.18 — november 2026.**
 - Ny bygger: **Podcastserie · Bygger** (`podcastserie-bygger.html`, v1.0, format `podcastserie`, builderVersion 1). Den laver én side med en afspilningsliste til en serie på 2-6 lydafsnit. Hvert afsnit har titel, beskrivelse, eget billede (16:9, højst 1200 px), en lydfil i mappen `media/` og en reserveadresse på nettet. Lydfilerne hedder som serien med løbenummer, fx `…-01.mp3`, og har kontroltal (5.7). Afspilleren går selv videre til næste afsnit og husker, hvor lytteren nåede til. Afsnit kan hentes fra færdige mediekort med lyd: Lyd, der ligger inde i et mediekort, bliver til en lydfil i mappen, og kortets adresse bliver reserve. dc.type er Sound, og identifikatoren får ordet `serie`.
@@ -904,8 +904,8 @@ Udgiverlisten i prompten skal altid svare til `PUBLISHERS` i 4.1. Kommer der en 
 5. Søgeportalen tager imod en hel mappe som zip-fil og pakker den ud. Kræver kun tilladte filtyper (mp4, mp3 og billeder), beskyttelse mod filer uden for mappen og en løsning på webhotellets grænse for upload.
 
 **Galleriarkivet (5.8), i denne rækkefølge:**
-1. Forslaget drøftes i foreningen, og punkterne under «Til drøftelse» afgøres.
-2. Værktøjet `tools/galleriarkiv.html` laves og prøves på Roskilde Domkirke (hovedalbum med 8 underalbum, 572 billeder): Hvor lang tid tager det, hvor meget fylder det, og hvordan ser det ud fra en disk?
+1. ~~Forslaget drøftes, og de åbne spørgsmål afgøres.~~ Afgjort i november 2026 (se 5.8).
+2. Værktøjet `tools/galleriarkiv.html` laves og prøves på Roskilde Domkirke (`index.php?/category/48`, hovedalbum med 8 underalbum, 572 billeder): Hvor lang tid tager det, hvor meget fylder det, og hvordan ser det ud fra en disk?
 3. Derefter afgøres det, om flere album skal med, og om SFB-afspilleren skal kunne vise et galleriarkiv.
 
 **Afklares, når byggeren tages op:**
