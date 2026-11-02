@@ -102,7 +102,7 @@ Mappen `afspiller/` bruger intet fra resten af repoet, og intet i repoet afhæng
 2. **App på telefon og tablet (PWA)** – lavet (version 0.2). Skal prøves på Android-telefoner, en Android-tablet og iPads.
 3. **Historiehylden** – lavet (version 0.3, gjort mere robust i 0.4 og 0.5, og i 0.6 rettet, så den virker i nyere browsere). Ligger på foreningens webhotel, fordi GitHub Pages har en grænse på 100 MB pr. fil.
 4. **Medlemsmødet:** et program for aftenen, der kører én ting ad gangen i fuld skærm, mens den, der viser, trykker Næste.
-5. **Gallerier** – lavet (version 0.9) med galleriarkivet fra værktøjet Galleriarkiv, som gemmer et helt album fra Piwigo med underalbum. Prøvet med en testudgave; prøves med Roskilde Domkirke.
+5. **Gallerier** – lavet (version 0.9) med galleriarkivet fra værktøjet Galleriarkiv, som gemmer et helt album fra Piwigo med underalbum. Prøvet i november 2026 med Roskilde Domkirke (572 billeder i 9 album): Mappen blev pakket med Finders «Komprimer», lagt på hylden og hentet til en mobiltelefon. Zip-filen på 310 MB kom hurtigt igennem, og albummet virker som det skal, også uden internet.
 6. **Lyd med slukket skærm** – lavet (version 0.7). Prøvet på Android og iOS. Mangler at blive prøvet i bilen med Bluetooth.
 
 ### Ønsker til hylden og biblioteket
