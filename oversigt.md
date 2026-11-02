@@ -1,6 +1,6 @@
 # Oversigt over byggere og værktøjer
 
-Status: 18. oktober 2026 · Builder-standard version 2.19 (`builder-standard.md`)
+Status: 18. oktober 2026 · Builder-standard version 2.20 (`builder-standard.md`)
 
 Versionsnummeret står i byggerens eller værktøjets topbar (eller, hvor der ikke er en topbar, i en kommentar øverst i filen). **Filformat** er det tal, en bygger skriver i sine færdige filer som `builderVersion`. Det tælles op, når formatet ændres, og en bygger afviser filer med et lavere tal end sit eget.
 
@@ -39,6 +39,7 @@ Værktøjerne ligger i mappen `tools/`. De følger ikke Builder-standarden, men 
 | Fotolab | `tools/fotolab.html` | 4 | farve-effekter, billedformat og Polaroid med håndskrevet tekst |
 | Lydudtrækker | `tools/lydudtraekker.html` | 1.1 | trækker lyden ud af en HTML-fil som mp3, når den oprindelige lydfil er væk |
 | Roskilde TV · arbejdsliste | `tools/rtv-arbejdsliste.html` | – | alle Roskilde TV's udsendelser med knappen «Lav mediekort», der åbner Mediekort med videoen udfyldt. Laves af `tools/lav-rtv-arbejdsliste.py` ud fra `roskilde-tv-videoarkiv.html`. Udgaven med fælles prikker ligger i søgeindekset som `sbtv/rtv.php` |
+| Galleriarkiv | `tools/galleriarkiv.html` | 1.0 | gemmer et helt album fra Piwigo med alle underalbum som en almindelig mappe med albumsider, billeder i ca. 1650 px, miniaturer, `album.json` og `LAES-MIG.txt`, så galleriet kan ses uden PHP og database (standardens 5.8). Skal ligge på galleriets webadresse ligesom Piwigo Albumbygger |
 | Billedudtrækker | `tools/billedudtraekker.html` | 1.0 | trækker billederne ud af en HTML-fil, fx et gammelt album, som billedfiler eller samlet i en zip-fil |
 | Musikpakke · Bygger | `tools/musikpakke-bygger.html` | 1 | laver en offline musik-app (PWA) med 3–5 samlinger som zip-fil |
 | Skyggeramme | `tools/skyggeramme.html` | – | sætter en blød skygge om et skærmbillede til wikien |
@@ -72,7 +73,7 @@ I mappen `fri/` ligger **Lokalhistorier · fri udgave** til enkeltpersoner, skol
 | Søgeindeks · Online | `sbtv/` | den samme søgeside som Søgeside · Bygger, men med login, upload, administration og en enkel statistik over besøg, klik og søgeord på et webhotel med PHP. Se `sbtv/LAES-MIG.md` |
 | SFB-afspiller | `afspiller/` | afspiller historier direkte fra zip-filer (mappeformatet), uden udpakning. Kan lægges på hjemmeskærmen som en app (PWA) og virker uden internet. Historiehylden på webhotellet henter historier ind i appen med ét tryk. Version 0.8, prøveudgave. Mappen er selvstændig og kan blive sit eget projekt. Se `afspiller/LAES-MIG.md` |
 | Formidling | `formidling/` | præsentationsmateriale, der kan ses på skærmen og printes som ét A4-ark. `fri-til-skoler.html` er et ark til skoler om den frie udgave, `fri-udgave.html` er den grundige side med trin, forløb og spørgsmål og svar, `forening.html` og `forening-ark.html` er den grundige side og arket til foreninger, med pladser til tre videoer, og `overblik.html` fortæller om hele projektet og idéen bag (afløser de ældre sider start.html og index.html fra Syd for Banen) |
-| Builder-standarden | `builder-standard.md` | fælles regler for byggerne, version 2.19 |
+| Builder-standarden | `builder-standard.md` | fælles regler for byggerne, version 2.20 |
 | Projektresumé | `projekt-resume.md` | kort fortælling om hele projektet til idéudvikling og sparring med mennesker og Claude |
 | Fælles emneord | `emneord.md` | emneord, som alle foreninger staver ens, fx Musik og Arkitektur, så man kan finde et emne på tværs af foreningerne |
 | Husregler | `CLAUDE.md` | regler for samarbejdet med Claude |
