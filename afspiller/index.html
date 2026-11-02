@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- SFB-afspiller · version 0.1 (prototype, nov. 2026)
+     Afspiller historier direkte fra zip-filer, uden at noget skal pakkes ud.
+     En zip-fil fra fx Mediekort · Bygger eller Podcastserie · Bygger indeholder
+     en HTML-side med sedlen (Dublin Core og kildedata) og mediefilerne i mappen
+     media/ (Builder-standard 5.7). Afspilleren læser sedlen, viser et lille
+     bibliotek og åbner historiens egen side, hvor lyd og video hentes direkte
+     fra zip-filen.
+     Mappen afspiller/ er selvstændig: Den bruger intet fra resten af repoet,
+     så den senere kan blive sit eget projekt. Se LAES-MIG.md.
+     Alt sker på din egen computer eller telefon. Intet sendes nogen steder hen. -->
+<title>SFB-afspiller</title>
+<style>
+  :root{
+    --accent:#8E1F49; --accent-mork:#6E1638; --accent-lys:#F1E7EC;
+    --papir:#FAF9F5; --ink:#241520; --body:#33202B; --muted:#58424D; --line:#D9C7CF;
+    --ok:#2F5D34; --fejl:#9b1c1c;
+    --sans:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --serif:Georgia, "Times New Roman", serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0; height:100%}
+  body{background:var(--papir); color:var(--body); font-family:var(--sans); font-size:17px; line-height:1.55}
+  :focus-visible{outline:3px solid var(--accent); outline-offset:2px}
+  [hidden]{display:none !important}
+
+  header.top{background:var(--accent); color:#fff}
+  header.top .indre{max-width:1000px; margin:0 auto; padding:14px 18px; display:flex; align-items:center; gap:14px; flex-wrap:wrap}
+  header.top h1{margin:0; font-family:var(--serif); font-size:1.6rem; flex:1 1 auto}
+  header.top .ver{font-size:.85rem; opacity:.9}
+
+  main{max-width:1000px; margin:0 auto; padding:22px 18px 60px}
+  .drop{display:block; border:3px dashed var(--line); border-radius:14px; background:#fff;
+    padding:28px 20px; text-align:center; cursor:pointer}
+  .drop.over{border-color:var(--accent); background:var(--accent-lys)}
+  .drop strong{display:block; font-size:1.25rem; color:var(--ink); margin-bottom:4px}
+  .drop input{display:block; margin:14px auto 0; font-size:1rem}
+  .status{margin:14px 0 0; font-weight:600}
+  .status.fejl{color:var(--fejl)}
+  .hjaelp{color:var(--muted); font-size:.95rem; margin:10px 0 0}
+
+  h2{font-family:var(--serif); font-size:1.4rem; color:var(--ink); margin:30px 0 12px}
+  .bibliotek{list-style:none; margin:0; padding:0; display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:16px}
+  .kort{background:#fff; border:1px solid var(--line); border-radius:12px; overflow:hidden; display:flex; flex-direction:column}
+  .kort .billede{aspect-ratio:16/9; background:var(--accent-mork); display:flex; align-items:center; justify-content:center; color:#fff; font-size:2.4rem}
+  .kort .billede img{width:100%; height:100%; object-fit:cover; display:block}
+  .kort .indhold{padding:12px 14px 14px; display:flex; flex-direction:column; gap:6px; flex:1 1 auto}
+  .kort .type{font-size:.8rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--accent)}
+  .kort h3{margin:0; font-family:var(--serif); font-size:1.2rem; color:var(--ink); line-height:1.3}
+  .kort .info{font-size:.9rem; color:var(--muted)}
+  .kort .beskr{font-size:.95rem; margin:0}
+  .kort .knapper{display:flex; flex-wrap:wrap; gap:8px; margin-top:auto; padding-top:8px}
+  .kort .tjek{font-size:.9rem; font-weight:600}
+  .kort .tjek.ok{color:var(--ok)} .kort .tjek.fejl{color:var(--fejl)}
+  button{font:inherit; font-weight:700; min-height:46px; padding:8px 18px; border-radius:999px; cursor:pointer;
+    border:2px solid var(--accent); background:#fff; color:var(--accent)}
+  button.hoved{background:var(--accent); color:#fff}
+  button.hoved:hover{background:var(--accent-mork); border-color:var(--accent-mork)}
+  button:hover{text-decoration:underline}
+  button:disabled{opacity:.5; cursor:default; text-decoration:none}
+
+  /* Visningen af en historie fylder hele vinduet. */
+  .visning{position:fixed; inset:0; z-index:50; background:#000; display:flex; flex-direction:column}
+  .visning .bar{background:var(--accent); color:#fff; display:flex; align-items:center; gap:12px; padding:8px 12px}
+  .visning .bar button{background:transparent; color:#fff; border-color:#fff; min-height:42px; padding:4px 16px}
+  .visning .bar span{font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+  .visning iframe{flex:1 1 auto; width:100%; border:0; background:#fff}
+  .note{color:var(--muted); font-size:.92rem; margin-top:34px}
+</style>
+</head>
+<body>
+<header class="top"><div class="indre"><h1>SFB-afspiller</h1><span class="ver">version 0.1 · prøveudgave</span></div></header>
+
+<main id="hoved">
+  <label class="drop" id="drop">
+    <strong>Vælg en eller flere zip-filer</strong>
+    eller træk dem herind
+    <input type="file" id="filer" accept=".zip,application/zip" multiple>
+  </label>
+  <p class="status" id="status" role="status" aria-live="polite"></p>
+  <p class="hjaelp">Zip-filerne laves med knappen <strong>Gem hele mappen som zip-fil</strong> i Mediekort · Bygger og Podcastserie · Bygger. De skal ikke pakkes ud. Afspilleren henter lyd og video direkte fra dem.</p>
+
+  <section id="bibSektion" hidden aria-labelledby="h-bib">
+    <h2 id="h-bib">Dit bibliotek</h2>
+    <ul class="bibliotek" id="bibliotek"></ul>
+  </section>
+
+  <p class="note">Alt sker på din egen computer eller telefon. Intet sendes nogen steder hen. Af sikkerhedsgrunde skal zip-filerne vælges igen, hver gang afspilleren åbnes.</p>
+</main>
+
+<div class="visning" id="visning" hidden role="dialog" aria-modal="true" aria-labelledby="visTitel">
+  <div class="bar"><button type="button" id="tilbage">← Biblioteket</button><span id="visTitel"></span></div>
+  <iframe id="ramme" title="Historien" allow="autoplay; fullscreen" allowfullscreen></iframe>
+</div>
+
+<script>
+/* =======================================================================
+   SFB-afspiller · version 0.1
+   ======================================================================= */
+const $ = id => document.getElementById(id);
+function escapeHtml(s){
+  return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+function fmtBytes(b){
+  if (!b) return '0 KB';
+  if (b < 1024*1024) return Math.max(1, Math.round(b/1024)) + ' KB';
+  if (b < 1024*1024*1024) return (b/(1024*1024)).toFixed(1).replace('.', ',') + ' MB';
+  return (b/(1024*1024*1024)).toFixed(2).replace('.', ',') + ' GB';
+}
+function fmtTid(sec){
+  sec = Math.round(sec || 0);
+  if (!sec) return '';
+  const h = Math.floor(sec / 3600), m = Math.round((sec % 3600) / 60);
+  return h ? h + ' t ' + m + ' min' : Math.max(1, m) + ' min';
+}
+function sig(tekst, fejl){ $('status').textContent = tekst; $('status').className = 'status' + (fejl ? ' fejl' : ''); }
+function pause(){ return new Promise(r => setTimeout(r, 0)); }
+
+/* ---------- Zip-filen læses uden at blive pakket ud ----------
+   Bagerst i en zip-fil ligger en indholdsfortegnelse. Den fortæller, hvor hver
+   fil begynder, og hvor stor den er. Vores zip-filer er lavet uden komprimering,
+   så en video kan hentes som et udsnit af zip-filen – uden at læse resten.
+   Pakkede filer (fx fra Finders «Komprimer») pakkes ud med browserens egen
+   DecompressionStream. ZIP64 (over 4 GB) understøttes ikke. */
+async function laesBytes(fil, start, slut){ return new Uint8Array(await fil.slice(start, slut).arrayBuffer()); }
+function u16(b, o){ return b[o] | (b[o+1] << 8); }
+function u32(b, o){ return (b[o] | (b[o+1] << 8) | (b[o+2] << 16) | (b[o+3] << 24)) >>> 0; }
+
+async function laesZip(fil){
+  const halen = Math.min(fil.size, 65557);
+  const t = await laesBytes(fil, fil.size - halen, fil.size);
+  let e = -1;
+  for (let i = t.length - 22; i >= 0; i--){ if (u32(t, i) === 0x06054b50){ e = i; break; } }
+  if (e < 0) throw new Error('Det er ikke en zip-fil, der kan læses.');
+  const antal = u16(t, e + 10), cdStr = u32(t, e + 12), cdStart = u32(t, e + 16);
+  if (cdStart === 0xFFFFFFFF || antal === 0xFFFF) throw new Error('Zip-filen er over 4 GB, og det kan afspilleren ikke endnu.');
+  const cd = await laesBytes(fil, cdStart, cdStart + cdStr);
+  const dek = new TextDecoder('utf-8');
+  const filer = [];
+  let p = 0;
+  for (let n = 0; n < antal && p + 46 <= cd.length; n++){
+    if (u32(cd, p) !== 0x02014b50) break;
+    const metode = u16(cd, p + 10), pakket = u32(cd, p + 20), str = u32(cd, p + 24);
+    const navnL = u16(cd, p + 28), ekstraL = u16(cd, p + 30), kommL = u16(cd, p + 32), lokal = u32(cd, p + 42);
+    const navn = dek.decode(cd.subarray(p + 46, p + 46 + navnL));
+    p += 46 + navnL + ekstraL + kommL;
+    if (navn.endsWith('/') || /(^|\/)(__MACOSX|\.)/.test(navn)) continue;
+    filer.push({ navn, metode, pakket, str, lokal });
+  }
+  return filer;
+}
+// Giver filens indhold som en Blob. Upakkede filer er blot et udsnit af zip-filen.
+async function hentFil(zip, f, type){
+  const h = await laesBytes(zip, f.lokal, f.lokal + 30);
+  if (u32(h, 0) !== 0x04034b50) throw new Error('Zip-filen er beskadiget ved ' + f.navn + '.');
+  const start = f.lokal + 30 + u16(h, 26) + u16(h, 28);
+  const del = zip.slice(start, start + f.pakket);
+  if (f.metode === 0) return type ? new Blob([del], { type }) : del;
+  if (f.metode === 8 && typeof DecompressionStream === 'function'){
+    const ud = del.stream().pipeThrough(new DecompressionStream('deflate-raw'));
+    const blob = await new Response(ud).blob();
+    return type ? new Blob([blob], { type }) : blob;
+  }
+  throw new Error(f.navn + ' er pakket på en måde, som browseren ikke kan læse.');
+}
+
+const TYPER = { mp3:'audio/mpeg', m4a:'audio/mp4', aac:'audio/aac', ogg:'audio/ogg', wav:'audio/wav', flac:'audio/flac',
+  mp4:'video/mp4', m4v:'video/mp4', webm:'video/webm', jpg:'image/jpeg', jpeg:'image/jpeg', png:'image/png', gif:'image/gif', webp:'image/webp', html:'text/html' };
+function typeAf(navn){ const m = navn.toLowerCase().match(/\.([a-z0-9]+)$/); return m ? (TYPER[m[1]] || '') : ''; }
+
+/* ---------- Kontroltal (SHA-256), samme beregning som i byggerne ---------- */
+const SHA_K = new Uint32Array([
+  0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,
+  0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,
+  0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,
+  0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,
+  0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,
+  0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,
+  0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,
+  0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2]);
+function shaNy(){
+  return { h: new Uint32Array([0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19]),
+           w: new Uint32Array(64), rest: new Uint8Array(64), restN: 0, laengde: 0 };
+}
+function shaBlok(st, b, o){
+  const w = st.w, h = st.h;
+  for (let i = 0; i < 16; i++, o += 4) w[i] = (b[o] << 24) | (b[o+1] << 16) | (b[o+2] << 8) | b[o+3];
+  for (let i = 16; i < 64; i++){
+    const x = w[i-15], y = w[i-2];
+    const s0 = ((x >>> 7) | (x << 25)) ^ ((x >>> 18) | (x << 14)) ^ (x >>> 3);
+    const s1 = ((y >>> 17) | (y << 15)) ^ ((y >>> 19) | (y << 13)) ^ (y >>> 10);
+    w[i] = (w[i-16] + s0 + w[i-7] + s1) | 0;
+  }
+  let a = h[0], bb = h[1], c = h[2], d = h[3], e = h[4], f = h[5], g = h[6], hh = h[7];
+  for (let i = 0; i < 64; i++){
+    const S1 = ((e >>> 6) | (e << 26)) ^ ((e >>> 11) | (e << 21)) ^ ((e >>> 25) | (e << 7));
+    const t1 = (hh + S1 + ((e & f) ^ (~e & g)) + SHA_K[i] + w[i]) | 0;
+    const S0 = ((a >>> 2) | (a << 30)) ^ ((a >>> 13) | (a << 19)) ^ ((a >>> 22) | (a << 10));
+    const t2 = (S0 + ((a & bb) ^ (a & c) ^ (bb & c))) | 0;
+    hh = g; g = f; f = e; e = (d + t1) | 0; d = c; c = bb; bb = a; a = (t1 + t2) | 0;
+  }
+  h[0] = (h[0] + a) | 0; h[1] = (h[1] + bb) | 0; h[2] = (h[2] + c) | 0; h[3] = (h[3] + d) | 0;
+  h[4] = (h[4] + e) | 0; h[5] = (h[5] + f) | 0; h[6] = (h[6] + g) | 0; h[7] = (h[7] + hh) | 0;
+}
+function shaOpdater(st, b){
+  let i = 0;
+  st.laengde += b.length;
+  if (st.restN){
+    while (st.restN < 64 && i < b.length) st.rest[st.restN++] = b[i++];
+    if (st.restN < 64) return;
+    shaBlok(st, st.rest, 0); st.restN = 0;
+  }
+  for (; i + 64 <= b.length; i += 64) shaBlok(st, b, i);
+  while (i < b.length) st.rest[st.restN++] = b[i++];
+}
+function shaSlut(st){
+  const bits = st.laengde * 8;
+  const fyld = new Uint8Array(((st.restN < 56) ? 56 : 120) - st.restN + 8);
+  fyld[0] = 0x80;
+  const n = fyld.length;
+  const hoej = Math.floor(bits / 4294967296), lav = bits >>> 0;
+  fyld[n-8] = hoej >>> 24; fyld[n-7] = hoej >>> 16; fyld[n-6] = hoej >>> 8; fyld[n-5] = hoej;
+  fyld[n-4] = lav >>> 24; fyld[n-3] = lav >>> 16; fyld[n-2] = lav >>> 8; fyld[n-1] = lav;
+  const laengde = st.laengde;
+  shaOpdater(st, fyld);
+  st.laengde = laengde;
+  return Array.from(st.h, x => (x >>> 0).toString(16).padStart(8, '0')).join('');
+}
+
+/* ---------- Biblioteket ---------- */
+const bibliotek = [];   // { zip, zipNavn, html, mappe, filer, data, titel, ... }
+
+function typeTekst(d){
+  if (d.format === 'podcastserie') return 'Podcastserie';
+  if (d.format === 'mediekort') return d.mode === 'videofile' ? 'Video' : d.mode === 'picture' ? 'Talende billede' : d.mode === 'audio' ? 'Lyd' : 'Video på YouTube';
+  return d.format || 'Historie';
+}
+function ikonFor(d){ return d.format === 'podcastserie' || d.mode === 'audio' || d.mode === 'picture' ? '🎧' : '🎬'; }
+function varighedAf(d){
+  if (d.format === 'podcastserie') return (d.afsnit || []).reduce((n, a) => n + (a.varighed || 0), 0);
+  return d.videoDuration || d.audioDuration || 0;
+}
+
+async function tilfoejZip(zip){
+  const filer = await laesZip(zip);
+  const sider = filer.filter(f => /\.html?$/i.test(f.navn) && f.navn.split('/').length <= 2);
+  let fundet = 0;
+  for (const side of sider){
+    const html = await (await hentFil(zip, side)).text();
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const ds = doc.getElementById('builder-source-data');
+    let data = null;
+    try { data = ds ? JSON.parse(ds.textContent) : null; } catch(e){ data = null; }
+    if (!data) continue;
+    const mappe = side.navn.indexOf('/') > -1 ? side.navn.slice(0, side.navn.lastIndexOf('/') + 1) : '';
+    const dc = data.dublinCore || {};
+    const pImg = doc.getElementById('poster') || doc.querySelector('img[id^="billede-"]');
+    const vid = doc.querySelector('video[poster^="data:image/"]');
+    const billede = pImg && /^data:image\//.test(pImg.getAttribute('src') || '') ? pImg.getAttribute('src') : (vid ? vid.getAttribute('poster') : '');
+    bibliotek.push({ zip, zipNavn: zip.name, html, mappe, filer, data,
+      titel: data.title || dc.title || zip.name, beskr: dc.description || '', billede,
+      media: Array.isArray(data.media) ? data.media : [] });
+    fundet++;
+  }
+  if (!fundet) throw new Error(zip.name + ' indeholder ingen historie fra byggerne.');
+  return fundet;
+}
+
+function tegnBibliotek(){
+  const ul = $('bibliotek');
+  ul.innerHTML = '';
+  bibliotek.forEach((b, i) => {
+    const li = document.createElement('li');
+    li.className = 'kort';
+    const tid = fmtTid(varighedAf(b.data));
+    const antalAfsnit = b.data.format === 'podcastserie' ? (b.data.afsnit || []).length + ' afsnit' : '';
+    li.innerHTML = '<div class="billede">' + (b.billede ? '<img alt="">' : '<span aria-hidden="true">' + ikonFor(b.data) + '</span>') + '</div>'
+      + '<div class="indhold"><span class="type">' + escapeHtml(typeTekst(b.data)) + '</span>'
+      + '<h3></h3><span class="info"></span><p class="beskr"></p>'
+      + '<span class="tjek" role="status"></span>'
+      + '<div class="knapper"><button type="button" class="hoved" data-aaben="' + i + '">Afspil</button>'
+      + (b.media.some(m => m.sha256) ? '<button type="button" data-tjek="' + i + '">Tjek filerne</button>' : '') + '</div></div>';
+    if (b.billede) li.querySelector('img').src = b.billede;
+    li.querySelector('h3').textContent = b.titel;
+    li.querySelector('.info').textContent = [antalAfsnit, tid, b.zipNavn + ' · ' + fmtBytes(b.zip.size)].filter(Boolean).join(' · ');
+    li.querySelector('.beskr').textContent = b.beskr.length > 160 ? b.beskr.slice(0, 159) + '…' : b.beskr;
+    ul.appendChild(li);
+  });
+  $('bibSektion').hidden = !bibliotek.length;
+}
+
+async function vaelgFiler(liste){
+  const zipper = Array.from(liste).filter(f => /\.zip$/i.test(f.name));
+  if (!zipper.length){ sig('Vælg zip-filer. Andre filer kan afspilleren ikke åbne.', true); return; }
+  const fejl = [];
+  let nye = 0;
+  for (const z of zipper){
+    if (bibliotek.some(b => b.zip.name === z.name && b.zip.size === z.size)) continue;
+    sig('Læser ' + z.name + ' …');
+    try { nye += await tilfoejZip(z); } catch(err){ fejl.push(err.message); }
+  }
+  tegnBibliotek();
+  sig((nye ? (nye === 1 ? '1 historie' : nye + ' historier') + ' er lagt i biblioteket.' : 'Ingen nye historier.')
+    + (fejl.length ? ' ' + fejl.join(' ') : ''), !!fejl.length && !nye);
+}
+
+/* ---------- Åbn en historie ----------
+   Historiens egen side vises i en ramme. Alle steder, hvor siden peger på en
+   fil i mappen (fx media/serie-01.mp3), skiftes adressen ud med filen direkte
+   fra zip-filen. Knapperne «Gem filen» og «Hjem» skjules, fordi de ikke giver
+   mening inde i afspilleren. */
+let aabneAdresser = [];
+async function aaben(i){
+  const b = bibliotek[i];
+  sig('Åbner ' + b.titel + ' …');
+  aabneAdresser.forEach(u => URL.revokeObjectURL(u));
+  aabneAdresser = [];
+  let html = b.html;
+  const media = b.filer.filter(f => f.navn.startsWith(b.mappe) && !/\.html?$/i.test(f.navn));
+  for (const f of media){
+    const rel = f.navn.slice(b.mappe.length);
+    if (html.indexOf(rel) === -1) continue;
+    const blob = await hentFil(b.zip, f, typeAf(f.navn));
+    const url = URL.createObjectURL(blob);
+    aabneAdresser.push(url);
+    html = html.split('"' + rel + '"').join('"' + url + '"');
+  }
+  html = html.replace('</head>', '<style>.save-wrap,.save-note,.homewrap{display:none !important}</style></head>');
+  $('ramme').srcdoc = html;
+  $('visTitel').textContent = b.titel;
+  $('visning').hidden = false;
+  document.body.style.overflow = 'hidden';
+  $('tilbage').focus();
+  sig('');
+}
+function luk(){
+  $('ramme').srcdoc = '';
+  $('visning').hidden = true;
+  document.body.style.overflow = '';
+  aabneAdresser.forEach(u => URL.revokeObjectURL(u));
+  aabneAdresser = [];
+}
+
+/* ---------- Tjek, at filerne er hele ---------- */
+async function tjek(i, knap){
+  const b = bibliotek[i];
+  const felt = knap.closest('.kort').querySelector('.tjek');
+  knap.disabled = true;
+  const liste = b.media.filter(m => m.sha256);
+  const ialt = liste.reduce((n, m) => n + (m.bytes || 0), 0) || 1;
+  let laest = 0, gode = 0;
+  const daarlige = [];
+  for (const m of liste){
+    const f = b.filer.find(x => x.navn === b.mappe + m.fil);
+    if (!f){ daarlige.push(m.fil + ' mangler'); continue; }
+    const blob = await hentFil(b.zip, f);
+    const sha = await shaAfBlob(blob, n => { felt.textContent = 'Tjekker … ' + Math.min(100, Math.floor((laest + n) / ialt * 100)) + ' %'; felt.className = 'tjek'; });
+    laest += m.bytes || 0;
+    if (sha === m.sha256) gode++; else daarlige.push(m.fil + ' er ændret eller beskadiget');
+  }
+  felt.textContent = daarlige.length ? daarlige.join('. ') + '.' : '✓ Alle ' + gode + ' filer er hele og uændrede.';
+  felt.className = 'tjek ' + (daarlige.length ? 'fejl' : 'ok');
+  knap.disabled = false;
+}
+async function shaAfBlob(blob, fremskridt){
+  const r = blob.stream().getReader();
+  const st = shaNy();
+  let n = 0, sidst = Date.now();
+  for (;;){
+    const { done, value } = await r.read();
+    if (done) break;
+    shaOpdater(st, value); n += value.length;
+    if (Date.now() - sidst > 50){ fremskridt(n); await pause(); sidst = Date.now(); }
+  }
+  return shaSlut(st);
+}
+
+/* ---------- Knapper og træk og slip ---------- */
+$('filer').addEventListener('change', e => { vaelgFiler(e.target.files); e.target.value = ''; });
+const drop = $('drop');
+['dragenter', 'dragover'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.add('over'); }));
+['dragleave', 'drop'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.remove('over'); }));
+drop.addEventListener('drop', e => { if (e.dataTransfer && e.dataTransfer.files.length) vaelgFiler(e.dataTransfer.files); });
+$('bibliotek').addEventListener('click', e => {
+  const a = e.target.closest('button[data-aaben]'); if (a){ aaben(+a.dataset.aaben).catch(err => sig(err.message, true)); return; }
+  const t = e.target.closest('button[data-tjek]'); if (t){ tjek(+t.dataset.tjek, t).catch(err => sig(err.message, true)); }
+});
+$('tilbage').addEventListener('click', luk);
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('visning').hidden) luk(); });
+</script>
+</body>
+</html>
