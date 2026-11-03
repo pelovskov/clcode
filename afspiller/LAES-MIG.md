@@ -2,7 +2,7 @@
 
 En afspiller, der viser historier **direkte fra zip-filer**, uden at noget skal pakkes ud. Den er tænkt til film, podcastserier og senere store gallerier, som er for store til at ligge inde i én HTML-fil, og til de mange, der har svært ved zip-filer, især på telefoner og tablets.
 
-Status: **version 0.11, prøveudgave.** Den virker på computeren og som app på telefoner og tablets, og den har en **historiehylde**, hvor historier hentes ind i appen med ét tryk.
+Status: **version 0.12, prøveudgave.** Den virker på computeren og som app på telefoner og tablets, og den har en **historiehylde**, hvor historier hentes ind i appen med ét tryk.
 
 ## Sådan bruges den
 
@@ -113,7 +113,7 @@ Hylden kan bruges som foreningens egen kanal, fx til «Ugens lydhistorie» eller
 
 1. **Fold hylden sammen** – lavet (version 0.8). Tryk på overskriften «Historiehylden». Antallet af historier står ved overskriften, og appen husker, om hylden var foldet sammen.
 2. **Albumkort** – lavet (version 0.8). Et album får sit første billede på kortet, typen «Billedalbum», antal billeder og knappen «Åbn» i stedet for «Afspil». Senere måske: et forsidebillede, man selv vælger i Album · Bygger.
-3. **Mærket «Nyt»** på historier på hylden, som man ikke har set før. Appen holder selv styr på det, uden beskeder på telefonen.
+3. **Mærket «Nyt»** – lavet (version 0.12). Historier, man ikke har haft på hylden før, får mærket «Nyt», og antallet står ved overskriften, fx «7 historier · 1 ny». Appen husker selv, hvad der har været vist, uden beskeder på telefonen. Mærket bliver stående, mens appen er åben, og er væk næste gang. Første gang appen bruges, er intet nyt.
 4. **Adminside** på webhotellet, fx i `afspiller/admin/`. Den er en selvstændig ting med sit eget login og er ikke lagt sammen med Foreningers søgeindeks. Ønsker fra november 2026:
    - Login for 2 brugere. Adgangskoderne gemmes kun som bcrypt-hash i en `config.php` på webhotellet, aldrig i repoet.
    - Upload af zip-filer fra browseren. Store filer sendes i stykker, siden tjekker, at zip-filen er lavet af byggerne, og filnavnet rettes.
@@ -123,7 +123,7 @@ Hylden kan bruges som foreningens egen kanal, fx til «Ugens lydhistorie» eller
    - Afgjort i november 2026 og lavet i version 0.11: Når en historie ikke længere er på hylden, fjerner appen den ikke af sig selv. Kortet i biblioteket får en linje, fx «Ikke længere på hylden – fjern fra appen?», og brugeren bestemmer selv. Webhotellet kan ikke slette kopien på telefonen, og appen tager aldrig noget fra folk uden at spørge.
    - Senere måske: skift en historie ud med en rettet udgave, og se, hvor tit hver historie hentes.
 5. **Tydeligere pil** – lavet (version 0.10). En rund knap med en vinkel og teksten «Skjul» eller «Vis» til højre for overskriften.
-6. **«Dine egne zip-filer»** – foldes sammen fra start, når der er en hylde (version 0.10), og appen husker, hvis man folder det ud. Afsnittet bruges mest til at prøve ting af. Det er foldet sammen, så det ikke fylder for dem, der kun bruger hylden. Det skal blive, fordi det er nyttigt til medlemsmøder med zip-filer på et USB-stik, til zip-filer sendt med mail eller lagt i Google Drev og til historier, der ikke skal på den offentlige hylde. Mangler stadig: Kortene kan vise, hvor historien kommer fra, fx «✓ Gemt i appen» eller «Fra din computer – vælges igen næste gang».
+6. **«Dine egne zip-filer»** – foldes sammen fra start, når der er en hylde (version 0.10), og appen husker, hvis man folder det ud. Afsnittet bruges mest til at prøve ting af. Det er foldet sammen, så det ikke fylder for dem, der kun bruger hylden. Det skal blive, fordi det er nyttigt til medlemsmøder med zip-filer på et USB-stik, til zip-filer sendt med mail eller lagt i Google Drev og til historier, der ikke skal på den offentlige hylde. Kortene i biblioteket viser, hvor historien kommer fra: «✓ Gemt i appen» eller «Din egen zip-fil – vælges igen næste gang» (version 0.12).
 7. **Opfriskning af hylden** – lavet (version 0.10): af sig selv efter mere end 10 minutter i baggrunden og med knappen «Opdatér hylden».
 
 Se også visionen i `projekt-resume.md` under «Åbne spørgsmål og idéer».
