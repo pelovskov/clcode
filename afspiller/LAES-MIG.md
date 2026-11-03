@@ -126,9 +126,9 @@ Hylden kan bruges som foreningens egen kanal, fx til «Ugens lydhistorie» eller
 6. **«Dine egne zip-filer»** – foldes sammen fra start, når der er en hylde (version 0.10), og appen husker, hvis man folder det ud. Afsnittet bruges mest til at prøve ting af. Det er foldet sammen, så det ikke fylder for dem, der kun bruger hylden. Det skal blive, fordi det er nyttigt til medlemsmøder med zip-filer på et USB-stik, til zip-filer sendt med mail eller lagt i Google Drev og til historier, der ikke skal på den offentlige hylde. Kortene i biblioteket viser, hvor historien kommer fra: «✓ Gemt i appen» eller «Din egen zip-fil – vælges igen næste gang» (version 0.12).
 7. **Opfriskning af hylden** – lavet (version 0.10): af sig selv efter mere end 10 minutter i baggrunden og med knappen «Opdatér hylden».
 
-## Adminsiden (beskrivelse til godkendelse)
+## Adminsiden
 
-**Status: udkast, november 2026.** Intet er lavet endnu. Beskrivelsen læses og godkendes, før der skrives kode.
+**Status: godkendt i november 2026.** Den laves i tre trin, som beskrevet nedenfor.
 
 ### Hvad den skal kunne
 
@@ -180,9 +180,9 @@ Samme opskrift som login i Søgeindeks · Online, men med sine egne filer, så a
 
 Hvert trin prøves på webhotellet, før det næste laves.
 
-### Spørgsmål, før vi går i gang
+### Afgjort i november 2026
 
-- Er adressen `…/over/afspiller/admin/` god?
-- Skal en sæsonhistorie, der kommer tilbage fra ventepositionen, have mærket «Nyt» igen? Forslaget er ja, fordi den så bliver bemærket, når den dukker op hvert år.
+- Adressen er `…/over/afspiller/admin/`.
+- En sæsonhistorie, der kommer tilbage fra ventepositionen, får mærket «Nyt» igen, så den bliver bemærket, når den dukker op hvert år.
 
 Se også visionen i `projekt-resume.md` under «Åbne spørgsmål og idéer».
