@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<!-- SFB-afspiller · version 0.12 (prøveudgave, nov. 2026)
+<!-- SFB-afspiller · version 0.13 (prøveudgave, nov. 2026)
+     0.13: en historie, der kommer tilbage på hylden fra ventepositionen, får mærket «Nyt» igen.
      0.12: mærket «Nyt» på hylden; kortene i biblioteket siger, om historien er gemt i appen eller er din egen zip-fil.
      0.11: en historie i appen, som ikke længere er på hylden, får en besked på kortet; brugeren bestemmer selv, om den skal fjernes.
      0.10: større knap til at folde hylden sammen; «Dine egne zip-filer» kan foldes sammen; hylden opfriskes af sig selv og med knappen «Opdatér hylden».
@@ -125,7 +126,7 @@
 </style>
 </head>
 <body>
-<header class="top"><div class="indre"><h1>SFB-afspiller</h1><span class="ver">version 0.12 · prøveudgave</span></div></header>
+<header class="top"><div class="indre"><h1>SFB-afspiller</h1><span class="ver">version 0.13 · prøveudgave</span></div></header>
 
 <main id="hoved">
   <div class="installer" id="installer" hidden>
@@ -175,7 +176,7 @@
 
 <script>
 /* =======================================================================
-   SFB-afspiller · version 0.12
+   SFB-afspiller · version 0.13
    ======================================================================= */
 const $ = id => document.getElementById(id);
 function escapeHtml(s){
@@ -765,9 +766,9 @@ async function visHylde(fraKnap){
       const url = new URL(fil, location.href).href;
       const bytes = +p.bytes || 0;
       const gammel = gamle.get(url + '|' + bytes);
-      if (gammel && gammel.historie){ nyListe.push(gammel); continue; }
+      if (gammel && gammel.historie){ gammel.tid = +p.tid || 0; nyListe.push(gammel); continue; }
       if (!gammel) nye++;
-      nyListe.push({ url, navn: decodeURIComponent(fil.split('/').pop()), bytes, historie: null, status: '' });
+      nyListe.push({ url, navn: decodeURIComponent(fil.split('/').pop()), bytes, tid: +p.tid || 0, historie: null, status: '' });
     }
     hylde.length = 0;
     nyListe.forEach(p => hylde.push(p));
@@ -838,22 +839,33 @@ function tegnHylde(){
 /* Mærket «Nyt» står på historier, man ikke har haft på hylden før. Appen husker selv,
    hvad der har været vist, uden beskeder på telefonen. Mærket bliver stående resten af
    tiden, appen er åben, og er væk, næste gang den åbnes. Første gang appen bruges, er
-   intet nyt. En rettet udgave med samme navn, men en anden størrelse, regnes som ny. */
+   intet nyt. Historien kendes på navn, størrelse og tidspunkt, så en rettet udgave og
+   en sæsonhistorie, der kommer tilbage fra ventepositionen, får mærket «Nyt» igen.
+   Fra version 0.12 kendtes den kun på navn og størrelse; de gamle oplysninger bruges,
+   indtil appen har gemt de nye, så alt ikke pludselig står som nyt. */
 const SETE_NOEGLE = 'sfb-afspiller-sete';
-let seteVedStart = null;
-try { const v = localStorage.getItem(SETE_NOEGLE); if (v) seteVedStart = new Set(JSON.parse(v)); } catch(e){}
-function noegle(p){ return p.url + '|' + p.bytes; }
-function erNy(p){ return !!seteVedStart && !seteVedStart.has(noegle(p)) && !erGemt(p.url); }
+let seteVedStart = null, seteGammel = null;
+try {
+  const v = JSON.parse(localStorage.getItem(SETE_NOEGLE) || 'null');
+  if (Array.isArray(v)) seteGammel = new Set(v);
+  else if (v && Array.isArray(v.noegler)) seteVedStart = new Set(v.noegler);
+} catch(e){}
+function noegle(p){ return p.url + '|' + p.bytes + '|' + (p.tid || 0); }
+function erNy(p){
+  if (erGemt(p.url)) return false;
+  if (seteGammel) return !seteGammel.has(p.url + '|' + p.bytes);
+  return !!seteVedStart && !seteVedStart.has(noegle(p));
+}
 function husSete(){
   if (!hylde.length) return;
   let alle = [];
-  try { alle = JSON.parse(localStorage.getItem(SETE_NOEGLE) || '[]'); } catch(e){}
+  try { const v = JSON.parse(localStorage.getItem(SETE_NOEGLE) || 'null'); if (v && Array.isArray(v.noegler)) alle = v.noegler; } catch(e){}
   const saet = new Set(alle);
   hylde.forEach(p => saet.add(noegle(p)));
   // Første gang appen bruges, regnes det, der er på hylden nu, som set. Det, der
   // kommer til, mens appen er åben, får mærket «Nyt».
-  if (!seteVedStart) seteVedStart = new Set(saet);
-  try { localStorage.setItem(SETE_NOEGLE, JSON.stringify(Array.from(saet).slice(-500))); } catch(e){}
+  if (!seteVedStart && !seteGammel) seteVedStart = new Set(saet);
+  try { localStorage.setItem(SETE_NOEGLE, JSON.stringify({ udgave: 2, noegler: Array.from(saet).slice(-500) })); } catch(e){}
 }
 // «Dine egne zip-filer» er foldet sammen fra start, når der er en hylde, fordi den
 // mest bruges til at prøve ting af. Uden hylde (fx åbnet fra computeren) er den åben.
@@ -956,7 +968,7 @@ async function hentTilAppen(i){
       ? 'Forbindelsen blev afbrudt. Prøv igen, når der er god forbindelse.'
       : 'Det lykkedes ikke: ' + err.message;
     // En kort teknisk besked, som kan sendes videre, hvis fejlen bliver ved.
-    p.status += ' · Teknisk besked: version 0.12; ' + (err.message || err) + '; ' + spor.join('; ')
+    p.status += ' · Teknisk besked: version 0.13; ' + (err.message || err) + '; ' + spor.join('; ')
       + (kilde && kilde.sidst ? '; sidste svar: ' + kilde.sidst : '') + '; ' + navigator.userAgent;
   }
   p.henter = false; tegnHylde(); visLager();

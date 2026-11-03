@@ -12,3 +12,10 @@ sbtv/filer/*
 
 # Historiehylden: zip-filerne ligger kun på webhotellet
 afspiller/hylde/*.zip
+
+# SFB-afspillerens adminside: adgangskoder og driftsdata hører til på webhotellet.
+# Brug afspiller/admin/config-eksempel.php som skabelon til config.php.
+afspiller/admin/config.php
+afspiller/admin/data/*
+!afspiller/admin/data/.htaccess
+afspiller/venter/*.zip
