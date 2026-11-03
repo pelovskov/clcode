@@ -72,7 +72,7 @@ Derefter ligger SFB-afspilleren som et ikon og åbner i fuld skærm. Den virker 
 | `venter/` | ventepositionen: zip-filer, der ikke vises på hylden. Spærret for besøgende med `.htaccess` |
 | `admin/index.php` | adminsiden (se «Adminsiden» nedenfor) |
 | `admin/config-eksempel.php` | skabelon til `admin/config.php` med de to brugere. `config.php` ligger kun på webhotellet |
-| `admin/data/` | login-forsøg og huskede titler. Spærret for besøgende og kommer aldrig i repoet |
+| `admin/data/` | login-forsøg, huskede titler og halve uploads (slettes efter et døgn). Spærret for besøgende og kommer aldrig i repoet |
 
 ## Hvilke zip-filer kan den åbne?
 
@@ -132,7 +132,7 @@ Hylden kan bruges som foreningens egen kanal, fx til «Ugens lydhistorie» eller
 
 ## Adminsiden
 
-**Status: trin 1 er lavet (november 2026):** login, de to lister, flyt og slet. Upload kommer i trin 2. Datoerne er droppet (se «Afgjort i november 2026»).
+**Status: færdig (november 2026):** login, upload, de to lister, flyt og slet. Datoerne er droppet (se «Afgjort i november 2026»).
 
 ### Sådan sættes adminsiden op
 
@@ -141,10 +141,11 @@ Hylden kan bruges som foreningens egen kanal, fx til «Ugens lydhistorie» eller
 3. Lav en kopi af `config-eksempel.php`, kald den `config.php`, skriv de to brugere og deres hash ind, og læg den i `admin/` på webhotellet. Den må aldrig komme i repoet.
 4. Åbn `…/over/afspiller/admin/` og log ind. Brugernavnet skrives med små bogstaver.
 
-Mangler `venter/` eller `admin/data/` eller deres `.htaccess`, laver siden dem selv. PHP skal kunne skrive i `hylde/`, `venter/` og `admin/data/`; det kan den normalt på et webhotel.
+Mangler `venter/` eller `admin/data/` eller deres `.htaccess`, laver siden dem selv. PHP skal kunne skrive i `hylde/`, `venter/` og `admin/data/`; det kan den normalt på et webhotel. For at kunne tjekke zip-filerne og vise titlerne skal webhotellets PHP kunne læse zip-filer (udvidelsen «zip», som næsten alle webhoteller har). Mangler den, lægges filerne stadig op, men siden siger, at de ikke er tjekket.
 
 ### Sådan bruges den
 
+- **Læg en historie op:** Vælg en zip-fil (eller træk den ind), vælg «På hylden» eller «I ventepositionen», og tryk «Læg op». Filen sendes i stykker på 1 MB med en bjælke, der viser, hvor langt den er; går et stykke galt, prøves det igen. Til sidst tjekker webhotellet, at filen er kommet helt igennem, og at den indeholder en historie fra byggerne eller Galleriarkiv. Navnet rettes til små bogstaver, tal og bindestreger, fx «Æble på Ørstedsvej.zip» → `aeble-paa-oerstedsvej.zip`. Findes navnet allerede, spørger siden, om den gamle skal erstattes. «Afbryd» stopper uden at lægge noget op. Lad siden være åben, mens filen sendes.
 - **På hylden** står det, der vises i afspilleren lige nu, med titel, filnavn, størrelse og tidspunkt. Knappen **Flyt til venteposition** tager en historie af hylden.
 - **I ventepositionen** står det, der venter. **Læg på hylden** sætter den tilbage; den får et nyt tidspunkt, står øverst og får mærket «Nyt» i appen igen. **Slet** sletter den for altid efter «Er du sikker?».
 - Man logges ud efter 2 timer uden brug. Efter 5 forkerte forsøg skal man vente 15 minutter.
@@ -189,7 +190,7 @@ Samme opskrift som login i Søgeindeks · Online, men med sine egne filer, så a
 ### Rækkefølge
 
 1. **Login, de to lister, flyt og slet** – lavet (november 2026). Det kan prøves med de zip-filer, der allerede ligger på hylden.
-2. **Upload i stykker** med tjek af zip-filen og navnet.
+2. **Upload i stykker** med tjek af zip-filen og navnet – lavet (november 2026).
 3. ~~**Datoer**, og `hylde.php` flytter efter dem.~~ Droppet i november 2026.
 
 Hvert trin prøves på webhotellet, før det næste laves.
