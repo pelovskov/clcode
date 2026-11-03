@@ -1,9 +1,12 @@
 <?php
 /* =========================================================================
-   SFB-afspiller · adminsiden · trin 1 (nov. 2026)
+   SFB-afspiller · adminsiden · trin 2 (nov. 2026)
    Her kan to personer logge ind og passe historiehylden uden FTP:
-   se hylden og ventepositionen, flytte zip-filer frem og tilbage og slette
-   dem fra ventepositionen. Upload og datoer kommer i de næste trin.
+   lægge zip-filer op, se hylden og ventepositionen, flytte zip-filer frem og
+   tilbage og slette dem fra ventepositionen.
+   Upload sendes i stykker på 1 MB, så webhotellets grænse for upload ikke gør
+   noget. Til sidst tjekkes størrelsen, og at zip-filen indeholder en historie
+   fra byggerne (en HTML-fil med sedlen builder-source-data).
 
    Siden er selvstændig: Den bruger kun filerne i afspillerens egen mappe og
    intet fra Søgeindeks · Online. Login følger samme opskrift som der:
@@ -20,6 +23,9 @@ const MAKS_FORSOEG = 5;          // forkerte forsøg, før man skal vente
 const PAUSE_SEK    = 15 * 60;    // så længe man skal vente
 const UDLOEB_SEK   = 2 * 3600;   // man logges ud efter 2 timer uden brug
 const NAVN_MOENSTER = '/^[a-z0-9][a-z0-9._-]*\.zip$/';
+const STYKKE       = 1024 * 1024;              // upload sendes i stykker på 1 MB
+const MAKS_BYTES   = 4 * 1024 * 1024 * 1024 - 1; // zip-filer over 4 GB kan afspilleren ikke læse
+const HALV_LEVETID = 24 * 3600;                // halve uploads slettes efter et døgn
 
 define('AFSPILLER', dirname(__DIR__));
 define('MAPPER', ['hylde' => AFSPILLER . '/hylde', 'venter' => AFSPILLER . '/venter']);
@@ -139,29 +145,36 @@ function filer_i(string $hvor): array {
 }
 /* Titlen læses i sedlen inde i zip-filen (builder-source-data). Den huskes i
    data/titler.json, så store zip-filer ikke skal læses, hver gang siden vises. */
+/* Læser sedlen (builder-source-data) i zip-filen, ligesom afspilleren gør:
+   en HTML-fil øverst eller i én mappe. I et galleriarkiv er det hovedalbummet.
+   Giver ['titel' => …] eller null, hvis der ingen historie fra byggerne er.
+   Kan webhotellet ikke læse zip-filer (ZipArchive mangler), gives ['titel' => '', 'ukendt' => true]. */
+function laes_seddel(string $sti): ?array {
+    if (!class_exists('ZipArchive')) return ['titel' => '', 'ukendt' => true];
+    $z = new ZipArchive();
+    if ($z->open($sti) !== true) return null;
+    $fundet = null;
+    for ($i = 0; $i < $z->numFiles && $fundet === null; $i++) {
+        $st = $z->statIndex($i);
+        $n = $st['name'] ?? '';
+        if (!preg_match('/\.html?$/i', $n) || substr_count($n, '/') > 1 || strpos($n, '__MACOSX') === 0) continue;
+        if (($st['size'] ?? 0) > 60 * 1024 * 1024) continue;
+        $html = $z->getFromIndex($i);
+        if (!is_string($html) || !preg_match('#<script[^>]*id="builder-source-data"[^>]*>(.*?)</script>#s', $html, $m)) continue;
+        $d = json_decode($m[1], true);
+        if (!is_array($d) || !empty($d['overordnet'])) continue;
+        $fundet = ['titel' => (string)($d['title'] ?? $d['titel'] ?? ($d['dublinCore']['title'] ?? ''))];
+    }
+    $z->close();
+    return $fundet;
+}
 function titel(string $sti): string {
     static $cache = null;
     if ($cache === null) $cache = laes_json(DATA . '/titler.json', []);
     $noegle = basename($sti) . '|' . filesize($sti) . '|' . filemtime($sti);
     if (isset($cache[$noegle])) return $cache[$noegle];
-    $titel = '';
-    if (class_exists('ZipArchive')) {
-        $z = new ZipArchive();
-        if ($z->open($sti) === true) {
-            for ($i = 0; $i < $z->numFiles && $titel === ''; $i++) {
-                $st = $z->statIndex($i);
-                $n = $st['name'] ?? '';
-                if (!preg_match('/\.html?$/i', $n) || substr_count($n, '/') > 1 || strpos($n, '__MACOSX') === 0) continue;
-                if (($st['size'] ?? 0) > 60 * 1024 * 1024) continue;
-                $html = $z->getFromIndex($i);
-                if (!is_string($html) || !preg_match('#<script[^>]*id="builder-source-data"[^>]*>(.*?)</script>#s', $html, $m)) continue;
-                $d = json_decode($m[1], true);
-                if (!is_array($d) || !empty($d['overordnet'])) continue;
-                $titel = (string)($d['title'] ?? $d['titel'] ?? ($d['dublinCore']['title'] ?? ''));
-            }
-            $z->close();
-        }
-    }
+    $seddel = laes_seddel($sti);
+    $titel = $seddel ? $seddel['titel'] : '';
     $cache[$noegle] = $titel;
     if (count($cache) > 400) $cache = array_slice($cache, -400, null, true);
     skriv_json(DATA . '/titler.json', $cache);
@@ -173,12 +186,121 @@ function fmt_bytes(int $b): string {
     return max(1, (int)round($b / 1024)) . ' KB';
 }
 
+/* ---------- Upload ----------
+   1. «start»: navnet rettes efter reglerne, og der laves en tom fil i data/upload/.
+   2. «stykke»: hvert stykke på 1 MB lægges i forlængelse af filen. Står filen et
+      andet sted end ventet (fx efter et nyt forsøg), svarer webhotellet med, hvor
+      langt den er, og browseren fortsætter derfra.
+   3. «slut»: størrelsen og sedlen tjekkes, og filen flyttes til hylden eller
+      ventepositionen. Ellers slettes den.
+   Halve uploads, der er ældre end et døgn, slettes af sig selv. */
+function slug_navn(string $navn): string {
+    $n = mb_strtolower(preg_replace('/\.zip$/i', '', trim($navn)), 'UTF-8');
+    $n = strtr($n, ['æ' => 'ae', 'ø' => 'oe', 'å' => 'aa']);
+    if (function_exists('iconv')) { $t = @iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $n); if (is_string($t)) $n = $t; }
+    $n = trim(preg_replace('/[^a-z0-9]+/', '-', strtolower($n)), '-');
+    return ($n !== '' ? substr($n, 0, 80) : 'historie') . '.zip';
+}
+function upload_mappe(): string {
+    $m = DATA . '/upload';
+    if (!is_dir($m)) @mkdir($m, 0755, true);
+    foreach (glob($m . '/*') ?: [] as $f) if (is_file($f) && filemtime($f) < time() - HALV_LEVETID) @unlink($f);
+    return $m;
+}
+function upload_id_ok(string $id): bool { return (bool)preg_match('/^[a-f0-9]{24}$/', $id); }
+function svar(array $data, int $kode = 200): void {
+    http_response_code($kode);
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
+}
+
 /* ---------- Beskeder mellem to sidevisninger ---------- */
 function besked(string $tekst, bool $fejl = false): void { start_session(); $_SESSION['besked'] = [$tekst, $fejl]; }
 function tilbage(): void { header('Location: ' . strtok($_SERVER['REQUEST_URI'] ?? 'index.php', '?')); exit; }
 
 /* ---------- Handlinger (kun POST, altid med CSRF) ---------- */
 start_session();
+
+/* Upload taler med siden i små JSON-beskeder (index.php?upload=…). */
+if (isset($_GET['upload'])) {
+    if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') svar(['fejl' => 'Forkert forespørgsel.'], 405);
+    if (aktuel_bruger() === null) svar(['fejl' => 'Du er blevet logget ud. Log ind igen.'], 401);
+    $token = (string)($_SERVER['HTTP_X_CSRF'] ?? '');
+    if (empty($_SESSION['csrf']) || !hash_equals($_SESSION['csrf'], $token)) svar(['fejl' => 'Siden var for gammel. Genindlæs siden, og prøv igen.'], 403);
+    session_write_close();   // så flere stykker ikke venter på hinanden
+    $trin = (string)$_GET['upload'];
+    $mappe = upload_mappe();
+
+    if ($trin === 'start') {
+        $in = json_decode((string)file_get_contents('php://input'), true) ?: [];
+        $bytes = (int)($in['bytes'] ?? 0);
+        $til = (string)($in['til'] ?? '');
+        if (!isset(MAPPER[$til])) svar(['fejl' => 'Vælg, om historien skal på hylden eller i ventepositionen.'], 400);
+        if (!preg_match('/\.zip$/i', (string)($in['navn'] ?? ''))) svar(['fejl' => 'Vælg en zip-fil.'], 400);
+        if ($bytes < 22) svar(['fejl' => 'Filen er tom.'], 400);
+        if ($bytes > MAKS_BYTES) svar(['fejl' => 'Filen er over 4 GB, og så kan afspilleren ikke læse den.'], 400);
+        $ledig = @disk_free_space($mappe);
+        if ($ledig !== false && $ledig < $bytes * 2 + 50 * 1024 * 1024) svar(['fejl' => 'Der er ikke plads nok på webhotellet til filen.'], 507);
+        $navn = slug_navn((string)$in['navn']);
+        $findes = null;
+        foreach (MAPPER as $hvor => $m) if (is_file($m . '/' . $navn)) $findes = $hvor;
+        $id = bin2hex(random_bytes(12));
+        file_put_contents($mappe . '/' . $id . '.part', '');
+        file_put_contents($mappe . '/' . $id . '.json', json_encode(['navn' => $navn, 'bytes' => $bytes, 'til' => $til]));
+        svar(['id' => $id, 'navn' => $navn, 'findes' => $findes, 'stykke' => STYKKE]);
+    }
+
+    $id = (string)($_GET['id'] ?? '');
+    if (!upload_id_ok($id) || !is_file($mappe . '/' . $id . '.json')) svar(['fejl' => 'Uploaden findes ikke længere. Prøv igen.'], 404);
+    $meta = json_decode((string)file_get_contents($mappe . '/' . $id . '.json'), true);
+    $del = $mappe . '/' . $id . '.part';
+
+    if ($trin === 'stykke') {
+        clearstatcache();
+        $har = filesize($del);
+        $fra = (int)($_GET['fra'] ?? -1);
+        if ($fra !== $har) svar(['modtaget' => $har]);                      // fortsæt herfra
+        $ud = fopen($del, 'ab');
+        $ind = fopen('php://input', 'rb');
+        $skrevet = stream_copy_to_stream($ind, $ud, STYKKE + 1);
+        fclose($ind); fclose($ud);
+        clearstatcache();
+        if ($skrevet === false || $skrevet > STYKKE || filesize($del) > $meta['bytes']) {
+            @unlink($del); @unlink($mappe . '/' . $id . '.json');
+            svar(['fejl' => 'Webhotellet modtog mere, end filen fylder. Prøv igen.'], 400);
+        }
+        svar(['modtaget' => filesize($del)]);
+    }
+
+    if ($trin === 'afbryd') {
+        @unlink($del); @unlink($mappe . '/' . $id . '.json');
+        svar(['ok' => true]);
+    }
+
+    if ($trin === 'slut') {
+        $in = json_decode((string)file_get_contents('php://input'), true) ?: [];
+        $slet = function () use ($del, $mappe, $id) { @unlink($del); @unlink($mappe . '/' . $id . '.json'); };
+        clearstatcache();
+        if (filesize($del) !== (int)$meta['bytes']) { $slet(); svar(['fejl' => 'Filen kom ikke helt igennem. Prøv igen.'], 400); }
+        $seddel = laes_seddel($del);
+        if ($seddel === null) { $slet(); svar(['fejl' => 'Zip-filen indeholder ingen historie fra byggerne. Den er ikke lagt op.'], 400); }
+        $navn = $meta['navn'];
+        $maal = MAPPER[$meta['til']] . '/' . $navn;
+        $andet = MAPPER[$meta['til'] === 'hylde' ? 'venter' : 'hylde'] . '/' . $navn;
+        if ((is_file($maal) || is_file($andet)) && empty($in['erstat'])) { $slet(); svar(['fejl' => 'Der ligger allerede en historie med navnet ' . $navn . '.'], 409); }
+        if (is_file($andet) && !@unlink($andet)) { $slet(); svar(['fejl' => 'Den gamle udgave kunne ikke fjernes.'], 500); }
+        if (!@rename($del, $maal)) { $slet(); svar(['fejl' => 'Filen kunne ikke lægges på plads. Tjek, at mapperne må skrives i.'], 500); }
+        @unlink($mappe . '/' . $id . '.json');
+        @touch($maal);
+        start_session();
+        $titel = $seddel['titel'] !== '' ? '«' . $seddel['titel'] . '»' : $navn;
+        besked($titel . ' er lagt op ' . ($meta['til'] === 'hylde' ? 'på hylden.' : 'i ventepositionen.')
+            . (!empty($seddel['ukendt']) ? ' Webhotellet kan ikke læse zip-filer, så det er ikke tjekket, at den indeholder en historie.' : ''));
+        svar(['ok' => true]);
+    }
+    svar(['fejl' => 'Ukendt handling.'], 400);
+}
 if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
     $handling = (string)($_POST['handling'] ?? '');
     if (!csrf_ok()) { besked('Siden var for gammel. Prøv igen.', true); tilbage(); }
@@ -300,6 +422,21 @@ function liste(string $hvor, array $filer): string {
   .login label{display:block; font-weight:700; margin:12px 0 4px; color:var(--ink)}
   .login input{width:100%; font:inherit; padding:10px 12px; border:1px solid var(--line); border-radius:8px}
   .login button{margin-top:16px}
+  .upload{background:#fff; border:1px solid var(--line); border-radius:12px; padding:16px}
+  .drop{display:block; border:3px dashed var(--line); border-radius:12px; padding:20px; text-align:center; cursor:pointer; background:var(--papir)}
+  .drop.over{border-color:var(--accent); background:var(--accent-lys)}
+  .drop strong{color:var(--ink)}
+  .drop input{display:block; margin:12px auto 0; font-size:1rem; max-width:100%}
+  fieldset{border:0; padding:0; margin:14px 0 0}
+  legend{font-weight:700; color:var(--ink); padding:0; margin-bottom:4px}
+  .valg{display:flex; gap:10px; align-items:center; min-height:40px; cursor:pointer}
+  .valg input{width:20px; height:20px; accent-color:var(--accent)}
+  .upload .knapper{display:flex; gap:10px; flex-wrap:wrap; margin-top:12px}
+  .bjaelke{height:12px; border-radius:6px; background:var(--accent-lys); overflow:hidden; margin-top:14px}
+  .bjaelke span{display:block; height:100%; width:0; background:var(--accent)}
+  .upstatus{font-weight:600; margin:10px 0 0}
+  .upstatus.fejl{color:var(--fejl)}
+  .upload .hjaelp{margin-top:10px}
 </style>
 </head>
 <body>
@@ -328,6 +465,23 @@ function liste(string $hvor, array $filer): string {
   </form>
 
 <?php else: ?>
+  <h2>Læg en historie op</h2>
+  <div class="upload" id="upload" data-csrf="<?= h(csrf()) ?>">
+    <label class="drop" id="drop">
+      <strong>Vælg en zip-fil</strong> eller træk den herind
+      <input type="file" id="zipfil" accept=".zip,application/zip">
+    </label>
+    <fieldset>
+      <legend>Hvor skal den hen?</legend>
+      <label class="valg"><input type="radio" name="til" value="hylde" checked> På hylden, så den kan ses med det samme</label>
+      <label class="valg"><input type="radio" name="til" value="venter"> I ventepositionen</label>
+    </fieldset>
+    <div class="knapper"><button type="button" class="hoved" id="laegOp" disabled>Læg op</button><button type="button" id="afbryd" hidden>Afbryd</button></div>
+    <div class="bjaelke" id="bjaelke" hidden><span></span></div>
+    <p class="upstatus" id="upstatus" role="status" aria-live="polite"></p>
+    <p class="hjaelp">Zip-filen skal være lavet med byggerne eller Galleriarkiv. Store filer sendes i stykker, så det kan tage lidt tid; lad siden være åben imens. Navnet rettes til små bogstaver, tal og bindestreger.</p>
+  </div>
+
   <h2>På hylden</h2>
   <p class="hjaelp">Det, der vises i afspilleren lige nu. Flyttes en historie til ventepositionen, forsvinder den fra hylden. Har nogen hentet den til appen, beholder de den og får at vide, at den ikke længere er på hylden.</p>
   <?= liste('hylde', filer_i('hylde')) ?>
@@ -338,6 +492,81 @@ function liste(string $hvor, array $filer): string {
 <?php endif; ?>
 </main>
 <script>
+  /* Upload i stykker på 1 MB. Hvert stykke prøves op til 4 gange, hvis forbindelsen
+     svigter. Webhotellet siger, hvor langt det er nået, så intet sendes to gange. */
+  (function(){
+    var boks = document.getElementById('upload');
+    if (!boks) return;
+    var csrf = boks.getAttribute('data-csrf');
+    var input = document.getElementById('zipfil'), knap = document.getElementById('laegOp'), afbryd = document.getElementById('afbryd');
+    var bjaelke = document.getElementById('bjaelke'), status = document.getElementById('upstatus'), drop = document.getElementById('drop');
+    var fil = null, stop = false, igang = false;
+    function sig(t, fejl){ status.textContent = t; status.className = 'upstatus' + (fejl ? ' fejl' : ''); }
+    function mb(b){ return (b / 1048576).toFixed(b < 10485760 ? 1 : 0).replace('.', ',') + ' MB'; }
+    function vaelg(f){
+      if (!f) return;
+      if (!/\.zip$/i.test(f.name)){ fil = null; knap.disabled = true; sig('Vælg en zip-fil.', true); return; }
+      fil = f; knap.disabled = false; sig(f.name + ' · ' + mb(f.size) + ' er valgt. Tryk «Læg op».');
+    }
+    input.addEventListener('change', function(){ vaelg(input.files[0]); });
+    ['dragenter','dragover'].forEach(function(t){ drop.addEventListener(t, function(e){ e.preventDefault(); drop.classList.add('over'); }); });
+    ['dragleave','drop'].forEach(function(t){ drop.addEventListener(t, function(e){ e.preventDefault(); drop.classList.remove('over'); }); });
+    drop.addEventListener('drop', function(e){ if (e.dataTransfer && e.dataTransfer.files.length) vaelg(e.dataTransfer.files[0]); });
+    function post(trin, krop, ekstra, type){
+      return fetch('?upload=' + trin + (ekstra || ''), { method:'POST', credentials:'same-origin',
+        headers:{ 'X-CSRF': csrf, 'Content-Type': type || 'application/json' }, body: krop })
+        .then(function(r){ return r.json().catch(function(){ return { fejl:'Webhotellet svarede ikke som ventet (' + r.status + ').' }; }); });
+    }
+    function vent(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
+    async function stykke(id, fra, str){
+      for (var forsoeg = 0; forsoeg < 4; forsoeg++){
+        try { return await post('stykke', fil.slice(fra, Math.min(fil.size, fra + str)), '&id=' + id + '&fra=' + fra, 'application/octet-stream'); }
+        catch(e){ if (stop) throw e; await vent(1500 * (forsoeg + 1)); }
+      }
+      throw new Error('Forbindelsen blev afbrudt. Prøv igen, når der er god forbindelse.');
+    }
+    knap.addEventListener('click', async function(){
+      if (!fil || igang) return;
+      var til = (document.querySelector('input[name=til]:checked') || {}).value;
+      igang = true; stop = false; knap.disabled = true; input.disabled = true; afbryd.hidden = false; bjaelke.hidden = false;
+      bjaelke.firstElementChild.style.width = '0';
+      var id = null;
+      try {
+        sig('Gør klar …');
+        var s = await post('start', JSON.stringify({ navn: fil.name, bytes: fil.size, til: til }));
+        if (s.fejl) throw new Error(s.fejl);
+        id = s.id;
+        var erstat = false;
+        if (s.findes){
+          erstat = confirm('Der ligger allerede en historie med navnet ' + s.navn + ' ' + (s.findes === 'hylde' ? 'på hylden' : 'i ventepositionen') + '. Vil du erstatte den med den nye?');
+          if (!erstat){ await post('afbryd', '{}', '&id=' + id); sig('Intet er lagt op.'); return; }
+        }
+        var pos = 0;
+        while (pos < fil.size){
+          if (stop) throw new Error('afbrudt');
+          var r = await stykke(id, pos, s.stykke);
+          if (r.fejl) throw new Error(r.fejl);
+          pos = r.modtaget;
+          bjaelke.firstElementChild.style.width = Math.floor(pos / fil.size * 100) + '%';
+          sig('Sender … ' + mb(pos) + ' af ' + mb(fil.size));
+        }
+        sig('Tjekker zip-filen …');
+        var slut = await post('slut', JSON.stringify({ erstat: erstat }), '&id=' + id);
+        if (slut.fejl) throw new Error(slut.fejl);
+        sig('Færdig. Siden opdateres …');
+        igang = false;
+        location.reload();
+      } catch(e){
+        if (id && e.message === 'afbrudt'){ try { await post('afbryd', '{}', '&id=' + id); } catch(x){} bjaelke.hidden = true; sig('Uploaden er afbrudt. Intet er lagt op.'); }
+        else sig(e.message || 'Det lykkedes ikke.', true);
+      } finally {
+        igang = false; knap.disabled = !fil; input.disabled = false; afbryd.hidden = true;
+      }
+    });
+    afbryd.addEventListener('click', function(){ stop = true; sig('Afbryder …'); });
+    window.addEventListener('beforeunload', function(e){ if (igang){ e.preventDefault(); e.returnValue = ''; } });
+  })();
+
   // «Er du sikker?», før en historie slettes.
   document.querySelectorAll('form.slet').forEach(function(f){
     f.addEventListener('submit', function(e){
