@@ -123,7 +123,7 @@ Hylden kan bruges som foreningens egen kanal, fx til «Ugens lydhistorie» eller
    - Upload af zip-filer fra browseren. Store filer sendes i stykker, siden tjekker, at zip-filen er lavet af byggerne, og filnavnet rettes.
    - En venteposition, fx mappen `venter/`, som besøgende ikke kan se. Her kan zip-filer ligge og vente på at blive brugt igen, fx julehistorier, og de kan flyttes frem og tilbage med én knap.
    - Sletning med «Er du sikker?», helst kun fra ventepositionen.
-   - Datoer for «vises fra» og «flyttes til venteposition». Hylden tjekker datoerne, hver gang den åbnes, så der skal ikke køre noget på serveren.
+   - ~~Datoer for «vises fra» og «flyttes til venteposition».~~ Droppet i november 2026: Historier flyttes altid med hånden, så der aldrig sker noget på hylden, som man ikke selv har gjort.
    - Afgjort i november 2026 og lavet i version 0.11: Når en historie ikke længere er på hylden, fjerner appen den ikke af sig selv. Kortet i biblioteket får en linje, fx «Ikke længere på hylden – fjern fra appen?», og brugeren bestemmer selv. Webhotellet kan ikke slette kopien på telefonen, og appen tager aldrig noget fra folk uden at spørge.
    - Senere måske: skift en historie ud med en rettet udgave, og se, hvor tit hver historie hentes.
 5. **Tydeligere pil** – lavet (version 0.10). En rund knap med en vinkel og teksten «Skjul» eller «Vis» til højre for overskriften.
@@ -132,7 +132,7 @@ Hylden kan bruges som foreningens egen kanal, fx til «Ugens lydhistorie» eller
 
 ## Adminsiden
 
-**Status: trin 1 er lavet (november 2026):** login, de to lister, flyt og slet. Upload og datoer kommer i trin 2 og 3.
+**Status: trin 1 er lavet (november 2026):** login, de to lister, flyt og slet. Upload kommer i trin 2. Datoerne er droppet (se «Afgjort i november 2026»).
 
 ### Sådan sættes adminsiden op
 
@@ -153,29 +153,24 @@ Mangler `venter/` eller `admin/data/` eller deres `.htaccess`, laver siden dem s
 
 En side på webhotellet, hvor to personer kan logge ind og passe hylden uden FTP:
 
-- **Se hylden og ventepositionen** i to lister med titel (læst inde i zip-filen), filnavn, størrelse, dato og eventuelle datoer for hvornår den vises og flyttes.
+- **Se hylden og ventepositionen** i to lister med titel (læst inde i zip-filen), filnavn, størrelse og tidspunkt.
 - **Lægge en zip-fil op** fra computeren. Filen sendes i stykker på 1 MB, så webhotellets grænse for upload ikke gør noget, og der er en bjælke, der viser, hvor langt den er. Bagefter tjekker siden, at det er en zip-fil med en historie fra byggerne (en HTML-fil med sedlen), og retter filnavnet efter reglerne: små bogstaver, tal og bindestreger. Findes navnet allerede, spørger siden, om den gamle skal erstattes.
 - **Vælge, hvor en ny fil skal hen:** direkte på hylden eller i ventepositionen.
 - **Flytte** en zip-fil fra hylden til ventepositionen og tilbage med én knap.
 - **Slette** en zip-fil, men kun fra ventepositionen og kun efter «Er du sikker?». Det, der ligger på hylden, skal altså først flyttes. Det giver en ekstra sikkerhed mod at slette ved et uheld.
-- **Datoer:** For hver zip-fil kan der stå «vises fra» og «flyttes til venteposition». Så kan julehistorierne lægges klar i oktober og forsvinde af sig selv i januar.
-
-### Sådan virker datoerne uden noget, der kører på serveren
-
-Datoerne gemmes i en lille fil på webhotellet. Hver gang nogen åbner hylden, kigger `hylde.php` på datoerne: Er «vises fra» nået, flyttes filen fra ventepositionen til hylden, og er «flyttes til venteposition» nået, flyttes den den anden vej. Det sker altså, første gang nogen kigger efter datoen. Afspilleren mærker ikke andet, end at hylden ændrer sig. Er en historie flyttet væk, siger kortet i appen «Ikke længere på hylden» (version 0.11).
 
 ### Filerne på webhotellet
 
 ```
 afspiller/
-  hylde.php              ← som i dag, men flytter også efter datoerne
+  hylde.php              ← som i dag
   hylde/                 ← det, der vises på hylden (som i dag)
   venter/                ← ventepositionen; kan ikke ses af besøgende
   admin/
     index.php            ← login og selve siden
     config.php           ← de to brugere med bcrypt-hash; ALDRIG i repoet
     config-eksempel.php  ← skabelon uden rigtige værdier, i repoet
-    data/                ← datoer, login-forsøg og halve uploads; kan ikke ses af besøgende
+    data/                ← login-forsøg, huskede titler og halve uploads; kan ikke ses af besøgende
 ```
 
 Adgangen til `venter/` og `admin/data/` spærres med en lille `.htaccess`-fil, som virker på jeres webhotel (LiteSpeed).
@@ -195,13 +190,14 @@ Samme opskrift som login i Søgeindeks · Online, men med sine egne filer, så a
 
 1. **Login, de to lister, flyt og slet** – lavet (november 2026). Det kan prøves med de zip-filer, der allerede ligger på hylden.
 2. **Upload i stykker** med tjek af zip-filen og navnet.
-3. **Datoer**, og `hylde.php` flytter efter dem.
+3. ~~**Datoer**, og `hylde.php` flytter efter dem.~~ Droppet i november 2026.
 
 Hvert trin prøves på webhotellet, før det næste laves.
 
 ### Afgjort i november 2026
 
 - Adressen er `…/over/afspiller/admin/`.
+- Der kommer ingen datoer. Historier flyttes mellem hylden og ventepositionen med hånden, så der aldrig sker noget på hylden, som man ikke selv har gjort.
 - En sæsonhistorie, der kommer tilbage fra ventepositionen, får mærket «Nyt» igen, så den bliver bemærket, når den dukker op hvert år. Lavet i afspillerens version 0.13 og adminsidens trin 1.
 
 Se også visionen i `projekt-resume.md` under «Åbne spørgsmål og idéer».
