@@ -2,7 +2,7 @@
 
 En afspiller, der viser historier **direkte fra zip-filer**, uden at noget skal pakkes ud. Den er tænkt til film, podcastserier og senere store gallerier, som er for store til at ligge inde i én HTML-fil, og til de mange, der har svært ved zip-filer, især på telefoner og tablets.
 
-Status: **version 0.10, prøveudgave.** Den virker på computeren og som app på telefoner og tablets, og den har en **historiehylde**, hvor historier hentes ind i appen med ét tryk.
+Status: **version 0.11, prøveudgave.** Den virker på computeren og som app på telefoner og tablets, og den har en **historiehylde**, hvor historier hentes ind i appen med ét tryk.
 
 ## Sådan bruges den
 
@@ -21,6 +21,7 @@ Når afspilleren ligger på webhotellet, viser den øverst **Historiehylden**: d
 - Tryk **Hent til appen**. En bjælke viser, hvor langt den er. Historien hentes i stykker på 4 MB og kontrolleres, før den gemmes, så en halv eller forkert fil aldrig havner i appen. Er et stykke forkert, hentes det igen i små bidder. Går det alligevel galt, siger beskeden hvorfor, og bagefter står en «Teknisk besked», som kan sendes videre til den, der passer afspilleren.
 - Historien gemmes i appens eget lager og ligger derefter i **Dit bibliotek**, også næste gang appen åbnes og uden internet. Ingen skal lede efter en zip-fil.
 - **Fjern fra appen** sletter den igen. Den kan altid hentes igen fra hylden.
+- **Ikke længere på hylden:** Bliver en historie fjernet fra hylden, fx med FTP, ligger den stadig i appen hos dem, der har hentet den. Kortet i biblioteket siger «Ikke længere på hylden», og brugeren bestemmer selv, om den skal blive eller fjernes. Beskeden vises kun, når appen faktisk har kunnet se hylden, så intet ser forsvundet ud, når der ikke er net.
 - **Nyt på hylden:** Hylden hentes, når appen åbnes. Ligger appen i baggrunden på telefonen og kommer frem igen efter mere end 10 minutter, kigger den selv efter nyt. Knappen **Opdatér hylden** gør det med det samme. Ved knappen står, hvornår hylden sidst blev opdateret, og om der er kommet nye historier.
 
 Afspilleren læser titel og billede direkte inde i zip-filerne over nettet, uden at hente hele filen. Det kræver, at webhotellet kan sende dele af en fil (HTTP Range), og det kan almindelige webhoteller.
@@ -119,7 +120,7 @@ Hylden kan bruges som foreningens egen kanal, fx til «Ugens lydhistorie» eller
    - En venteposition, fx mappen `venter/`, som besøgende ikke kan se. Her kan zip-filer ligge og vente på at blive brugt igen, fx julehistorier, og de kan flyttes frem og tilbage med én knap.
    - Sletning med «Er du sikker?», helst kun fra ventepositionen.
    - Datoer for «vises fra» og «flyttes til venteposition». Hylden tjekker datoerne, hver gang den åbnes, så der skal ikke køre noget på serveren.
-   - Afgjort i november 2026: Når en historie ikke længere er på hylden, fjerner appen den ikke af sig selv. Kortet i biblioteket får en linje, fx «Ikke længere på hylden – fjern fra appen?», og brugeren bestemmer selv. Webhotellet kan ikke slette kopien på telefonen, og appen tager aldrig noget fra folk uden at spørge.
+   - Afgjort i november 2026 og lavet i version 0.11: Når en historie ikke længere er på hylden, fjerner appen den ikke af sig selv. Kortet i biblioteket får en linje, fx «Ikke længere på hylden – fjern fra appen?», og brugeren bestemmer selv. Webhotellet kan ikke slette kopien på telefonen, og appen tager aldrig noget fra folk uden at spørge.
    - Senere måske: skift en historie ud med en rettet udgave, og se, hvor tit hver historie hentes.
 5. **Tydeligere pil** – lavet (version 0.10). En rund knap med en vinkel og teksten «Skjul» eller «Vis» til højre for overskriften.
 6. **«Dine egne zip-filer»** – foldes sammen fra start, når der er en hylde (version 0.10), og appen husker, hvis man folder det ud. Afsnittet bruges mest til at prøve ting af. Det er foldet sammen, så det ikke fylder for dem, der kun bruger hylden. Det skal blive, fordi det er nyttigt til medlemsmøder med zip-filer på et USB-stik, til zip-filer sendt med mail eller lagt i Google Drev og til historier, der ikke skal på den offentlige hylde. Mangler stadig: Kortene kan vise, hvor historien kommer fra, fx «✓ Gemt i appen» eller «Fra din computer – vælges igen næste gang».
