@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<!-- SFB-afspiller · version 0.9 (prøveudgave, nov. 2026)
+<!-- SFB-afspiller · version 0.10 (prøveudgave, nov. 2026)
+     0.10: større knap til at folde hylden sammen; «Dine egne zip-filer» kan foldes sammen; hylden opfriskes af sig selv og med knappen «Opdatér hylden».
      0.9: viser et galleriarkiv (standardens 5.8) fra en zip-fil, med underalbum og billeder i stort format.
      0.8: historiehylden kan foldes sammen; et album får sit første billede på kortet, antal billeder og knappen «Åbn».
      0.7: lyden spiller videre med slukket skærm, med titel og knapper på den låste skærm; knappen «Hold skærmen tændt».
@@ -94,17 +95,32 @@
   .kort .bjaelke span{display:block; height:100%; width:0; background:var(--accent)}
   .lager{color:var(--muted); font-size:.9rem; margin:10px 0 0}
   /* Hylden kan foldes sammen med et tryk på overskriften. */
-  .fold > summary{list-style:none; cursor:pointer; display:flex; align-items:baseline; flex-wrap:wrap; gap:4px 12px; margin:0 0 12px; min-height:46px}
+  /* Hylden og «Dine egne zip-filer» kan foldes sammen med et tryk på overskriften
+     eller på den runde knap «Skjul» / «Vis». */
+  .fold{margin-top:30px}
+  section > .fold{margin-top:0}
+  .fold > summary{list-style:none; cursor:pointer; display:flex; align-items:center; flex-wrap:wrap; gap:6px 12px; margin:0 0 12px; min-height:52px}
   .fold > summary::-webkit-details-marker{display:none}
   .fold > summary h2{margin:0; display:inline}
-  .fold > summary::before{content:"▾"; font-size:1.3rem; color:var(--accent); width:1em; flex:0 0 auto}
-  .fold:not([open]) > summary::before{content:"▸"}
   .fold > summary .antal{color:var(--muted); font-size:.95rem}
   .fold > summary:hover h2{text-decoration:underline}
+  .fold > summary .foldknap{margin-left:auto; display:inline-flex; align-items:center; gap:8px; min-height:46px; padding:6px 18px 6px 12px;
+    border:2px solid var(--accent); border-radius:999px; background:#fff; color:var(--accent); font-weight:700}
+  .fold > summary:hover .foldknap{background:var(--accent); color:#fff}
+  .fold > summary .foldknap .pil{display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:50%;
+    background:var(--accent); color:#fff; font-size:1.1rem; line-height:1; transition:transform .2s ease}
+  .fold > summary:hover .foldknap .pil{background:#fff; color:var(--accent)}
+  .fold:not([open]) > summary .foldknap .pil{transform:rotate(-90deg)}
+  .fold > summary .foldknap .vis{display:none}
+  .fold:not([open]) > summary .foldknap .vis{display:inline}
+  .fold:not([open]) > summary .foldknap .skjul{display:none}
+  .hyldelinje{display:flex; flex-wrap:wrap; align-items:center; gap:8px 16px; margin:0 0 12px}
+  .hyldelinje .hjaelp{margin:0; flex:1 1 18em}
+  .hyldelinje .tid{color:var(--muted); font-size:.9rem}
 </style>
 </head>
 <body>
-<header class="top"><div class="indre"><h1>SFB-afspiller</h1><span class="ver">version 0.9 · prøveudgave</span></div></header>
+<header class="top"><div class="indre"><h1>SFB-afspiller</h1><span class="ver">version 0.10 · prøveudgave</span></div></header>
 
 <main id="hoved">
   <div class="installer" id="installer" hidden>
@@ -113,8 +129,13 @@
   </div>
   <section id="hyldeSektion" hidden aria-labelledby="h-hylde">
     <details class="fold" id="hyldeFold" open>
-      <summary><h2 id="h-hylde">Historiehylden</h2> <span class="antal" id="hyldeAntal"></span></summary>
-      <p class="hjaelp" style="margin:0 0 12px">Tryk <strong>Hent til appen</strong>. Så gemmes historien her i appen og kan afspilles, også uden internet.</p>
+      <summary><h2 id="h-hylde">Historiehylden</h2> <span class="antal" id="hyldeAntal"></span>
+        <span class="foldknap" aria-hidden="true"><span class="pil"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></span><span class="skjul">Skjul</span><span class="vis">Vis</span></span></summary>
+      <div class="hyldelinje">
+        <p class="hjaelp">Tryk <strong>Hent til appen</strong>. Så gemmes historien her i appen og kan afspilles, også uden internet.</p>
+        <button type="button" id="opdater">↻ Opdatér hylden</button>
+        <span class="tid" id="hyldeTid" role="status" aria-live="polite"></span>
+      </div>
       <ul class="bibliotek" id="hylde"></ul>
       <p class="lager" id="lager"></p>
     </details>
@@ -125,14 +146,18 @@
     <ul class="bibliotek" id="bibliotek"></ul>
   </section>
 
-  <h2 id="h-egne">Dine egne zip-filer</h2>
-  <label class="drop" id="drop">
-    <strong>Vælg en eller flere zip-filer</strong>
-    eller træk dem herind
-    <input type="file" id="filer" accept=".zip,application/zip" multiple>
-  </label>
   <p class="status" id="status" role="status" aria-live="polite"></p>
-  <p class="hjaelp">Zip-filerne laves med knappen <strong>Gem hele mappen som zip-fil</strong> i Mediekort · Bygger og Podcastserie · Bygger. De skal ikke pakkes ud. Afspilleren henter lyd og video direkte fra dem.</p>
+
+  <details class="fold" id="egneFold" open>
+    <summary><h2 id="h-egne">Dine egne zip-filer</h2> <span class="antal">fx fra et USB-stik, en mail eller Google Drev</span>
+      <span class="foldknap" aria-hidden="true"><span class="pil"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></span><span class="skjul">Skjul</span><span class="vis">Vis</span></span></summary>
+    <label class="drop" id="drop">
+      <strong>Vælg en eller flere zip-filer</strong>
+      eller træk dem herind
+      <input type="file" id="filer" accept=".zip,application/zip" multiple>
+    </label>
+    <p class="hjaelp">Zip-filerne laves med knappen <strong>Gem hele mappen som zip-fil</strong> i Mediekort · Bygger og Podcastserie · Bygger. De skal ikke pakkes ud. Afspilleren henter lyd og video direkte fra dem. Zip-filer, du selv vælger, gemmes ikke i appen og skal vælges igen næste gang.</p>
+  </details>
 
   <p class="note">Alt sker på din egen computer eller telefon. Intet sendes nogen steder hen. Historier fra hylden bliver i appen, til du fjerner dem. Zip-filer, du selv vælger, skal af sikkerhedsgrunde vælges igen, hver gang afspilleren åbnes.</p>
 </main>
@@ -145,7 +170,7 @@
 
 <script>
 /* =======================================================================
-   SFB-afspiller · version 0.9
+   SFB-afspiller · version 0.10
    ======================================================================= */
 const $ = id => document.getElementById(id);
 function escapeHtml(s){
@@ -703,24 +728,66 @@ async function hentHyldeliste(){
   }
   return null;
 }
-async function visHylde(){
+/* Hylden hentes, når appen starter, når man trykker «Opdatér hylden», og af sig selv,
+   når appen kommer frem igen efter mere end 10 minutter i baggrunden (en app på en
+   telefon kan ligge i baggrunden i dagevis). Historier, der allerede er læst, læses
+   ikke igen. Mens noget hentes til appen, venter opfriskningen. */
+let hyldeHentet = 0, hyldeOpdaterer = false;
+async function visHylde(fraKnap){
   if (!/^https?:$/.test(location.protocol)) return;
-  const liste = await hentHyldeliste();
-  if (!liste || !liste.length) return;
-  $('hyldeSektion').hidden = false;
-  for (const p of liste){
-    const fil = String(p.fil || '');
-    if (!/^hylde\/[^\/]+\.zip$/i.test(fil)) continue;
-    const url = new URL(fil, location.href).href;
-    const navn = decodeURIComponent(fil.split('/').pop());
-    const post = { url, navn, bytes: +p.bytes || 0, historie: null, status: '' };
-    hylde.push(post);
-    try { post.historie = (await laesHistorier(fjernKilde(url, post.bytes, navn)))[0]; }
-    catch(e){ post.status = 'Titlen kunne ikke læses: ' + e.message; }
-    tegnHylde();
+  if (hyldeOpdaterer || hylde.some(p => p.henter)){
+    if (fraKnap) $('hyldeTid').textContent = 'Vent, til hentningen er færdig.';
+    return;
   }
-  visLager();
+  hyldeOpdaterer = true;
+  $('opdater').disabled = true;
+  if (fraKnap) $('hyldeTid').textContent = 'Kigger på hylden …';
+  try {
+    const liste = await hentHyldeliste();
+    if (!liste){
+      if (fraKnap || hylde.length) $('hyldeTid').textContent = 'Hylden kunne ikke hentes. Er der forbindelse til internettet?';
+      return;
+    }
+    const foerste = !hyldeHentet;
+    hyldeHentet = Date.now();
+    const gamle = new Map(hylde.map(p => [p.url + '|' + p.bytes, p]));
+    const nyListe = [];
+    let nye = 0;
+    for (const p of liste){
+      const fil = String(p.fil || '');
+      if (!/^hylde\/[^\/]+\.zip$/i.test(fil)) continue;
+      const url = new URL(fil, location.href).href;
+      const bytes = +p.bytes || 0;
+      const gammel = gamle.get(url + '|' + bytes);
+      if (gammel && gammel.historie){ nyListe.push(gammel); continue; }
+      if (!gammel) nye++;
+      nyListe.push({ url, navn: decodeURIComponent(fil.split('/').pop()), bytes, historie: null, status: '' });
+    }
+    hylde.length = 0;
+    nyListe.forEach(p => hylde.push(p));
+    $('hyldeSektion').hidden = !hylde.length;
+    tegnHylde();
+    for (const post of hylde){
+      if (post.historie) continue;
+      try { post.historie = (await laesHistorier(fjernKilde(post.url, post.bytes, post.navn)))[0]; post.status = ''; }
+      catch(e){ post.status = 'Titlen kunne ikke læses: ' + e.message; }
+      tegnHylde();
+    }
+    const nu = new Date();
+    $('hyldeTid').textContent = 'Opdateret kl. ' + String(nu.getHours()).padStart(2, '0') + '.' + String(nu.getMinutes()).padStart(2, '0')
+      + (!foerste && nye ? ' · ' + (nye === 1 ? '1 ny historie' : nye + ' nye historier') : '');
+    egneFoldStart();
+  } finally {
+    hyldeOpdaterer = false;
+    $('opdater').disabled = false;
+    visLager();
+  }
 }
+$('opdater').addEventListener('click', () => visHylde(true));
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden && Date.now() - hyldeHentet > 10 * 60 * 1000) visHylde();
+});
+window.addEventListener('online', () => { if (Date.now() - hyldeHentet > 60 * 1000) visHylde(); });
 function erGemt(url){ return bibliotek.some(b => b.gemtUrl === url); }
 function tegnHylde(){
   const ul = $('hylde');
@@ -753,6 +820,20 @@ function tegnHylde(){
   const hentet = hylde.filter(p => erGemt(p.url)).length;
   $('hyldeAntal').textContent = (hylde.length === 1 ? '1 historie' : hylde.length + ' historier') + (hentet ? ', ' + hentet + ' hentet' : '');
 }
+// «Dine egne zip-filer» er foldet sammen fra start, når der er en hylde, fordi den
+// mest bruges til at prøve ting af. Uden hylde (fx åbnet fra computeren) er den åben.
+// Har man selv foldet den ud eller sammen, huskes det.
+const EGNE_NOEGLE = 'sfb-afspiller-egne-foldet';
+function egneFoldStart(){
+  let valg = null;
+  try { valg = localStorage.getItem(EGNE_NOEGLE); } catch(e){}
+  if (valg === 'ja' || valg === 'nej') $('egneFold').open = valg === 'nej';
+  else if (!$('hyldeSektion').hidden) $('egneFold').open = false;
+}
+egneFoldStart();
+$('egneFold').querySelector('summary').addEventListener('click', () => {
+  setTimeout(() => { try { localStorage.setItem(EGNE_NOEGLE, $('egneFold').open ? 'nej' : 'ja'); } catch(e){} }, 0);
+});
 // Appen husker, om hylden var foldet sammen.
 const FOLD_NOEGLE = 'sfb-afspiller-hylde-foldet';
 try { if (localStorage.getItem(FOLD_NOEGLE) === 'ja') $('hyldeFold').open = false; } catch(e){}
@@ -840,7 +921,7 @@ async function hentTilAppen(i){
       ? 'Forbindelsen blev afbrudt. Prøv igen, når der er god forbindelse.'
       : 'Det lykkedes ikke: ' + err.message;
     // En kort teknisk besked, som kan sendes videre, hvis fejlen bliver ved.
-    p.status += ' · Teknisk besked: version 0.9; ' + (err.message || err) + '; ' + spor.join('; ')
+    p.status += ' · Teknisk besked: version 0.10; ' + (err.message || err) + '; ' + spor.join('; ')
       + (kilde && kilde.sidst ? '; sidste svar: ' + kilde.sidst : '') + '; ' + navigator.userAgent;
   }
   p.henter = false; tegnHylde(); visLager();
