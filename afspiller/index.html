@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<!-- SFB-afspiller · version 0.10 (prøveudgave, nov. 2026)
+<!-- SFB-afspiller · version 0.11 (prøveudgave, nov. 2026)
+     0.11: en historie i appen, som ikke længere er på hylden, får en besked på kortet; brugeren bestemmer selv, om den skal fjernes.
      0.10: større knap til at folde hylden sammen; «Dine egne zip-filer» kan foldes sammen; hylden opfriskes af sig selv og med knappen «Opdatér hylden».
      0.9: viser et galleriarkiv (standardens 5.8) fra en zip-fil, med underalbum og billeder i stort format.
      0.8: historiehylden kan foldes sammen; et album får sit første billede på kortet, antal billeder og knappen «Åbn».
@@ -91,6 +92,7 @@
   .installer{margin:0 0 18px; background:var(--accent-lys); border-left:5px solid var(--accent); border-radius:0 10px 10px 0; padding:12px 16px; display:flex; flex-wrap:wrap; gap:10px 16px; align-items:center}
   .installer p{margin:0; flex:1 1 16em}
   .kort .gemt{font-size:.85rem; font-weight:700; color:var(--ok)}
+  .kort .vaek{font-size:.9rem; font-weight:600; color:var(--fejl); border-left:4px solid var(--fejl); padding:2px 0 2px 10px}
   .kort .bjaelke{height:10px; border-radius:5px; background:var(--accent-lys); overflow:hidden}
   .kort .bjaelke span{display:block; height:100%; width:0; background:var(--accent)}
   .lager{color:var(--muted); font-size:.9rem; margin:10px 0 0}
@@ -120,7 +122,7 @@
 </style>
 </head>
 <body>
-<header class="top"><div class="indre"><h1>SFB-afspiller</h1><span class="ver">version 0.10 · prøveudgave</span></div></header>
+<header class="top"><div class="indre"><h1>SFB-afspiller</h1><span class="ver">version 0.11 · prøveudgave</span></div></header>
 
 <main id="hoved">
   <div class="installer" id="installer" hidden>
@@ -170,7 +172,7 @@
 
 <script>
 /* =======================================================================
-   SFB-afspiller · version 0.10
+   SFB-afspiller · version 0.11
    ======================================================================= */
 const $ = id => document.getElementById(id);
 function escapeHtml(s){
@@ -434,6 +436,7 @@ function tegnBibliotek(){
       + '<div class="indhold"><span class="type">' + escapeHtml(typeTekst(b.data)) + '</span>'
       + '<h3></h3><span class="info"></span><p class="beskr"></p>'
       + (b.gemtUrl ? '<span class="gemt">✓ Gemt i appen</span>' : '')
+      + (b.gemtUrl && ikkePaaHylden(b.gemtUrl) ? '<span class="vaek">Ikke længere på hylden. Du kan beholde den i appen, eller trykke «Fjern fra appen».</span>' : '')
       + '<span class="tjek" role="status"></span>'
       + '<div class="knapper"><button type="button" class="hoved" data-aaben="' + i + '">' + knapTekst(b.data) + '</button>'
       + (b.media.some(m => m.sha256) ? '<button type="button" data-tjek="' + i + '">Tjek filerne</button>' : '')
@@ -766,6 +769,7 @@ async function visHylde(fraKnap){
     hylde.length = 0;
     nyListe.forEach(p => hylde.push(p));
     $('hyldeSektion').hidden = !hylde.length;
+    tegnBibliotek();
     tegnHylde();
     for (const post of hylde){
       if (post.historie) continue;
@@ -788,6 +792,10 @@ document.addEventListener('visibilitychange', () => {
   if (!document.hidden && Date.now() - hyldeHentet > 10 * 60 * 1000) visHylde();
 });
 window.addEventListener('online', () => { if (Date.now() - hyldeHentet > 60 * 1000) visHylde(); });
+// En historie, der er hentet til appen, men som ikke længere ligger på hylden.
+// Appen fjerner den ikke af sig selv; kortet siger det, og brugeren bestemmer.
+// Det vises kun, når hylden faktisk er hentet, så intet ser forsvundet ud uden net.
+function ikkePaaHylden(url){ return hyldeHentet > 0 && !hylde.some(p => p.url === url); }
 function erGemt(url){ return bibliotek.some(b => b.gemtUrl === url); }
 function tegnHylde(){
   const ul = $('hylde');
@@ -921,7 +929,7 @@ async function hentTilAppen(i){
       ? 'Forbindelsen blev afbrudt. Prøv igen, når der er god forbindelse.'
       : 'Det lykkedes ikke: ' + err.message;
     // En kort teknisk besked, som kan sendes videre, hvis fejlen bliver ved.
-    p.status += ' · Teknisk besked: version 0.10; ' + (err.message || err) + '; ' + spor.join('; ')
+    p.status += ' · Teknisk besked: version 0.11; ' + (err.message || err) + '; ' + spor.join('; ')
       + (kilde && kilde.sidst ? '; sidste svar: ' + kilde.sidst : '') + '; ' + navigator.userAgent;
   }
   p.henter = false; tegnHylde(); visLager();
