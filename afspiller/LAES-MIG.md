@@ -2,7 +2,7 @@
 
 En afspiller, der viser historier **direkte fra zip-filer**, uden at noget skal pakkes ud. Den er tænkt til film, podcastserier og senere store gallerier, som er for store til at ligge inde i én HTML-fil, og til de mange, der har svært ved zip-filer, især på telefoner og tablets.
 
-Status: **version 0.12, prøveudgave.** Den virker på computeren og som app på telefoner og tablets, og den har en **historiehylde**, hvor historier hentes ind i appen med ét tryk.
+Status: **version 0.13, prøveudgave.** Den virker på computeren og som app på telefoner og tablets, og den har en **historiehylde**, hvor historier hentes ind i appen med ét tryk.
 
 ## Sådan bruges den
 
@@ -69,6 +69,10 @@ Derefter ligger SFB-afspilleren som et ikon og åbner i fuld skærm. Den virker 
 | `ikon-192.png`, `ikon-512.png`, `ikon-180.png` | appens ikon (180 er til iPhone og iPad) |
 | `hylde.php` | laver listen over zip-filerne i `hylde/` til historiehylden |
 | `hylde/` | zip-filerne til hylden (kun på webhotellet) |
+| `venter/` | ventepositionen: zip-filer, der ikke vises på hylden. Spærret for besøgende med `.htaccess` |
+| `admin/index.php` | adminsiden (se «Adminsiden» nedenfor) |
+| `admin/config-eksempel.php` | skabelon til `admin/config.php` med de to brugere. `config.php` ligger kun på webhotellet |
+| `admin/data/` | login-forsøg og huskede titler. Spærret for besøgende og kommer aldrig i repoet |
 
 ## Hvilke zip-filer kan den åbne?
 
@@ -128,7 +132,22 @@ Hylden kan bruges som foreningens egen kanal, fx til «Ugens lydhistorie» eller
 
 ## Adminsiden
 
-**Status: godkendt i november 2026.** Den laves i tre trin, som beskrevet nedenfor.
+**Status: trin 1 er lavet (november 2026):** login, de to lister, flyt og slet. Upload og datoer kommer i trin 2 og 3.
+
+### Sådan sættes adminsiden op
+
+1. Læg mappen `admin/` (med `index.php`, `.htaccess`, `config-eksempel.php` og `data/.htaccess`) og mappen `venter/` (med `.htaccess`) op i `…/over/afspiller/` med FTP.
+2. Lav en bcrypt-hash af hver brugers adgangskode med `tools/password-hash.html` på din egen computer.
+3. Lav en kopi af `config-eksempel.php`, kald den `config.php`, skriv de to brugere og deres hash ind, og læg den i `admin/` på webhotellet. Den må aldrig komme i repoet.
+4. Åbn `…/over/afspiller/admin/` og log ind. Brugernavnet skrives med små bogstaver.
+
+Mangler `venter/` eller `admin/data/` eller deres `.htaccess`, laver siden dem selv. PHP skal kunne skrive i `hylde/`, `venter/` og `admin/data/`; det kan den normalt på et webhotel.
+
+### Sådan bruges den
+
+- **På hylden** står det, der vises i afspilleren lige nu, med titel, filnavn, størrelse og tidspunkt. Knappen **Flyt til venteposition** tager en historie af hylden.
+- **I ventepositionen** står det, der venter. **Læg på hylden** sætter den tilbage; den får et nyt tidspunkt, står øverst og får mærket «Nyt» i appen igen. **Slet** sletter den for altid efter «Er du sikker?».
+- Man logges ud efter 2 timer uden brug. Efter 5 forkerte forsøg skal man vente 15 minutter.
 
 ### Hvad den skal kunne
 
@@ -174,7 +193,7 @@ Samme opskrift som login i Søgeindeks · Online, men med sine egne filer, så a
 
 ### Rækkefølge
 
-1. **Login, de to lister, flyt og slet.** Det kan prøves med de zip-filer, der allerede ligger på hylden.
+1. **Login, de to lister, flyt og slet** – lavet (november 2026). Det kan prøves med de zip-filer, der allerede ligger på hylden.
 2. **Upload i stykker** med tjek af zip-filen og navnet.
 3. **Datoer**, og `hylde.php` flytter efter dem.
 
@@ -183,6 +202,6 @@ Hvert trin prøves på webhotellet, før det næste laves.
 ### Afgjort i november 2026
 
 - Adressen er `…/over/afspiller/admin/`.
-- En sæsonhistorie, der kommer tilbage fra ventepositionen, får mærket «Nyt» igen, så den bliver bemærket, når den dukker op hvert år.
+- En sæsonhistorie, der kommer tilbage fra ventepositionen, får mærket «Nyt» igen, så den bliver bemærket, når den dukker op hvert år. Lavet i afspillerens version 0.13 og adminsidens trin 1.
 
 Se også visionen i `projekt-resume.md` under «Åbne spørgsmål og idéer».

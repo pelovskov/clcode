@@ -2,7 +2,7 @@
    Gemmer afspillerens egne filer på telefonen eller computeren, så den virker
    uden internet. Zip-filerne, man vælger, gemmes ikke her – de bliver, hvor de er.
    Ved en ny version tælles VERSION op, så den gamle kopi bliver skiftet ud. */
-const VERSION = 'sfb-afspiller-0.12';
+const VERSION = 'sfb-afspiller-0.13';
 const FILER = ['./', './index.html', './manifest.webmanifest', './ikon-192.png', './ikon-512.png', './ikon-180.png'];
 
 self.addEventListener('install', e => {
