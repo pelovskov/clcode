@@ -114,7 +114,7 @@ Hylden kan bruges som foreningens egen kanal, fx til «Ugens lydhistorie» eller
 1. **Fold hylden sammen** – lavet (version 0.8). Tryk på overskriften «Historiehylden». Antallet af historier står ved overskriften, og appen husker, om hylden var foldet sammen.
 2. **Albumkort** – lavet (version 0.8). Et album får sit første billede på kortet, typen «Billedalbum», antal billeder og knappen «Åbn» i stedet for «Afspil». Senere måske: et forsidebillede, man selv vælger i Album · Bygger.
 3. **Mærket «Nyt»** – lavet (version 0.12). Historier, man ikke har haft på hylden før, får mærket «Nyt», og antallet står ved overskriften, fx «7 historier · 1 ny». Appen husker selv, hvad der har været vist, uden beskeder på telefonen. Mærket bliver stående, mens appen er åben, og er væk næste gang. Første gang appen bruges, er intet nyt.
-4. **Adminside** på webhotellet, fx i `afspiller/admin/`. Den er en selvstændig ting med sit eget login og er ikke lagt sammen med Foreningers søgeindeks. Ønsker fra november 2026:
+4. **Adminside** på webhotellet, fx i `afspiller/admin/`. Den er en selvstændig ting med sit eget login og er ikke lagt sammen med Foreningers søgeindeks. Se beskrivelsen under «Adminsiden» nedenfor. Ønsker fra november 2026:
    - Login for 2 brugere. Adgangskoderne gemmes kun som bcrypt-hash i en `config.php` på webhotellet, aldrig i repoet.
    - Upload af zip-filer fra browseren. Store filer sendes i stykker, siden tjekker, at zip-filen er lavet af byggerne, og filnavnet rettes.
    - En venteposition, fx mappen `venter/`, som besøgende ikke kan se. Her kan zip-filer ligge og vente på at blive brugt igen, fx julehistorier, og de kan flyttes frem og tilbage med én knap.
@@ -125,5 +125,64 @@ Hylden kan bruges som foreningens egen kanal, fx til «Ugens lydhistorie» eller
 5. **Tydeligere pil** – lavet (version 0.10). En rund knap med en vinkel og teksten «Skjul» eller «Vis» til højre for overskriften.
 6. **«Dine egne zip-filer»** – foldes sammen fra start, når der er en hylde (version 0.10), og appen husker, hvis man folder det ud. Afsnittet bruges mest til at prøve ting af. Det er foldet sammen, så det ikke fylder for dem, der kun bruger hylden. Det skal blive, fordi det er nyttigt til medlemsmøder med zip-filer på et USB-stik, til zip-filer sendt med mail eller lagt i Google Drev og til historier, der ikke skal på den offentlige hylde. Kortene i biblioteket viser, hvor historien kommer fra: «✓ Gemt i appen» eller «Din egen zip-fil – vælges igen næste gang» (version 0.12).
 7. **Opfriskning af hylden** – lavet (version 0.10): af sig selv efter mere end 10 minutter i baggrunden og med knappen «Opdatér hylden».
+
+## Adminsiden (beskrivelse til godkendelse)
+
+**Status: udkast, november 2026.** Intet er lavet endnu. Beskrivelsen læses og godkendes, før der skrives kode.
+
+### Hvad den skal kunne
+
+En side på webhotellet, hvor to personer kan logge ind og passe hylden uden FTP:
+
+- **Se hylden og ventepositionen** i to lister med titel (læst inde i zip-filen), filnavn, størrelse, dato og eventuelle datoer for hvornår den vises og flyttes.
+- **Lægge en zip-fil op** fra computeren. Filen sendes i stykker på 1 MB, så webhotellets grænse for upload ikke gør noget, og der er en bjælke, der viser, hvor langt den er. Bagefter tjekker siden, at det er en zip-fil med en historie fra byggerne (en HTML-fil med sedlen), og retter filnavnet efter reglerne: små bogstaver, tal og bindestreger. Findes navnet allerede, spørger siden, om den gamle skal erstattes.
+- **Vælge, hvor en ny fil skal hen:** direkte på hylden eller i ventepositionen.
+- **Flytte** en zip-fil fra hylden til ventepositionen og tilbage med én knap.
+- **Slette** en zip-fil, men kun fra ventepositionen og kun efter «Er du sikker?». Det, der ligger på hylden, skal altså først flyttes. Det giver en ekstra sikkerhed mod at slette ved et uheld.
+- **Datoer:** For hver zip-fil kan der stå «vises fra» og «flyttes til venteposition». Så kan julehistorierne lægges klar i oktober og forsvinde af sig selv i januar.
+
+### Sådan virker datoerne uden noget, der kører på serveren
+
+Datoerne gemmes i en lille fil på webhotellet. Hver gang nogen åbner hylden, kigger `hylde.php` på datoerne: Er «vises fra» nået, flyttes filen fra ventepositionen til hylden, og er «flyttes til venteposition» nået, flyttes den den anden vej. Det sker altså, første gang nogen kigger efter datoen. Afspilleren mærker ikke andet, end at hylden ændrer sig. Er en historie flyttet væk, siger kortet i appen «Ikke længere på hylden» (version 0.11).
+
+### Filerne på webhotellet
+
+```
+afspiller/
+  hylde.php              ← som i dag, men flytter også efter datoerne
+  hylde/                 ← det, der vises på hylden (som i dag)
+  venter/                ← ventepositionen; kan ikke ses af besøgende
+  admin/
+    index.php            ← login og selve siden
+    config.php           ← de to brugere med bcrypt-hash; ALDRIG i repoet
+    config-eksempel.php  ← skabelon uden rigtige værdier, i repoet
+    data/                ← datoer, login-forsøg og halve uploads; kan ikke ses af besøgende
+```
+
+Adgangen til `venter/` og `admin/data/` spærres med en lille `.htaccess`-fil, som virker på jeres webhotel (LiteSpeed).
+
+### Sikkerhed
+
+Samme opskrift som login i Søgeindeks · Online, men med sine egne filer, så adminsiden er selvstændig:
+
+- Adgangskoder gemmes kun som bcrypt-hash. Hashen laves med `tools/password-hash.html` på din egen computer.
+- Efter 5 forkerte forsøg fra samme sted skal man vente 15 minutter.
+- Login-cookien kan kun bruges over https og kun af denne side. Man logges ud efter 2 timer uden brug.
+- Alle knapper, der ændrer noget, er beskyttet mod at blive sendt fra en fremmed side (CSRF).
+- Filnavne kontrolleres strengt, så ingen kan nå filer uden for `hylde/` og `venter/`.
+- `config.php` og `admin/data/` kommer aldrig i repoet (`.gitignore`).
+
+### Rækkefølge
+
+1. **Login, de to lister, flyt og slet.** Det kan prøves med de zip-filer, der allerede ligger på hylden.
+2. **Upload i stykker** med tjek af zip-filen og navnet.
+3. **Datoer**, og `hylde.php` flytter efter dem.
+
+Hvert trin prøves på webhotellet, før det næste laves.
+
+### Spørgsmål, før vi går i gang
+
+- Er adressen `…/over/afspiller/admin/` god?
+- Skal en sæsonhistorie, der kommer tilbage fra ventepositionen, have mærket «Nyt» igen? Forslaget er ja, fordi den så bliver bemærket, når den dukker op hvert år.
 
 Se også visionen i `projekt-resume.md` under «Åbne spørgsmål og idéer».
