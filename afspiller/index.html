@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<!-- SFB-afspiller · version 0.11 (prøveudgave, nov. 2026)
+<!-- SFB-afspiller · version 0.12 (prøveudgave, nov. 2026)
+     0.12: mærket «Nyt» på hylden; kortene i biblioteket siger, om historien er gemt i appen eller er din egen zip-fil.
      0.11: en historie i appen, som ikke længere er på hylden, får en besked på kortet; brugeren bestemmer selv, om den skal fjernes.
      0.10: større knap til at folde hylden sammen; «Dine egne zip-filer» kan foldes sammen; hylden opfriskes af sig selv og med knappen «Opdatér hylden».
      0.9: viser et galleriarkiv (standardens 5.8) fra en zip-fil, med underalbum og billeder i stort format.
@@ -92,6 +93,8 @@
   .installer{margin:0 0 18px; background:var(--accent-lys); border-left:5px solid var(--accent); border-radius:0 10px 10px 0; padding:12px 16px; display:flex; flex-wrap:wrap; gap:10px 16px; align-items:center}
   .installer p{margin:0; flex:1 1 16em}
   .kort .gemt{font-size:.85rem; font-weight:700; color:var(--ok)}
+  .kort .egen{font-size:.85rem; font-weight:600; color:var(--muted)}
+  .kort .nyt{align-self:flex-start; background:var(--accent); color:#fff; font-size:.8rem; font-weight:700; letter-spacing:.04em; padding:3px 12px; border-radius:999px}
   .kort .vaek{font-size:.9rem; font-weight:600; color:var(--fejl); border-left:4px solid var(--fejl); padding:2px 0 2px 10px}
   .kort .bjaelke{height:10px; border-radius:5px; background:var(--accent-lys); overflow:hidden}
   .kort .bjaelke span{display:block; height:100%; width:0; background:var(--accent)}
@@ -122,7 +125,7 @@
 </style>
 </head>
 <body>
-<header class="top"><div class="indre"><h1>SFB-afspiller</h1><span class="ver">version 0.11 · prøveudgave</span></div></header>
+<header class="top"><div class="indre"><h1>SFB-afspiller</h1><span class="ver">version 0.12 · prøveudgave</span></div></header>
 
 <main id="hoved">
   <div class="installer" id="installer" hidden>
@@ -172,7 +175,7 @@
 
 <script>
 /* =======================================================================
-   SFB-afspiller · version 0.11
+   SFB-afspiller · version 0.12
    ======================================================================= */
 const $ = id => document.getElementById(id);
 function escapeHtml(s){
@@ -435,7 +438,7 @@ function tegnBibliotek(){
     li.innerHTML = '<div class="billede">' + (b.billede ? '<img alt="">' : '<span aria-hidden="true">' + ikonFor(b.data) + '</span>') + '</div>'
       + '<div class="indhold"><span class="type">' + escapeHtml(typeTekst(b.data)) + '</span>'
       + '<h3></h3><span class="info"></span><p class="beskr"></p>'
-      + (b.gemtUrl ? '<span class="gemt">✓ Gemt i appen</span>' : '')
+      + (b.gemtUrl ? '<span class="gemt">✓ Gemt i appen</span>' : '<span class="egen">Din egen zip-fil – vælges igen næste gang</span>')
       + (b.gemtUrl && ikkePaaHylden(b.gemtUrl) ? '<span class="vaek">Ikke længere på hylden. Du kan beholde den i appen, eller trykke «Fjern fra appen».</span>' : '')
       + '<span class="tjek" role="status"></span>'
       + '<div class="knapper"><button type="button" class="hoved" data-aaben="' + i + '">' + knapTekst(b.data) + '</button>'
@@ -806,7 +809,8 @@ function tegnHylde(){
     li.className = 'kort';
     const d = h ? h.data : {};
     li.innerHTML = '<div class="billede">' + (h && h.billede ? '<img alt="">' : '<span aria-hidden="true">' + (h ? ikonFor(d) : '📦') + '</span>') + '</div>'
-      + '<div class="indhold"><span class="type">' + escapeHtml(h ? typeTekst(d) : 'Zip-fil') + '</span>'
+      + '<div class="indhold">' + (erNy(p) ? '<span class="nyt">Nyt</span>' : '')
+      + '<span class="type">' + escapeHtml(h ? typeTekst(d) : 'Zip-fil') + '</span>'
       + '<h3></h3><span class="info"></span><p class="beskr"></p>'
       + (p.henter ? '<div class="bjaelke" aria-hidden="true"><span></span></div>' : '')
       + '<span class="tjek" role="status"></span>'
@@ -826,7 +830,30 @@ function tegnHylde(){
   });
   // Antallet står ved overskriften, så det kan ses, også når hylden er foldet sammen.
   const hentet = hylde.filter(p => erGemt(p.url)).length;
-  $('hyldeAntal').textContent = (hylde.length === 1 ? '1 historie' : hylde.length + ' historier') + (hentet ? ', ' + hentet + ' hentet' : '');
+  const nye = hylde.filter(erNy).length;
+  $('hyldeAntal').textContent = (hylde.length === 1 ? '1 historie' : hylde.length + ' historier') + (hentet ? ', ' + hentet + ' hentet' : '')
+    + (nye ? ' · ' + (nye === 1 ? '1 ny' : nye + ' nye') : '');
+  husSete();
+}
+/* Mærket «Nyt» står på historier, man ikke har haft på hylden før. Appen husker selv,
+   hvad der har været vist, uden beskeder på telefonen. Mærket bliver stående resten af
+   tiden, appen er åben, og er væk, næste gang den åbnes. Første gang appen bruges, er
+   intet nyt. En rettet udgave med samme navn, men en anden størrelse, regnes som ny. */
+const SETE_NOEGLE = 'sfb-afspiller-sete';
+let seteVedStart = null;
+try { const v = localStorage.getItem(SETE_NOEGLE); if (v) seteVedStart = new Set(JSON.parse(v)); } catch(e){}
+function noegle(p){ return p.url + '|' + p.bytes; }
+function erNy(p){ return !!seteVedStart && !seteVedStart.has(noegle(p)) && !erGemt(p.url); }
+function husSete(){
+  if (!hylde.length) return;
+  let alle = [];
+  try { alle = JSON.parse(localStorage.getItem(SETE_NOEGLE) || '[]'); } catch(e){}
+  const saet = new Set(alle);
+  hylde.forEach(p => saet.add(noegle(p)));
+  // Første gang appen bruges, regnes det, der er på hylden nu, som set. Det, der
+  // kommer til, mens appen er åben, får mærket «Nyt».
+  if (!seteVedStart) seteVedStart = new Set(saet);
+  try { localStorage.setItem(SETE_NOEGLE, JSON.stringify(Array.from(saet).slice(-500))); } catch(e){}
 }
 // «Dine egne zip-filer» er foldet sammen fra start, når der er en hylde, fordi den
 // mest bruges til at prøve ting af. Uden hylde (fx åbnet fra computeren) er den åben.
@@ -929,7 +956,7 @@ async function hentTilAppen(i){
       ? 'Forbindelsen blev afbrudt. Prøv igen, når der er god forbindelse.'
       : 'Det lykkedes ikke: ' + err.message;
     // En kort teknisk besked, som kan sendes videre, hvis fejlen bliver ved.
-    p.status += ' · Teknisk besked: version 0.11; ' + (err.message || err) + '; ' + spor.join('; ')
+    p.status += ' · Teknisk besked: version 0.12; ' + (err.message || err) + '; ' + spor.join('; ')
       + (kilde && kilde.sidst ? '; sidste svar: ' + kilde.sidst : '') + '; ' + navigator.userAgent;
   }
   p.henter = false; tegnHylde(); visLager();
