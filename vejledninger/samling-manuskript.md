@@ -34,7 +34,7 @@ Kapitlerne kan bruges i Mediekort · Bygger og på YouTube.
 | 0:55 | Klik på **Tilføj historier**, og vælg filerne i mappen. | Jeg tilføjer historierne. Titel, ophav og billede hentes selv fra filerne. |
 | 1:10 | Vælg **Sommer**. Klik på **Generér samling (.html)**. Flyt filen ind i mappen. | Jeg gemmer samlingen og flytter den ind i samme mappe som historierne. Så virker links. |
 | 1:30 | Forsiden. Klik på **Søgeside**. Klik på **Vælg mappe**, og vælg mappen. | Er der mange filer, kan vi lave en søgeside. Jeg vælger mappen. |
-| 1:50 | Skriv overskriften "7.b’s lokalhistorier". Vis forhåndsvisningen. | Jeg giver søgesiden en overskrift og ser, hvordan den bliver. |
+| 1:50 | Skriv overskriften "7.b’s lokalhistorier". Vælg farverne **Sommer**. Vis forhåndsvisningen. | Jeg giver søgesiden en overskrift, vælger farver og ser, hvordan den bliver. |
 | 2:05 | Klik på **Gem søgeside**, og læg filen i mappen. Åbn den, og søg. | Jeg gemmer søgesiden i mappen. Nu kan man søge i alle historierne. |
 | 2:20 | Kopiér mappen til et USB-stik. | Hele mappen kan kopieres til et USB-stik, et delt drev eller en hjemmeside. |
 | 2:40 | Forsiden. | Husk: kommer der nye filer til, laver I søgesiden igen. |

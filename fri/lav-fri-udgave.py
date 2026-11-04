@@ -11,6 +11,7 @@ med i den fælles portal. Forskellene fra de almindelige byggere:
   intet foreningspræfiks, fx "side-sommerlejren-2026".
 - Foreningernes særlige ting er fjernet, fx Sidebyggerens faste serier.
 - De fælles emneord (tools/emneord.html) bliver til frie forslag i fri/emneord.html.
+- Søgeside · Bygger og de søgesider, den laver, har eget design og vælgbare temaer.
 - Filformatet er det samme, så filerne kan åbnes i begge udgaver.
 
 Kør opskriften igen, når en almindelig bygger er blevet forbedret:
@@ -167,9 +168,155 @@ def lav(fil):
     print(f'Lavet: fri/{fil}')
 
 
+# --- Søgesidens eget design i den frie udgave ---
+# Designet lægges oven på den almindelige søgeside, så foreningernes udgaver
+# ikke ændres. Farverne hentes fra THEMES ovenfor, så de kun står ét sted.
+# Teksten ender inde i en JavaScript-skabelon og må derfor ikke indeholde backticks.
+def soegeside_temaer():
+    ud = ''
+    for noegle, _, _, _ in VAELGER:
+        blok = re.search(noegle + r": \{(.*?)\n  \}", THEMES, re.S).group(1)
+        t = dict(re.findall(r"(\w+):'([^']+)'", blok))
+        ud += (f':root[data-tema="{noegle}"]{{--accent:{t["accentDark"]};--accent-lys:{t["accent"]};'
+               f'--paper:{t["paper"]};--paper-dim:{t["paper"]};--flade:{t["surface"]};--ink:{t["ink"]};'
+               f'--muted:{t["muted"]};--line:{t["line"]};--footer-strong:{t["ink"]}}}\n')
+    return ud
+
+
+SOEGESIDE_FAELLES = """
+/* Fri udgave · eget design: tema, skrift og layout. Lægges på af fri/lav-fri-udgave.py. */
+""" + soegeside_temaer() + """@media (prefers-contrast:more){
+  :root[data-tema]{--ink:#000;--muted:#000;--line:#555}
+}
+body{font-family:"Avenir Next","Segoe UI","Helvetica Neue",Helvetica,Roboto,"Noto Sans",Arial,sans-serif}
+h1{font-weight:700;letter-spacing:-.01em}
+header{max-width:none;margin:0;padding:2rem 1.25rem 3.5rem;background:var(--accent);color:#fff;
+  border-bottom:.4rem solid var(--accent-lys)}
+header h1,header .sub,header .tekststr .lbl{color:#fff}
+header :focus-visible{outline-color:#fff}
+.topbar{margin:0 auto}
+.tekststr button{border-color:#fff}
+.tekststr button:hover{border-color:var(--ink)}
+.tekststr button[aria-pressed="true"]{background:var(--ink);border-color:#fff;color:#fff}
+"""
+
+SOEGESIDE_SIDEN = SOEGESIDE_FAELLES + """.topbar{max-width:calc(1100px - 2.5rem)}
+.controls{position:relative;width:calc(100% - 2.5rem);max-width:calc(1100px - 2.5rem);margin:-2rem auto 0;
+  padding:1rem;background:var(--flade);border:1px solid var(--line);border-radius:14px;
+  box-shadow:0 2px 10px rgba(0,0,0,.1)}
+.controls input,.controls select{border-color:var(--muted);border-radius:10px}
+.controls input{flex:1 1 100%;min-height:58px;font-size:1.2rem}
+.controls select{flex:1 1 11rem}
+.count{margin-top:1.2rem}
+a.row{background:var(--flade);border:1px solid var(--line);border-radius:12px;
+  padding:1.1rem 1.15rem;margin-bottom:.75rem;align-items:center}
+a.row:hover{border-color:var(--accent)}
+.icon{display:flex;align-items:center;justify-content:center;flex:0 0 2.8rem;height:2.8rem;
+  background:var(--paper);border-radius:50%;font-size:1.3rem;line-height:1}
+.col-main .t{color:var(--accent);font-weight:700}
+.col-type{background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:.15rem .75rem}
+footer{border-top:1px solid var(--line);padding-top:1.2rem}
+@media(max-width:640px){
+  header{padding:1.5rem 1rem 3.25rem}
+  .controls{width:calc(100% - 2rem);padding:.75rem}
+  .controls input,.controls select{flex:1 1 100%}
+  a.row{padding:1rem .8rem;align-items:flex-start}
+  .icon{flex:0 0 2.2rem;height:2.2rem;font-size:1.1rem}
+}
+"""
+
+SOEGESIDE_BYGGER = SOEGESIDE_FAELLES + """.topbar{max-width:calc(1400px - 2.5rem)}
+h1 .fri{display:block;font-size:1.05rem;font-weight:600;letter-spacing:0;margin-top:.2rem}
+.grid{position:relative;margin:-2rem auto 0}
+.panel{background:var(--flade);border:1px solid var(--line);border-radius:14px;box-shadow:0 2px 10px rgba(0,0,0,.1)}
+.panel h2,.trin h3{font-weight:700}
+button.stor,button.rolig{border-radius:999px}
+button.stor:hover{background:var(--ink);border-color:var(--ink)}
+button.stor[disabled]{background:var(--line);border-color:var(--line);color:var(--muted)}
+button.rolig{border-color:var(--muted)}
+input.felt{border-color:var(--muted);border-radius:10px}
+#dropzone{border-color:var(--muted);border-radius:12px}
+iframe,.tom{border-radius:12px}
+.tom[hidden]{display:none}
+.temavalg{display:flex;flex-wrap:wrap;gap:.6rem;border:0;margin:.6rem 0 0;padding:0}
+.temaknap{flex:1 1 6.5rem;display:flex;flex-direction:column;gap:.35rem;min-height:48px;padding:.6rem .7rem;
+  background:#fff;border:2px solid var(--muted);border-radius:10px;cursor:pointer}
+.temaknap:hover{border-color:var(--accent)}
+.temaknap.valgt{border-color:var(--accent);box-shadow:inset 0 0 0 2px var(--accent)}
+.temaknap .raekke{display:flex;align-items:center;gap:.45rem;font-size:1rem}
+.temaknap input{width:1.15rem;height:1.15rem;margin:0;flex:0 0 auto}
+.temaknap .prikker{display:flex;gap:.25rem}
+.temaknap .prik{width:1.15rem;height:1.15rem;border-radius:50%;border:1px solid rgba(0,0,0,.25)}
+"""
+
+
+def soegeside_temavaelger():
+    knapper = ''
+    for noegle, navn, _, prikker in VAELGER:
+        farver = ''.join(f'<span class="prik" style="background:{c}"></span>' for c in prikker)
+        knapper += (f'        <label class="temaknap{" valgt" if noegle == "vinter" else ""}">\n'
+                    f'          <span class="raekke"><input type="radio" name="tema" value="{noegle}"'
+                    f'{" checked" if noegle == "vinter" else ""}>{navn}</span>\n'
+                    f'          <span class="prikker" aria-hidden="true">{farver}</span>\n'
+                    f'        </label>\n')
+    return ('    <div class="trin">\n      <h3>3. Vælg farver</h3>\n'
+            '      <fieldset class="temavalg">\n'
+            '        <legend class="visuelt-skjult">Farvetema til søgesiden</legend>\n'
+            + knapper +
+            '      </fieldset>\n    </div>\n\n')
+
+
+SOEGESIDE_TEMA_KODE = """/* --- Farvetema (fri udgave) --- */
+function valgtTema(){
+  const v = document.querySelector('input[name="tema"]:checked');
+  return v ? v.value : "vinter";
+}
+(function(){
+  const radioer = Array.from(document.querySelectorAll('input[name="tema"]'));
+  function vis(){
+    const tema = valgtTema();
+    document.documentElement.setAttribute("data-tema", tema);
+    radioer.forEach(r => r.closest(".temaknap").classList.toggle("valgt", r.checked));
+  }
+  let gemt = null;
+  try{ gemt = localStorage.getItem("fri-soegeside-tema"); }catch(e){}
+  radioer.forEach(r => {
+    if (r.value === gemt) r.checked = true;
+    r.addEventListener("change", () => {
+      vis();
+      try{ localStorage.setItem("fri-soegeside-tema", valgtTema()); }catch(e){}
+      opdaterForhaandsvisning();
+    });
+  });
+  vis();
+})();
+
+"""
+
+
+def soegeside_design(s, fil):
+    """Lægger det frie design på: CSS i både byggeren og skabelonen, temavælger og tema i den færdige side."""
+    dele = s.split('</style>')
+    if len(dele) != 3:
+        sys.exit(f'{fil}: forventede to <style>-blokke, fandt {len(dele) - 1}')
+    s = dele[0] + SOEGESIDE_BYGGER + '</style>' + dele[1] + SOEGESIDE_SIDEN + '</style>' + dele[2]
+    if s.count('<html lang="da">') != 2:
+        sys.exit(f'{fil}: forventede to <html lang="da">')
+    s = s.replace('<html lang="da">', '<html lang="da" data-tema="vinter">', 1)
+    s = s.replace('<html lang="da">', '<html lang="da" data-tema="__TEMA__">', 1)
+    s = ret(s, '<h1>Søgeside · Bygger</h1>', '<h1>Søgeside · Bygger <span class="fri">fri udgave</span></h1>', fil)
+    s = ret(s, '    <div class="trin">\n      <h3>3. Gem søgesiden</h3>',
+            soegeside_temavaelger() + '    <div class="trin">\n      <h3>4. Gem søgesiden</h3>', fil)
+    s = ret(s, '  return SKABELON\n    .split("__MARKER__")',
+            '  return SKABELON\n    .split("__TEMA__").join(valgtTema())\n    .split("__MARKER__")', fil)
+    s = ret(s, '/* --- Startbesked --- */', SOEGESIDE_TEMA_KODE + '/* --- Startbesked --- */', fil)
+    return s
+
+
 def lav_soegeside():
     fil = 'tools/soegeside-bygger.html'
     s = (ROD / fil).read_text(encoding='utf-8')
+    s = soegeside_design(s, fil)
     s = erstat(s, r'"Søg i lokalhistorier"', '"Søg i samlingen"', antal=3, navn=fil)
     s = erstat(s, r'aria-label="Filtrér på område"><option value="">Alle områder</option>',
                'aria-label="Filtrér på udgiver"><option value="">Alle udgivere</option>', navn=fil)
@@ -177,7 +324,7 @@ def lav_soegeside():
     s = erstat(s, r'"Uden område \("', '"Uden udgiver ("', navn=fil)
     # Kun byggerens egen titel og version, ikke titlen i den søgeside, den laver.
     s, n = re.subn(r'^<title>([^<]*)</title>', r'<title>\1 · fri udgave</title>', s, count=1, flags=re.M)
-    s = erstat(s, r'(Søgeside · Bygger — version [0-9.]+)', r'\1 · fri udgave', navn=fil)
+    s = erstat(s, r'(Søgeside · Bygger — version [0-9.]+)', r'\1 · fri udgave med eget design', navn=fil)
     (UD / 'soegeside-bygger.html').write_text(s, encoding='utf-8')
     print('Lavet: fri/soegeside-bygger.html')
 

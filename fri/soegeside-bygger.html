@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="da">
+<html lang="da" data-tema="vinter">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Søgeside · Bygger · fri udgave</title>
 <style>
 /* ---------------------------------------------------------------
-   Søgeside · Bygger — version 1.4 · fri udgave (okt. 2026)
+   Søgeside · Bygger — version 1.4 · fri udgave med eget design (okt. 2026)
    1.4: knappen "Til søgningen" kommer frem, når man er rullet langt ned.
    1.3: standardtitlen er nu "Søg i samlingen".
    1.2: henvisninger får altid 🔗-ikonet, kun http(s)-adresser bliver til links,
@@ -135,6 +135,46 @@ footer p{max-width:70ch}
   position:absolute;width:1px;height:1px;padding:0;margin:-1px;
   overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;
 }
+
+/* Fri udgave · eget design: tema, skrift og layout. Lægges på af fri/lav-fri-udgave.py. */
+:root[data-tema="vinter"]{--accent:#244A6E;--accent-lys:#2F5D8A;--paper:#EEF2F6;--paper-dim:#EEF2F6;--flade:#FFFFFF;--ink:#14202B;--muted:#5A6772;--line:#D6DEE6;--footer-strong:#14202B}
+:root[data-tema="sommer"]{--accent:#245F37;--accent-lys:#2F7A46;--paper:#FBF7EA;--paper-dim:#FBF7EA;--flade:#FFFFFF;--ink:#1F2418;--muted:#5E6553;--line:#E6DFC6;--footer-strong:#1F2418}
+:root[data-tema="hindbaer"]{--accent:#BE123C;--accent-lys:#E11D48;--paper:#F4F4F5;--paper-dim:#F4F4F5;--flade:#FFFFFF;--ink:#18181B;--muted:#52525B;--line:#E4E4E7;--footer-strong:#18181B}
+@media (prefers-contrast:more){
+  :root[data-tema]{--ink:#000;--muted:#000;--line:#555}
+}
+body{font-family:"Avenir Next","Segoe UI","Helvetica Neue",Helvetica,Roboto,"Noto Sans",Arial,sans-serif}
+h1{font-weight:700;letter-spacing:-.01em}
+header{max-width:none;margin:0;padding:2rem 1.25rem 3.5rem;background:var(--accent);color:#fff;
+  border-bottom:.4rem solid var(--accent-lys)}
+header h1,header .sub,header .tekststr .lbl{color:#fff}
+header :focus-visible{outline-color:#fff}
+.topbar{margin:0 auto}
+.tekststr button{border-color:#fff}
+.tekststr button:hover{border-color:var(--ink)}
+.tekststr button[aria-pressed="true"]{background:var(--ink);border-color:#fff;color:#fff}
+.topbar{max-width:calc(1400px - 2.5rem)}
+h1 .fri{display:block;font-size:1.05rem;font-weight:600;letter-spacing:0;margin-top:.2rem}
+.grid{position:relative;margin:-2rem auto 0}
+.panel{background:var(--flade);border:1px solid var(--line);border-radius:14px;box-shadow:0 2px 10px rgba(0,0,0,.1)}
+.panel h2,.trin h3{font-weight:700}
+button.stor,button.rolig{border-radius:999px}
+button.stor:hover{background:var(--ink);border-color:var(--ink)}
+button.stor[disabled]{background:var(--line);border-color:var(--line);color:var(--muted)}
+button.rolig{border-color:var(--muted)}
+input.felt{border-color:var(--muted);border-radius:10px}
+#dropzone{border-color:var(--muted);border-radius:12px}
+iframe,.tom{border-radius:12px}
+.tom[hidden]{display:none}
+.temavalg{display:flex;flex-wrap:wrap;gap:.6rem;border:0;margin:.6rem 0 0;padding:0}
+.temaknap{flex:1 1 6.5rem;display:flex;flex-direction:column;gap:.35rem;min-height:48px;padding:.6rem .7rem;
+  background:#fff;border:2px solid var(--muted);border-radius:10px;cursor:pointer}
+.temaknap:hover{border-color:var(--accent)}
+.temaknap.valgt{border-color:var(--accent);box-shadow:inset 0 0 0 2px var(--accent)}
+.temaknap .raekke{display:flex;align-items:center;gap:.45rem;font-size:1rem}
+.temaknap input{width:1.15rem;height:1.15rem;margin:0;flex:0 0 auto}
+.temaknap .prikker{display:flex;gap:.25rem}
+.temaknap .prik{width:1.15rem;height:1.15rem;border-radius:50%;border:1px solid rgba(0,0,0,.25)}
 </style>
 </head>
 <body>
@@ -142,7 +182,7 @@ footer p{max-width:70ch}
 <header>
 <div class="topbar">
   <div>
-    <h1>Søgeside · Bygger</h1>
+    <h1>Søgeside · Bygger <span class="fri">fri udgave</span></h1>
     <p class="sub">Vælg mappen med dine færdige HTML-filer. Værktøjet laver en søgeside,
     du kan lægge i samme mappe. Alt foregår på din egen computer.</p>
   </div>
@@ -177,7 +217,26 @@ footer p{max-width:70ch}
     </div>
 
     <div class="trin">
-      <h3>3. Gem søgesiden</h3>
+      <h3>3. Vælg farver</h3>
+      <fieldset class="temavalg">
+        <legend class="visuelt-skjult">Farvetema til søgesiden</legend>
+        <label class="temaknap valgt">
+          <span class="raekke"><input type="radio" name="tema" value="vinter" checked>Vinter</span>
+          <span class="prikker" aria-hidden="true"><span class="prik" style="background:#2F5D8A"></span><span class="prik" style="background:#BFD7EA"></span><span class="prik" style="background:#EEF2F6"></span></span>
+        </label>
+        <label class="temaknap">
+          <span class="raekke"><input type="radio" name="tema" value="sommer">Sommer</span>
+          <span class="prikker" aria-hidden="true"><span class="prik" style="background:#2F7A46"></span><span class="prik" style="background:#F4C542"></span><span class="prik" style="background:#FBF7EA"></span></span>
+        </label>
+        <label class="temaknap">
+          <span class="raekke"><input type="radio" name="tema" value="hindbaer">Hindbær</span>
+          <span class="prikker" aria-hidden="true"><span class="prik" style="background:#E11D48"></span><span class="prik" style="background:#18181B"></span><span class="prik" style="background:#F4F4F5"></span></span>
+        </label>
+      </fieldset>
+    </div>
+
+    <div class="trin">
+      <h3>4. Gem søgesiden</h3>
       <button type="button" class="stor" id="gem" disabled>Gem søgeside</button>
       <p class="hint" id="gemHint">Vælg først en mappe.</p>
     </div>
@@ -220,7 +279,7 @@ const OUTPUT_NAME = "soegeside.html";
 
 const SKABELON = `<!-- __MARKER__ -->
 <!DOCTYPE html>
-<html lang="da">
+<html lang="da" data-tema="__TEMA__">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -324,6 +383,47 @@ footer{max-width:1100px;margin:0 auto;padding:.6rem 1.25rem 3rem;color:var(--mut
 .optil:hover{text-decoration:underline}
 .optil svg{width:1.25rem;height:1.25rem;flex:0 0 auto}
 @media print{.optil{display:none}}
+
+/* Fri udgave · eget design: tema, skrift og layout. Lægges på af fri/lav-fri-udgave.py. */
+:root[data-tema="vinter"]{--accent:#244A6E;--accent-lys:#2F5D8A;--paper:#EEF2F6;--paper-dim:#EEF2F6;--flade:#FFFFFF;--ink:#14202B;--muted:#5A6772;--line:#D6DEE6;--footer-strong:#14202B}
+:root[data-tema="sommer"]{--accent:#245F37;--accent-lys:#2F7A46;--paper:#FBF7EA;--paper-dim:#FBF7EA;--flade:#FFFFFF;--ink:#1F2418;--muted:#5E6553;--line:#E6DFC6;--footer-strong:#1F2418}
+:root[data-tema="hindbaer"]{--accent:#BE123C;--accent-lys:#E11D48;--paper:#F4F4F5;--paper-dim:#F4F4F5;--flade:#FFFFFF;--ink:#18181B;--muted:#52525B;--line:#E4E4E7;--footer-strong:#18181B}
+@media (prefers-contrast:more){
+  :root[data-tema]{--ink:#000;--muted:#000;--line:#555}
+}
+body{font-family:"Avenir Next","Segoe UI","Helvetica Neue",Helvetica,Roboto,"Noto Sans",Arial,sans-serif}
+h1{font-weight:700;letter-spacing:-.01em}
+header{max-width:none;margin:0;padding:2rem 1.25rem 3.5rem;background:var(--accent);color:#fff;
+  border-bottom:.4rem solid var(--accent-lys)}
+header h1,header .sub,header .tekststr .lbl{color:#fff}
+header :focus-visible{outline-color:#fff}
+.topbar{margin:0 auto}
+.tekststr button{border-color:#fff}
+.tekststr button:hover{border-color:var(--ink)}
+.tekststr button[aria-pressed="true"]{background:var(--ink);border-color:#fff;color:#fff}
+.topbar{max-width:calc(1100px - 2.5rem)}
+.controls{position:relative;width:calc(100% - 2.5rem);max-width:calc(1100px - 2.5rem);margin:-2rem auto 0;
+  padding:1rem;background:var(--flade);border:1px solid var(--line);border-radius:14px;
+  box-shadow:0 2px 10px rgba(0,0,0,.1)}
+.controls input,.controls select{border-color:var(--muted);border-radius:10px}
+.controls input{flex:1 1 100%;min-height:58px;font-size:1.2rem}
+.controls select{flex:1 1 11rem}
+.count{margin-top:1.2rem}
+a.row{background:var(--flade);border:1px solid var(--line);border-radius:12px;
+  padding:1.1rem 1.15rem;margin-bottom:.75rem;align-items:center}
+a.row:hover{border-color:var(--accent)}
+.icon{display:flex;align-items:center;justify-content:center;flex:0 0 2.8rem;height:2.8rem;
+  background:var(--paper);border-radius:50%;font-size:1.3rem;line-height:1}
+.col-main .t{color:var(--accent);font-weight:700}
+.col-type{background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:.15rem .75rem}
+footer{border-top:1px solid var(--line);padding-top:1.2rem}
+@media(max-width:640px){
+  header{padding:1.5rem 1rem 3.25rem}
+  .controls{width:calc(100% - 2rem);padding:.75rem}
+  .controls input,.controls select{flex:1 1 100%}
+  a.row{padding:1rem .8rem;align-items:flex-start}
+  .icon{flex:0 0 2.2rem;height:2.2rem;font-size:1.1rem}
+}
 </style>
 </head>
 <body>
@@ -786,6 +886,7 @@ function byg(){
   json = json.replace(/<\/script/gi, "<\\/script");
 
   return SKABELON
+    .split("__TEMA__").join(valgtTema())
     .split("__MARKER__").join(MARKER)
     .split("__TITEL__").join(escapeHtml(titel))
     .split("__UNDERTITEL__").join(under ? escapeHtml(under) + " · " : "")
@@ -1008,6 +1109,31 @@ let ventetid = null;
   try{ gemt = localStorage.getItem("lokalhist-tekst"); }catch(e){}
   if (gemt) saet(gemt, false);
   knapper.forEach(k => k.addEventListener("click", () => saet(k.dataset.str, true)));
+})();
+
+/* --- Farvetema (fri udgave) --- */
+function valgtTema(){
+  const v = document.querySelector('input[name="tema"]:checked');
+  return v ? v.value : "vinter";
+}
+(function(){
+  const radioer = Array.from(document.querySelectorAll('input[name="tema"]'));
+  function vis(){
+    const tema = valgtTema();
+    document.documentElement.setAttribute("data-tema", tema);
+    radioer.forEach(r => r.closest(".temaknap").classList.toggle("valgt", r.checked));
+  }
+  let gemt = null;
+  try{ gemt = localStorage.getItem("fri-soegeside-tema"); }catch(e){}
+  radioer.forEach(r => {
+    if (r.value === gemt) r.checked = true;
+    r.addEventListener("change", () => {
+      vis();
+      try{ localStorage.setItem("fri-soegeside-tema", valgtTema()); }catch(e){}
+      opdaterForhaandsvisning();
+    });
+  });
+  vis();
 })();
 
 /* --- Startbesked --- */
