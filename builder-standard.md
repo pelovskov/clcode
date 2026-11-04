@@ -1,7 +1,7 @@
 # Builder-standard
 
 **Fælles specifikation for værktøjskassen**
-Version 2.21 · november 2026
+Version 2.22 · november 2026
 
 Referenceimplementering: **Sidebygger** (`side-bygger.html`, version 1.5).
 Når noget er i tvivl, er det referencefilen der gælder.
@@ -45,7 +45,7 @@ Metadata-hjælper laver ingen outputfil og har derfor hverken temaer, forhåndsv
 
 Søgeside · Bygger (`tools/soegeside-bygger.html`, v1.4) og Søgeindeks · Online (`sbtv/`, den samme søgeside med login, upload og administration på et webhotel med PHP) er værktøjer, ikke byggere. De læser metadata fra byggernes filer (`builder-source-data` med de 15 Dublin Core-felter), men laver ikke selv en fil efter afsnit 5 og har derfor hverken temaer, Dublin Core-panel eller byggernes udseende. De følger standarden på disse punkter: `?hjem=` sendes med til filerne (5.3), `dc.publisher` vises som *Område* med valget **Uden område** (4.1), og en henvisning kendes på sin `link` og vises med 🔗, uanset `dc.type`. Kun `http(s)`-adresser bliver til links.
 
-**Lokalhistorier · fri udgave** (`fri/`) er en udgave af byggerne til enkeltpersoner, skoler og institutioner uden for den fælles portal. Den laves af opskriften `fri/lav-fri-udgave.py` ud fra de almindelige byggere og følger standarden med disse undtagelser: `dc.publisher` er et tekstfelt i stedet for `PUBLISHERS` (4.1), der er kun temaerne Vinter og Sommer i stedet for afsnit 3's temaer, udgiveren sættes ikke ind som første emneord, og identifikatoren har intet præfiks, fx `album-sommerlejren-2026`. Filformatet er det samme som i de almindelige byggere.
+**Lokalhistorier · fri udgave** (`fri/`) er en udgave af byggerne til enkeltpersoner, skoler og institutioner uden for den fælles portal. Den laves af opskriften `fri/lav-fri-udgave.py` ud fra de almindelige byggere og følger standarden med disse undtagelser: `dc.publisher` er et tekstfelt i stedet for `PUBLISHERS` (4.1), der er kun temaerne Vinter, Sommer og Hindbær i stedet for afsnit 3's temaer, udgiveren sættes ikke ind som første emneord, og identifikatoren har intet præfiks, fx `album-sommerlejren-2026`. Filformatet er det samme som i de almindelige byggere.
 
 Søgeindeks · Online lægger aldrig `config.php` og `data/` i repoet. Repoet er offentligt, og de to dele indeholder adgangskoder og driftsdata. Brug `sbtv/config-eksempel.php` som skabelon.
 
@@ -744,6 +744,9 @@ Udgiverlisten i prompten skal altid svare til `PUBLISHERS` i 4.1. Kommer der en 
 
 ## 12. Ændringslog
 
+**Version 2.22 — november 2026.**
+- Lokalhistorier · fri udgave får et tredje tema, **Hindbær** (`hindbaer`), efter ønske fra en bruger: hindbærrød accent (#E11D48), lys grå baggrund (#F4F4F5) og næsten sort tekst (#18181B). I mørk tilstand er baggrunden #18181B og teksten #FAFAFA. Som de andre temaer beholder det accentfarven i mørk tilstand; en egen accentfarve i mørk tilstand for alle temaer står på listen over åbne punkter.
+
 **Version 2.21 — november 2026.**
 - Afsnit 5.8: SFB-afspilleren (v0.9) viser et galleriarkiv fra en zip-fil. Kun hovedalbummet bliver et kort; sider med `overordnet` springes over, også når zip-filen er lavet uden den øverste mappe. Prøven med Roskilde Domkirke er gennemført.
 - `CLAUDE.md` nævner Galleriarkiv som et værktøj, der skal ligge på galleriets adresse.
@@ -915,6 +918,9 @@ Udgiverlisten i prompten skal altid svare til `PUBLISHERS` i 4.1. Kommer der en 
 1. ~~Forslaget drøftes, og de åbne spørgsmål afgøres.~~ Afgjort i november 2026 (se 5.8).
 2. ~~Værktøjet laves og prøves på Roskilde Domkirke (`index.php?/category/48`, hovedalbum med 8 underalbum, 572 billeder).~~ `tools/galleriarkiv.html` er lavet (v1.0, version 2.20). Domkirken med alle underalbum blev hentet uden problemer i november 2026 over en 5G-forbindelse, og arkivet ser fint ud fra disken.
 3. SFB-afspilleren viser et galleriarkiv fra version 0.9. Tilbage står at afgøre, om flere album skal med.
+
+**Accentfarve i mørk tilstand:**
+- Temaerne beholder i dag accentfarven i mørk tilstand. Røde, grønne, blå og orange accentfarver er derfor svage som tekst og links på mørk baggrund (fx Vinter 2,7:1, Sommer 3,4:1 og Hindbær 3,8:1, hvor kravet er 4,5:1). Forslag: hvert tema får en egen, lysere accentfarve til mørk tilstand (`dAccent`) og en tekstfarve til knapperne (`dOnAccent`), fx #FB7185 med mørk tekst #18181B til Hindbær. Det kræver en ændring i alle byggere og laves for alle temaer på én gang.
 
 **Afklares, når byggeren tages op:**
 - dc.type for Vejledning og PWA.

@@ -6,7 +6,7 @@ Den frie udgave er til enkeltpersoner, skoler og institutioner, som ikke er
 med i den fælles portal. Forskellene fra de almindelige byggere:
 
 - Udgiveren skrives i et almindeligt tekstfelt i stedet for at vælges på en liste.
-- Kun to farvetemaer: Vinter og Sommer.
+- Kun tre farvetemaer: Vinter, Sommer og Hindbær.
 - Udgiveren sættes ikke ind som første emneord, og identifikatoren har
   intet foreningspræfiks, fx "side-sommerlejren-2026".
 - Foreningernes særlige ting er fjernet, fx Sidebyggerens faste serier.
@@ -53,12 +53,21 @@ THEMES = """const THEMES = {
     muted:'#5E6553', line:'#E6DFC6', quote:'#434A39',
     dPaper:'#14170F', dSurface:'#1C2016', dInk:'#F2F0E4', dBody:'#E1DFD0',
     dMuted:'#A8AC98', dLine:'#33392A', dQuote:'#C3C6B2'
+  },
+  hindbaer: {
+    label:'Hindbær',
+    accent:'#E11D48', accentDark:'#BE123C', onAccent:'#FFFFFF',
+    paper:'#F4F4F5', surface:'#FFFFFF', ink:'#18181B', body:'#27272A',
+    muted:'#52525B', line:'#E4E4E7', quote:'#3F3F46',
+    dPaper:'#18181B', dSurface:'#232327', dInk:'#FAFAFA', dBody:'#E4E4E7',
+    dMuted:'#A1A1AA', dLine:'#3F3F46', dQuote:'#D4D4D8'
   }
 };"""
 
 VAELGER = [
     ('vinter', 'Vinter', '#2F5D8A', ['#2F5D8A', '#BFD7EA', '#EEF2F6']),
     ('sommer', 'Sommer', '#2F7A46', ['#2F7A46', '#F4C542', '#FBF7EA']),
+    ('hindbaer', 'Hindbær', '#E11D48', ['#E11D48', '#18181B', '#F4F4F5']),
 ]
 
 UDGIVER_FELT = ('<input type="text" id="dcPublisher" '
@@ -103,7 +112,7 @@ def lav(fil):
     # Identifikator uden foreningspræfiks.
     s = erstat(s, r"\(prefix && name\) \? \(prefix \+ '-", "(name) ? ('", navn=fil)
 
-    # --- Temaer: kun Vinter og Sommer ---
+    # --- Temaer: kun Vinter, Sommer og Hindbær ---
     s = erstat(s, r'(?:const|var) THEMES = \{.*?\n\};', THEMES, navn=fil)
     s = (s.replace('THEMES.original', 'THEMES.vinter')
           .replace(": 'original';", ": 'vinter';")
@@ -115,7 +124,7 @@ def lav(fil):
         sys.exit(f"{fil}: der står stadig 'original' et sted")
     if fil == 'foer-og-nu-bygger.html':
         # Før og Nu bygger temavælgeren i JavaScript ud fra THEMES og THEME_NAMES.
-        s = erstat(s, r'var THEME_NAMES = \{[^\n]*\};', "var THEME_NAMES = { vinter:'Vinter', sommer:'Sommer' };", navn=fil)
+        s = erstat(s, r'var THEME_NAMES = \{[^\n]*\};', "var THEME_NAMES = { vinter:'Vinter', sommer:'Sommer', hindbaer:'Hindbær' };", navn=fil)
     labels = re.findall(r'( *)<label class="theme-option" data-theme="(\w+)".*?</label>\n', s, re.S)
     if not labels and fil != 'foer-og-nu-bygger.html':
         sys.exit(f'{fil}: fandt ikke temavælgeren')

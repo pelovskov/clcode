@@ -9,7 +9,7 @@ Start med at åbne **`index.html`**. Den er forsiden med links til det hele.
 Den frie udgave er lavet ud fra de samme byggere, som foreningerne i den fælles portal bruger, med disse forskelle:
 
 - **Udgiveren skriver man selv,** fx "7.b, Roskilde Lille Skole" eller sit eget navn. Der er ingen liste over foreninger.
-- **Der er to farvetemaer,** Vinter (blå) og Sommer (grøn), begge med lys og mørk tilstand.
+- **Der er tre farvetemaer,** Vinter (blå), Sommer (grøn) og Hindbær (rød), alle med lys og mørk tilstand.
 - **Identifikatoren har intet foreningspræfiks,** fx `album-sommerlejren-2026`.
 - **Emneordene er dem, man selv skriver.** Udgiveren sættes ikke ind som første emneord, og de fælles emneord er ikke et krav. Siden `emneord.html` giver forslag: foreningernes fælles emneord uden dem, der kun gælder Roskilde.
 - **Foreningernes særlige ting er fjernet,** fx Sidebyggerens faste serier og foreningernes farver.
