@@ -30,6 +30,8 @@ Filformatet er det samme. En fil fra den frie udgave kan derfor åbnes i forenin
 
 Hele mappen kan kopieres til et USB-stik eller lægges på en hjemmeside. Alt virker uden internet.
 
+Søgeside · Bygger og de færdige søgesider har knappen **Gem det hele som zip-fil**. Den samler søgesiden og dens filer i én zip-fil. På en søgeside bliver du bedt om at vælge den mappe, hvor søgesiden ligger.
+
 Ligger mappen på en hjemmeside, viser forsiden knappen **Hent det hele som zip-fil**. Den henter `lokalhistorier-fri-udgave.zip` med forsiden, byggerne, værktøjerne og denne vejledning. Pak zip-filen ud, og åbn `index.html`. I en udpakket kopi er knappen skjult, fordi zip-filen ikke ligger i den.
 
 ## Til den, der vedligeholder

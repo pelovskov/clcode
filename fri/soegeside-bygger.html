@@ -175,6 +175,7 @@ iframe,.tom{border-radius:12px}
 .temaknap input{width:1.15rem;height:1.15rem;margin:0;flex:0 0 auto}
 .temaknap .prikker{display:flex;gap:.25rem}
 .temaknap .prik{width:1.15rem;height:1.15rem;border-radius:50%;border:1px solid rgba(0,0,0,.25)}
+button.rolig[disabled]{border-color:var(--line);color:var(--muted);cursor:not-allowed}
 </style>
 </head>
 <body>
@@ -239,6 +240,8 @@ iframe,.tom{border-radius:12px}
       <h3>4. Gem søgesiden</h3>
       <button type="button" class="stor" id="gem" disabled>Gem søgeside</button>
       <p class="hint" id="gemHint">Vælg først en mappe.</p>
+      <button type="button" class="rolig" id="gemZip" disabled>Gem det hele som zip-fil</button>
+      <p class="hint">Søgesiden og filerne samlet i én fil, fx til et USB-stik eller en anden computer.</p>
     </div>
 
     <div class="status" id="status" role="status" aria-live="polite"></div>
@@ -424,6 +427,17 @@ footer{border-top:1px solid var(--line);padding-top:1.2rem}
   a.row{padding:1rem .8rem;align-items:flex-start}
   .icon{flex:0 0 2.2rem;height:2.2rem;font-size:1.1rem}
 }
+.zipboks{max-width:1100px;margin:0 auto 2rem;padding:0 1.25rem;font-size:1.05rem}
+.zipboks[hidden]{display:none}
+.zipboks h2{font-size:1.25rem;margin:0 0 .3rem}
+.zipboks p{margin:0 0 .7rem;max-width:70ch;color:var(--muted)}
+.zipboks button{font-family:inherit;font-size:1.05rem;min-height:48px;padding:.5rem 1.25rem;cursor:pointer;
+  background:var(--flade);color:var(--accent);border:2px solid var(--accent);border-radius:999px}
+.zipboks button:hover{background:var(--accent);color:#fff}
+.zipboks button[disabled]{opacity:.6;cursor:wait}
+.zipboks .zipstatus{margin:.7rem 0 0;color:var(--ink);word-break:break-word}
+.zipboks .zipstatus:empty{display:none}
+@media print{.zipboks{display:none}}
 </style>
 </head>
 <body>
@@ -458,6 +472,13 @@ footer{border-top:1px solid var(--line);padding-top:1.2rem}
 
 <p class="count" id="count" role="status" aria-live="polite"></p>
 <div class="list" id="list"></div>
+
+<section class="zipboks" id="zipboks" aria-labelledby="ziptitel">
+<h2 id="ziptitel">Gem hele samlingen</h2>
+<p>Saml søgesiden og alle filerne i én zip-fil, fx til et USB-stik eller en anden computer. Du bliver bedt om at vælge den mappe, hvor søgesiden ligger. Der sendes ikke noget nogen steder hen.</p>
+<button type="button" id="zipknap">Gem det hele som zip-fil</button>
+<p class="zipstatus" id="zipstatus" role="status" aria-live="polite"></p>
+</section>
 
 <footer>
 Denne side er selvstændig og indeholder alt indhold direkte i filen. Byg søgesiden
@@ -756,6 +777,208 @@ render();
   });
   tjek();
 })();
+
+/* ---- Zip-fil (fri udgave) ----
+   Pakker uden komprimering (standardens 5.7, regel 8). Billeder, lyd og video er
+   allerede komprimeret. Filerne læses i bidder, så også store filer kan være med.
+   Alt foregår i browseren. Der sendes ikke noget nogen steder hen. */
+const ZIP_TABEL = (function(){
+  const t = [];
+  for(let n = 0; n < 256; n++){
+    let c = n;
+    for(let k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+    t[n] = c >>> 0;
+  }
+  return t;
+})();
+
+/* Kontroltal for en fil. Zip-formatet kræver det, og udpakningen bruger det. */
+async function zipKontrol(file){
+  const BID = 4 * 1024 * 1024;
+  let crc = 0xFFFFFFFF;
+  for(let i = 0; i < file.size; i += BID){
+    const b = new Uint8Array(await file.slice(i, i + BID).arrayBuffer());
+    for(let j = 0; j < b.length; j++) crc = ZIP_TABEL[(crc ^ b[j]) & 255] ^ (crc >>> 8);
+  }
+  return (crc ^ 0xFFFFFFFF) >>> 0;
+}
+
+/* Kun almindelige relative stier må komme med, aldrig fx ../ eller C: */
+function zipSikkerSti(s){
+  s = String(s || "");
+  if(!s || s.indexOf(":") !== -1 || s.indexOf(String.fromCharCode(92)) !== -1) return false;
+  return s.split("/").every(d => d && d !== "." && d !== "..");
+}
+
+/* Mediefiler, der ligger ved siden af filen, og som filen selv opgiver (standardens 5.7). */
+function zipMedier(data){
+  if(!data || !Array.isArray(data.media)) return [];
+  return data.media.map(m => m && m.fil).filter(zipSikkerSti);
+}
+
+async function zipFraMappe(handle, sti){
+  const dele = sti.split("/");
+  try{
+    let h = handle;
+    for(let i = 0; i < dele.length - 1; i++) h = await h.getDirectoryHandle(dele[i]);
+    const fh = await h.getFileHandle(dele[dele.length - 1]);
+    return await fh.getFile();
+  }catch(e){ return null; }
+}
+
+/* Filer valgt med browserens filfelt: stien regnes fra den valgte mappe. */
+function zipKort(filer){
+  const kort = new Map();
+  filer.forEach(f => {
+    const dele = (f.webkitRelativePath || f.name).split("/");
+    if(dele.length > 1) dele.shift();
+    kort.set(dele.join("/"), f);
+  });
+  return kort;
+}
+
+async function zipFind(liste, find){
+  const filer = [], mangler = [], sete = new Set();
+  for(const p of liste){
+    for(const sti of [p.filnavn].concat(p.medier || [])){
+      if(!zipSikkerSti(sti) || sete.has(sti)) continue;
+      sete.add(sti);
+      const file = await find(sti);
+      if(file) filer.push({sti: sti, file: file}); else mangler.push(sti);
+    }
+  }
+  return {filer: filer, mangler: mangler};
+}
+
+function zipMappenavn(titel){
+  const s = String(titel || "").toLowerCase()
+    .replace(/æ/g, "ae").replace(/ø/g, "oe").replace(/å/g, "aa")
+    .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60);
+  return s || "soegeside";
+}
+
+/* Laver selve zip-filen. Filerne bliver ikke lagt i hukommelsen, kun henvist til. */
+async function zipLav(filer, mappe, vis){
+  const tekst = new TextEncoder(), dele = [], central = [];
+  const nu = new Date();
+  const tid = (nu.getHours() << 11) | (nu.getMinutes() << 5) | (nu.getSeconds() >> 1);
+  const dato = ((nu.getFullYear() - 1980) << 9) | ((nu.getMonth() + 1) << 5) | nu.getDate();
+  let pos = 0, centralStr = 0;
+
+  for(let i = 0; i < filer.length; i++){
+    const f = filer[i];
+    vis("Pakker fil " + (i + 1) + " af " + filer.length + ": " + f.sti);
+    const navn = tekst.encode(mappe + "/" + f.sti);
+    const crc = await zipKontrol(f.file);
+    const str = f.file.size;
+
+    const h = new Uint8Array(30 + navn.length), v = new DataView(h.buffer);
+    v.setUint32(0, 0x04034b50, true); v.setUint16(4, 20, true); v.setUint16(6, 0x0800, true);
+    v.setUint16(8, 0, true); v.setUint16(10, tid, true); v.setUint16(12, dato, true);
+    v.setUint32(14, crc, true); v.setUint32(18, str, true); v.setUint32(22, str, true);
+    v.setUint16(26, navn.length, true); v.setUint16(28, 0, true);
+    h.set(navn, 30);
+
+    const c = new Uint8Array(46 + navn.length), w = new DataView(c.buffer);
+    w.setUint32(0, 0x02014b50, true); w.setUint16(4, 20, true); w.setUint16(6, 20, true);
+    w.setUint16(8, 0x0800, true); w.setUint16(10, 0, true); w.setUint16(12, tid, true);
+    w.setUint16(14, dato, true); w.setUint32(16, crc, true); w.setUint32(20, str, true);
+    w.setUint32(24, str, true); w.setUint16(28, navn.length, true); w.setUint32(42, pos, true);
+    c.set(navn, 46);
+
+    dele.push(h, f.file);
+    central.push(c);
+    pos += h.length + str;
+    centralStr += c.length;
+  }
+
+  const e = new Uint8Array(22), x = new DataView(e.buffer);
+  x.setUint32(0, 0x06054b50, true); x.setUint16(8, filer.length, true); x.setUint16(10, filer.length, true);
+  x.setUint32(12, centralStr, true); x.setUint32(16, pos, true);
+  return new Blob(dele.concat(central, [e]), {type: "application/zip"});
+}
+
+/* Giver besked og henter zip-filen ned. Formatet kan højst rumme ca. 4 GB. */
+async function zipHent(fund, titel, vis){
+  let i_alt = 0;
+  fund.filer.forEach(f => { i_alt += f.file.size + 200; });
+  if(i_alt >= 0xFFFFFFFF || fund.filer.length >= 65000){
+    vis("Der er for meget til én zip-fil. Den kan højst rumme ca. 4 GB. Kopiér i stedet hele mappen, fx til et USB-stik.");
+    return;
+  }
+  const mappe = zipMappenavn(titel);
+  const blob = await zipLav(fund.filer, mappe, vis);
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = mappe + ".zip";
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 120000);
+  let besked = mappe + ".zip er hentet ned med " + fund.filer.length + " filer. Pak den ud, og åbn søgesiden.";
+  if(fund.mangler.length){
+    besked += " Disse filer kunne ikke findes og er ikke med: " + fund.mangler.join(", ") + ".";
+  }
+  vis(besked);
+}
+
+(function(){
+  const boks = document.getElementById("zipboks");
+  const knap = document.getElementById("zipknap");
+  const status = document.getElementById("zipstatus");
+  const felt = document.createElement("input");
+  felt.type = "file";
+  felt.webkitdirectory = true;
+  felt.hidden = true;
+  document.body.appendChild(felt);
+
+  const online = location.protocol === "http:" || location.protocol === "https:";
+  if(online || (!window.showDirectoryPicker && !("webkitdirectory" in felt))){
+    boks.hidden = true;
+    return;
+  }
+  const vis = t => { status.textContent = t; };
+
+  async function pak(find){
+    knap.disabled = true;
+    try{
+      const egen = await find(MIG);
+      const fund = await zipFind(DATA, find);
+      if(!egen && !fund.filer.length){
+        vis("Der er ingen af samlingens filer i den mappe. Vælg den mappe, hvor søgesiden ligger.");
+        return;
+      }
+      if(egen) fund.filer.unshift({sti: MIG, file: egen});
+      else fund.mangler.unshift(MIG);
+      await zipHent(fund, document.title, vis);
+    }catch(e){
+      vis("Zip-filen kunne ikke laves. Prøv igen, eller kopiér i stedet hele mappen.");
+    }finally{
+      knap.disabled = false;
+    }
+  }
+
+  knap.addEventListener("click", async () => {
+    if(location.protocol === "about:"){
+      vis("Her i forhåndsvisningen virker knappen ikke. Den virker i den færdige søgeside.");
+      return;
+    }
+    if(window.showDirectoryPicker){
+      try{
+        const h = await window.showDirectoryPicker({mode: "read"});
+        await pak(sti => zipFraMappe(h, sti));
+        return;
+      }catch(e){
+        if(e && e.name === "AbortError") return;
+      }
+    }
+    felt.click();
+  });
+
+  felt.addEventListener("change", async () => {
+    const kort = zipKort(Array.from(felt.files));
+    await pak(async sti => kort.get(sti) || null);
+    felt.value = "";
+  });
+})();
 <\/script>
 </body>
 </html>`;
@@ -839,7 +1062,8 @@ async function laesPost(navn, file){
   const dc = (data && (data.dublinCore || data.dc)) || {};
   const post = {filnavn: navn,
                 link: /^https?:\/\//i.test(String((data && data.link) || "").trim()) ? String(data.link).trim() : "",
-                appformat: (data && (data.format || data.builder)) || ""};
+                appformat: (data && (data.format || data.builder)) || "",
+                medier: zipMedier(data)};
   DC_FIELDS.forEach(f => post[f] = String(dc[f] || "").trim());
   if (!post.title) post.title = navn.replace(/\.html?$/i, "");
   return {post};
@@ -849,6 +1073,7 @@ async function behandl(filer){
   saetStatus("Læser filerne …");
   poster = [];
   sprunget = [];
+  valgteFiler = filer;
 
   filer.sort((a,b) => a.navn.localeCompare(b.navn, "da"));
 
@@ -921,6 +1146,7 @@ function visResultat(){
   if (!poster.length){
     saetStatus('<span class="fejl">Der blev ikke fundet nogen filer med metadata i mappen.</span>');
     document.getElementById("gem").disabled = true;
+    document.getElementById("gemZip").disabled = true;
     document.getElementById("gemHint").textContent =
       "Filerne skal være lavet med et af Bygger-værktøjerne.";
     opdaterForhaandsvisning();
@@ -953,6 +1179,7 @@ function visResultat(){
   plads.appendChild(d);
 
   document.getElementById("gem").disabled = false;
+  document.getElementById("gemZip").disabled = false;
   document.getElementById("gemHint").textContent = mappeHandle
     ? "Søgesiden bliver lagt direkte i mappen som soegeside.html."
     : "Søgesiden bliver hentet ned. Læg den bagefter i den samme mappe som filerne.";
@@ -992,6 +1219,7 @@ document.body.appendChild(mappeInput);
 mappeInput.addEventListener("change", async () => {
   mappeHandle = null;
   const alle = Array.from(mappeInput.files);
+  zipValgt = zipKort(alle);
   // kun filer der ligger direkte i den valgte mappe, ikke i undermapper
   const top = alle.filter(f => {
     const dele = (f.webkitRelativePath || f.name).split("/");
@@ -1014,6 +1242,7 @@ document.body.appendChild(filInput);
 document.getElementById("vaelgFiler").addEventListener("click", () => filInput.click());
 filInput.addEventListener("change", async () => {
   mappeHandle = null;
+  zipValgt = null;
   document.getElementById("mappeHint").textContent = "Valgte filer: " + filInput.files.length;
   await behandl(Array.from(filInput.files).map(f => ({navn: f.name, file: f})));
 });
@@ -1029,6 +1258,7 @@ const zone = document.getElementById("dropzone");
 
 zone.addEventListener("drop", async e => {
   mappeHandle = null;
+  zipValgt = null;
   const items = Array.from(e.dataTransfer.items || []);
   const filer = [];
 
@@ -1135,6 +1365,167 @@ function valgtTema(){
   });
   vis();
 })();
+
+/* ---- Zip-fil (fri udgave) ----
+   Pakker uden komprimering (standardens 5.7, regel 8). Billeder, lyd og video er
+   allerede komprimeret. Filerne læses i bidder, så også store filer kan være med.
+   Alt foregår i browseren. Der sendes ikke noget nogen steder hen. */
+const ZIP_TABEL = (function(){
+  const t = [];
+  for(let n = 0; n < 256; n++){
+    let c = n;
+    for(let k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+    t[n] = c >>> 0;
+  }
+  return t;
+})();
+
+/* Kontroltal for en fil. Zip-formatet kræver det, og udpakningen bruger det. */
+async function zipKontrol(file){
+  const BID = 4 * 1024 * 1024;
+  let crc = 0xFFFFFFFF;
+  for(let i = 0; i < file.size; i += BID){
+    const b = new Uint8Array(await file.slice(i, i + BID).arrayBuffer());
+    for(let j = 0; j < b.length; j++) crc = ZIP_TABEL[(crc ^ b[j]) & 255] ^ (crc >>> 8);
+  }
+  return (crc ^ 0xFFFFFFFF) >>> 0;
+}
+
+/* Kun almindelige relative stier må komme med, aldrig fx ../ eller C: */
+function zipSikkerSti(s){
+  s = String(s || "");
+  if(!s || s.indexOf(":") !== -1 || s.indexOf(String.fromCharCode(92)) !== -1) return false;
+  return s.split("/").every(d => d && d !== "." && d !== "..");
+}
+
+/* Mediefiler, der ligger ved siden af filen, og som filen selv opgiver (standardens 5.7). */
+function zipMedier(data){
+  if(!data || !Array.isArray(data.media)) return [];
+  return data.media.map(m => m && m.fil).filter(zipSikkerSti);
+}
+
+async function zipFraMappe(handle, sti){
+  const dele = sti.split("/");
+  try{
+    let h = handle;
+    for(let i = 0; i < dele.length - 1; i++) h = await h.getDirectoryHandle(dele[i]);
+    const fh = await h.getFileHandle(dele[dele.length - 1]);
+    return await fh.getFile();
+  }catch(e){ return null; }
+}
+
+/* Filer valgt med browserens filfelt: stien regnes fra den valgte mappe. */
+function zipKort(filer){
+  const kort = new Map();
+  filer.forEach(f => {
+    const dele = (f.webkitRelativePath || f.name).split("/");
+    if(dele.length > 1) dele.shift();
+    kort.set(dele.join("/"), f);
+  });
+  return kort;
+}
+
+async function zipFind(liste, find){
+  const filer = [], mangler = [], sete = new Set();
+  for(const p of liste){
+    for(const sti of [p.filnavn].concat(p.medier || [])){
+      if(!zipSikkerSti(sti) || sete.has(sti)) continue;
+      sete.add(sti);
+      const file = await find(sti);
+      if(file) filer.push({sti: sti, file: file}); else mangler.push(sti);
+    }
+  }
+  return {filer: filer, mangler: mangler};
+}
+
+function zipMappenavn(titel){
+  const s = String(titel || "").toLowerCase()
+    .replace(/æ/g, "ae").replace(/ø/g, "oe").replace(/å/g, "aa")
+    .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60);
+  return s || "soegeside";
+}
+
+/* Laver selve zip-filen. Filerne bliver ikke lagt i hukommelsen, kun henvist til. */
+async function zipLav(filer, mappe, vis){
+  const tekst = new TextEncoder(), dele = [], central = [];
+  const nu = new Date();
+  const tid = (nu.getHours() << 11) | (nu.getMinutes() << 5) | (nu.getSeconds() >> 1);
+  const dato = ((nu.getFullYear() - 1980) << 9) | ((nu.getMonth() + 1) << 5) | nu.getDate();
+  let pos = 0, centralStr = 0;
+
+  for(let i = 0; i < filer.length; i++){
+    const f = filer[i];
+    vis("Pakker fil " + (i + 1) + " af " + filer.length + ": " + f.sti);
+    const navn = tekst.encode(mappe + "/" + f.sti);
+    const crc = await zipKontrol(f.file);
+    const str = f.file.size;
+
+    const h = new Uint8Array(30 + navn.length), v = new DataView(h.buffer);
+    v.setUint32(0, 0x04034b50, true); v.setUint16(4, 20, true); v.setUint16(6, 0x0800, true);
+    v.setUint16(8, 0, true); v.setUint16(10, tid, true); v.setUint16(12, dato, true);
+    v.setUint32(14, crc, true); v.setUint32(18, str, true); v.setUint32(22, str, true);
+    v.setUint16(26, navn.length, true); v.setUint16(28, 0, true);
+    h.set(navn, 30);
+
+    const c = new Uint8Array(46 + navn.length), w = new DataView(c.buffer);
+    w.setUint32(0, 0x02014b50, true); w.setUint16(4, 20, true); w.setUint16(6, 20, true);
+    w.setUint16(8, 0x0800, true); w.setUint16(10, 0, true); w.setUint16(12, tid, true);
+    w.setUint16(14, dato, true); w.setUint32(16, crc, true); w.setUint32(20, str, true);
+    w.setUint32(24, str, true); w.setUint16(28, navn.length, true); w.setUint32(42, pos, true);
+    c.set(navn, 46);
+
+    dele.push(h, f.file);
+    central.push(c);
+    pos += h.length + str;
+    centralStr += c.length;
+  }
+
+  const e = new Uint8Array(22), x = new DataView(e.buffer);
+  x.setUint32(0, 0x06054b50, true); x.setUint16(8, filer.length, true); x.setUint16(10, filer.length, true);
+  x.setUint32(12, centralStr, true); x.setUint32(16, pos, true);
+  return new Blob(dele.concat(central, [e]), {type: "application/zip"});
+}
+
+/* Giver besked og henter zip-filen ned. Formatet kan højst rumme ca. 4 GB. */
+async function zipHent(fund, titel, vis){
+  let i_alt = 0;
+  fund.filer.forEach(f => { i_alt += f.file.size + 200; });
+  if(i_alt >= 0xFFFFFFFF || fund.filer.length >= 65000){
+    vis("Der er for meget til én zip-fil. Den kan højst rumme ca. 4 GB. Kopiér i stedet hele mappen, fx til et USB-stik.");
+    return;
+  }
+  const mappe = zipMappenavn(titel);
+  const blob = await zipLav(fund.filer, mappe, vis);
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = mappe + ".zip";
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 120000);
+  let besked = mappe + ".zip er hentet ned med " + fund.filer.length + " filer. Pak den ud, og åbn søgesiden.";
+  if(fund.mangler.length){
+    besked += " Disse filer kunne ikke findes og er ikke med: " + fund.mangler.join(", ") + ".";
+  }
+  vis(besked);
+}
+
+/* --- Gem det hele som zip-fil (fri udgave) --- */
+let zipValgt = null;   // sat, når mappen er valgt med browserens filfelt
+document.getElementById("gemZip").addEventListener("click", async () => {
+  const knap = document.getElementById("gemZip");
+  const titel = document.getElementById("titel").value.trim() || "Søg i samlingen";
+  const kort = zipValgt || zipKort(valgteFiler.map(f => f.file));
+  const find = mappeHandle ? (sti => zipFraMappe(mappeHandle, sti)) : (async sti => kort.get(sti) || null);
+  knap.disabled = true;
+  try{
+    const fund = await zipFind(poster, find);
+    fund.filer.unshift({sti: OUTPUT_NAME, file: new Blob([byg()], {type: "text/html"})});
+    await zipHent(fund, titel, t => saetStatus(escapeHtml(t)));
+  }catch(e){
+    saetStatus('<span class="fejl">Zip-filen kunne ikke laves. Prøv igen, eller kopiér i stedet hele mappen.</span>');
+  }finally{
+    knap.disabled = false;
+  }
+});
 
 /* --- Startbesked --- */
 if (!window.showDirectoryPicker){
