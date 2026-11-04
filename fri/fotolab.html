@@ -3,7 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<!-- Fotolab · version 4 (hed før fotolab-standalone-v-4.html) -->
+<!-- Fotolab · version 5 (hed før fotolab-standalone-v-4.html)
+     5: nyt format «Delingsbillede» – 1200 × 630 billedpunkter som JPG under 300 KB,
+        til forhåndsvisningen, når et link sendes i en besked eller deles. -->
 <title>Fotolab</title>
 <style>
 /* ============================================================
@@ -331,6 +333,7 @@ body.tilgængelig .polVærdi { font-size: 17px; }
                 <p class="hjælp" id="formatHjælp">V&aelig;lg hvilket format billedet skal have. Der bliver klippet lige meget af i begge sider &ndash; med skyderen nedenunder kan du flytte udsnittet, s&aring; det rigtige kommer med.</p>
                 <p class="hjælp skjult" id="polFormatHjælp">Fotoet bliver kvadratisk som p&aring; et rigtigt Polaroid. Med skyderen kan du flytte udsnittet, s&aring; det rigtige kommer med.</p>
                 <div class="formatValg" id="formatValg"></div>
+                <p class="hjælp skjult" id="delingHjælp">Et delingsbillede er det billede, der vises, n&aring;r et link til en historie sendes i en besked eller deles. Det gemmes som JPG p&aring; 1200 &times; 630 billedpunkter og under 300 KB. L&aelig;g det p&aring; jeres webhotel, og skriv adressen i feltet <strong>Webadresse til delingsbillede</strong> i byggeren.</p>
 
                 <div class="udsnitRække skjult" id="udsnitRække">
                     <label for="udsnitSlider" id="udsnitLabel" style="font-size:14.5px;color:var(--hint)">Flyt udsnittet</label>
@@ -613,6 +616,9 @@ const FORMATER = [
     { id: '1x1',  navn: 'Kvadratisk',     kort: '1:1',   ratio: 1 },
     { id: '3x2',  navn: 'Fotoprint',      kort: '3:2',   ratio: 3/2 },
     { id: '16x9', navn: 'Bredformat',     kort: '16:9',  ratio: 16/9 },
+    /* Delingsbilledet vises, når et link sendes i en besked eller deles på nettet.
+       Fast størrelse og altid liggende; gemmes som JPG under 300 KB (afsnit 5.2). */
+    { id: 'deling', navn: 'Delingsbillede', kort: '1200 × 630', ratio: 1200/630, fast: { w: 1200, h: 630, maksBytes: 300 * 1024 } },
 ];
 
 
@@ -772,8 +778,12 @@ function vælgFormat(id) {
     const f = nuværendeFormat();
     if (f.ratio !== null && aktivtBillede) {
         // vend automatisk med billedets egen retning første gang
-        stående = aktivtBillede.naturalHeight > aktivtBillede.naturalWidth && f.ratio !== 1;
+        stående = aktivtBillede.naturalHeight > aktivtBillede.naturalWidth && f.ratio !== 1 && !f.fast;
     }
+    if (f.fast) stående = false;
+    document.getElementById('delingHjælp').classList.toggle('skjult', !f.fast);
+    // Et delingsbillede gemmes altid som JPG under 300 KB, så filtype og kvalitet skjules.
+    document.querySelector('.eksportRække').classList.toggle('skjult', !!f.fast);
     udsnit = 0.5;
     udsnitSlider.value = 50;
     zoom = 1;
@@ -798,7 +808,7 @@ function opdaterUdsnitRække() {
                             : vandret ? 'Flyt udsnittet: venstre – højre'
                                       : 'Flyt udsnittet: op – ned';
 
-    vendKnap.disabled = (f.ratio === 1);
+    vendKnap.disabled = (f.ratio === 1 || !!f.fast);
     vendKnap.textContent = stående ? 'Vend til liggende' : 'Vend til stående';
     vendKnap.classList.toggle('aktivKnap', stående);
 }
@@ -809,7 +819,7 @@ udsnitSlider.addEventListener('input', () => {
     byggThumbnails();
 });
 vendKnap.addEventListener('click', () => {
-    if (nuværendeFormat().ratio === 1) return;
+    if (nuværendeFormat().ratio === 1 || nuværendeFormat().fast) return;
     stående = !stående;
     udsnit = 0.5; udsnitSlider.value = 50;
     zoom = 1;
@@ -874,6 +884,8 @@ function tegn(visOriginal = false) {
     let w = u.sw, h = u.sh;
     if (w > mw) { h = Math.round(h * mw / w); w = mw; }
     if (h > mw) { w = Math.round(w * mw / h); h = mw; }
+    const fast = !polaroidTilstand && nuværendeFormat().fast;
+    if (fast) { w = fast.w; h = fast.h; }
     lærred.width = w; lærred.height = h;
     lærredOrig.width = w; lærredOrig.height = h;
 
@@ -914,6 +926,7 @@ function opdaterGemTekst(w, h) {
         return;
     }
     const f = nuværendeFormat();
+    if (f.fast){ gemUnder.textContent = 'Et delingsbillede til beskeder og deling – ' + w + ' × ' + h + ' billedpunkter, JPG under 300 KB'; return; }
     const formatTekst = f.ratio === null ? 'i originalformat' : 'i ' + (f.kort || f.navn.toLowerCase());
     gemUnder.textContent = 'Et billede ' + formatTekst + ' – ' + w + ' × ' + h + ' billedpunkter';
 }
@@ -1321,6 +1334,22 @@ document.getElementById('hentKnap').addEventListener('click', () => {
         const valg = gemSomVælg.value;
         kilde = valg === 'alene' ? polaroid : byggPrintark(polaroid, valg === 'fyld');
         formatDel = valg === 'alene' ? '_polaroid' : '_polaroid_printark';
+    }
+    const fast = !polaroidTilstand && nuværendeFormat().fast;
+    if (fast){
+        // Altid JPG. Kvaliteten sænkes trinvis, til filen er under 300 KB.
+        const navn = grundnavn.replace(/[^\wæøåÆØÅ\- ]/g, '').trim() + '_delingsbillede.jpg';
+        const prøv = (q) => kilde.toBlob(blob => {
+            if (blob.size > fast.maksBytes && q > 0.45) { prøv(Math.round((q - 0.07) * 100) / 100); return; }
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = navn;
+            a.click();
+            setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+            gemUnder.textContent = 'Gemt som ' + navn + ' – ' + Math.round(blob.size / 1024) + ' KB. Læg det på jeres webhotel, og skriv adressen i byggeren.';
+        }, 'image/jpeg', q);
+        prøv(Math.min(kvalitet, 0.9));
+        return;
     }
     const filnavn = grundnavn.replace(/[^\wæøåÆØÅ\- ]/g, '').trim()
                   + '_' + aktivtFilter + formatDel + '.' + filtype;

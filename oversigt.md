@@ -36,7 +36,7 @@ Værktøjerne ligger i mappen `tools/`. De følger ikke Builder-standarden, men 
 | Fælles emneord | `tools/emneord.html` | 1.0 | de fælles emneord fra `emneord.md` som en side med søgning og en kopiér-knap ved hvert ord |
 | Feltoptager | `tools/feltoptager.html` | 1 | optager lyd, rydder op og gemmer som mp3 eller som lydfortælling (HTML) |
 | Lydlab | `tools/lydlab.html` | 1 | gør en lydoptagelse klar: mono, jævn lyd og fast lydstyrke, ud kommer en mp3 |
-| Fotolab | `tools/fotolab.html` | 4 | farve-effekter, billedformat og Polaroid med håndskrevet tekst |
+| Fotolab | `tools/fotolab.html` | 5 | farve-effekter, billedformat og Polaroid med håndskrevet tekst. Formatet «Delingsbillede» laver en JPG på 1200 × 630 under 300 KB til forhåndsvisningen, når et link sendes i en besked |
 | Lydudtrækker | `tools/lydudtraekker.html` | 1.1 | trækker lyden ud af en HTML-fil som mp3, når den oprindelige lydfil er væk |
 | Roskilde TV · arbejdsliste | `tools/rtv-arbejdsliste.html` | – | alle Roskilde TV's udsendelser med knappen «Lav mediekort», der åbner Mediekort med videoen udfyldt. Laves af `tools/lav-rtv-arbejdsliste.py` ud fra `roskilde-tv-videoarkiv.html`. Udgaven med fælles prikker ligger i søgeindekset som `sbtv/rtv.php` |
 | Galleriarkiv | `tools/galleriarkiv.html` | 1.0 | gemmer et helt album fra Piwigo med alle underalbum som en almindelig mappe med albumsider, billeder i ca. 1650 px, miniaturer, `album.json` og `LAES-MIG.txt`, så galleriet kan ses uden PHP og database (standardens 5.8). Skal ligge på galleriets webadresse ligesom Piwigo Albumbygger |
