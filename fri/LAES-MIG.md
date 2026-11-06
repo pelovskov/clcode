@@ -27,6 +27,7 @@ Filformatet er det samme. En fil fra den frie udgave kan derfor åbnes i forenin
 | Feltoptager, Lydlab, Fotolab og Skyggeramme | `feltoptager.html`, `lydlab.html`, `fotolab.html`, `skyggeramme.html` |
 | Huskesedler til Side, Album, Lydfortælling, Præsentation, Bog, Mediekort og Samling med Søgeside | `vejledning-….html` |
 | Forslag til emneord, med en kopiér-knap ved hvert ord | `emneord.html` |
+| Må det komme med? Tjek af samtykke til billeder, lyd og tekst, med øvelser og samtykkesedler | `maa-det-komme-med.html` |
 
 Hele mappen kan kopieres til et USB-stik eller lægges på en hjemmeside. Alt virker uden internet.
 

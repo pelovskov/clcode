@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Må det komme med? · version 1.0 (nov. 2026)
+     Et tjek-lys om billeder, lyd og tekst med mennesker i, i tre udgaver: 5. klasse,
+     unge/uddannelse og 60+. Med små øvelser og samtykkesedler til udskrift.
+     Reglerne er med vilje strengere end loven, så de er lette at følge.
+     Vejledning, ikke juridisk rådgivning. Alt sker i browseren; intet sendes nogen steder hen. -->
+<title>Må det komme med?</title>
+<meta name="DC.title" content="Må det komme med?">
+<meta name="DC.description" content="Interaktivt tjek-lys om billeder, lyd og tekst med mennesker i – i tre udgaver: 5. klasse, unge/uddannelse og 60+.">
+<meta name="DC.subject" content="GDPR; samtykke; formidling; lokalhistorie">
+<meta name="DC.language" content="da">
+<meta name="DC.type" content="InteractiveResource">
+<meta name="DC.format" content="text/html">
+<meta name="DC.date" content="2026-11-06">
+<meta name="DC.rights" content="Vejledning, ikke juridisk rådgivning. Må bruges og deles frit.">
+<style>
+  /* Værktøjskassens egne farver (som Fotolab og Fælles emneord). Trafiklysets grøn,
+     gul og rød betyder noget og er de samme i alle tre udgaver. Udgaverne adskiller
+     sig kun ved skriftstørrelsen. */
+  :root{
+    --bg:#EDE7D8; --card:#FBF8EF; --ink:#211E19; --muted:#5F5A4B; --line:#cbc2a8;
+    --accent:#9A4630; --accent-ink:#FDF8EE; --soft:#F4E4DC;
+    --green:#1e8a4c; --green-ink:#166534; --green-soft:#e6f5ec;
+    --yellow:#b7790d; --yellow-soft:#fdf3dc;
+    --red:#c0392b; --red-soft:#fbe9e7;
+    --radius:14px; --base:18px;
+    --font:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --serif:Georgia, 'Iowan Old Style', 'Palatino Linotype', Palatino, serif;
+  }
+  /* Skriftstørrelsen sættes på hele siden (html), så rem-målene følger med. */
+  html.lvl-b{ --base:19px; }
+  html.lvl-u{ --base:18px; }
+  html.lvl-s{ --base:21px; }
+
+  *{ box-sizing:border-box; }
+  html{ font-size:var(--base); }
+  body{ margin:0; background:var(--bg); color:var(--ink); font-family:var(--font); line-height:1.5; }
+  .wrap{ max-width:760px; margin:0 auto; padding:1.4rem 1.1rem 3rem; }
+  header{ margin-bottom:1.4rem; }
+  h1{ font-family:var(--serif); font-size:1.9rem; line-height:1.15; margin:0 0 .3rem; }
+  .sub{ color:var(--muted); margin:0; }
+  .chip{ display:inline-block; font-size:.75rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase;
+         background:var(--accent); color:var(--accent-ink); padding:.25rem .7rem; border-radius:99px; margin-bottom:.7rem; }
+  h2{ font-size:1.35rem; margin:0 0 .8rem; line-height:1.25; }
+  p{ margin:0 0 .8rem; }
+
+  .doors{ display:grid; gap:1rem; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); margin-top:1rem; }
+  .door{ text-align:left; border:2px solid var(--line); background:var(--card); border-radius:var(--radius);
+         padding:1.2rem; cursor:pointer; font:inherit; color:inherit; display:flex; flex-direction:column; gap:.4rem;
+         transition:border-color .15s, transform .15s; }
+  .door:hover,.door:focus-visible{ border-color:var(--accent); transform:translateY(-2px); }
+  .door .icon{ font-size:2rem; line-height:1; }
+  .door strong{ font-size:1.15rem; }
+  .door span{ color:var(--muted); font-size:.9rem; }
+  .door.s{ font-size:1.05rem; }
+
+  .card{ background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:1.4rem; margin-bottom:1rem; }
+  .rules{ list-style:none; padding:0; margin:0 0 1rem; counter-reset:r; }
+  .rules li{ counter-increment:r; position:relative; padding:.2rem 0 .7rem 2.6rem; }
+  .rules li::before{ content:counter(r); position:absolute; left:0; top:.1rem; width:1.8rem; height:1.8rem; border-radius:50%;
+         background:var(--accent); color:var(--accent-ink); font-weight:700; display:flex; align-items:center; justify-content:center; font-size:.9rem; }
+  .note{ background:var(--soft); border-radius:12px; padding:.8rem 1rem; font-size:.95rem; }
+
+  .progress{ height:8px; background:var(--line); border-radius:99px; overflow:hidden; margin-bottom:1.1rem; }
+  .progress div{ height:100%; background:var(--accent); width:0; transition:width .25s; }
+  .help{ color:var(--muted); font-size:.95rem; }
+  .answers{ display:grid; gap:.7rem; margin-top:1rem; }
+  .ans{ font:inherit; color:inherit; text-align:left; background:var(--card); border:2px solid var(--line); border-radius:14px;
+        padding:.9rem 1.1rem; cursor:pointer; display:flex; gap:.8rem; align-items:center; min-height:3.2rem; }
+  .ans:hover,.ans:focus-visible{ border-color:var(--accent); background:var(--soft); }
+  .ans .e{ font-size:1.5rem; width:2rem; text-align:center; flex:none; }
+  .ans small{ display:block; color:var(--muted); font-size:.85rem; }
+
+  .nav{ display:flex; gap:.6rem; flex-wrap:wrap; margin-top:1.2rem; }
+  .btn{ font:inherit; font-weight:600; border-radius:12px; padding:.7rem 1.2rem; cursor:pointer; border:2px solid var(--accent); }
+  .btn.primary{ background:var(--accent); color:var(--accent-ink); }
+  .btn.ghost{ background:transparent; color:var(--accent); }
+  /* Tydelig ramme for dem, der bruger tastaturet (Builder-standard afsnit 9). */
+  .btn:focus-visible, .door:focus-visible, .ans:focus-visible, .tile:focus-visible, .segb:focus-visible{ outline:3px solid var(--accent); outline-offset:2px; }
+
+  .light{ display:flex; gap:1.2rem; align-items:center; margin-bottom:1rem; }
+  .lamp{ width:5.5rem; height:5.5rem; border-radius:50%; flex:none; display:flex; align-items:center; justify-content:center;
+         font-size:2.4rem; color:#fff; font-weight:800; box-shadow:0 0 0 8px rgba(0,0,0,.05); }
+  .res-green{ border-color:var(--green); background:var(--green-soft); } .res-green .lamp{ background:var(--green); }
+  .res-yellow{ border-color:var(--yellow); background:var(--yellow-soft); } .res-yellow .lamp{ background:var(--yellow); }
+  .res-red{ border-color:var(--red); background:var(--red-soft); } .res-red .lamp{ background:var(--red); }
+  .res-green h2{ color:var(--green-ink); } .res-yellow h2{ color:#8a5a06; } .res-red h2{ color:var(--red); }
+  .tips{ margin:.4rem 0 0; padding-left:1.2rem; } .tips li{ margin-bottom:.35rem; }
+  h3{ font-size:1rem; margin:1rem 0 .3rem; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); }
+  .trail{ font-size:.9rem; color:var(--muted); margin:0; padding-left:1.2rem; }
+
+  .tiles{ display:grid; gap:.8rem; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); }
+  .tile{ text-align:left; font:inherit; color:inherit; background:var(--card); border:2px solid var(--line); border-radius:var(--radius);
+         padding:1.1rem; cursor:pointer; display:flex; flex-direction:column; gap:.3rem; }
+  .tile:hover,.tile:focus-visible{ border-color:var(--accent); background:var(--soft); }
+  .tile .icon{ font-size:1.8rem; line-height:1; } .tile strong{ font-size:1.1rem; } .tile span{ color:var(--muted); font-size:.9rem; }
+  .chip.soft{ background:var(--soft); color:var(--accent); }
+
+  .ans.right{ border-color:var(--green); background:var(--green-soft); }
+  .ans.wrong{ border-color:var(--red); background:var(--red-soft); }
+  .ans[disabled]{ cursor:default; }
+  .fb{ margin-top:1rem; border-radius:12px; padding:.9rem 1.1rem; }
+  .fb.ok{ background:var(--green-soft); border-left:6px solid var(--green); }
+  .fb.no{ background:var(--yellow-soft); border-left:6px solid var(--yellow); }
+  .fb strong{ display:block; margin-bottom:.2rem; }
+
+  .seg{ display:grid; gap:.5rem; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); }
+  .segb{ font:inherit; color:inherit; text-align:left; background:var(--card); border:2px solid var(--line); border-radius:12px; padding:.7rem .9rem; cursor:pointer; }
+  .segb small{ display:block; color:var(--muted); font-size:.8rem; }
+  .segb[aria-checked="true"]{ border-color:var(--accent); background:var(--soft); font-weight:600; }
+
+  .sheet{ background:#fff; color:#1a1a1a; border:1px solid var(--line); border-radius:6px; padding:2rem 2.2rem; margin-bottom:1rem;
+          font-size:16px; line-height:1.55; }
+  body.lvl-s .sheet{ font-size:17px; }
+  .sheet h2{ font-size:1.45rem; margin:0 0 .2rem; color:#1a1a1a; }
+  .sheet .lead{ color:#444; margin-bottom:1.2rem; }
+  .sheet h4{ font-size:.95rem; margin:1.1rem 0 .4rem; text-transform:uppercase; letter-spacing:.05em; color:#333; }
+  .sheet .f{ display:flex; gap:.6rem; align-items:flex-end; margin:.55rem 0; }
+  .sheet .f label{ flex:none; min-width:9.5rem; }
+  .sheet input[type=text]{ flex:1; font:inherit; border:0; border-bottom:1.5px solid #555; background:transparent; padding:.1rem .2rem; min-width:0; }
+  .sheet .cb{ display:flex; gap:.6rem; align-items:flex-start; margin:.35rem 0; }
+  .sheet .cb input{ width:1.15em; height:1.15em; margin-top:.25em; flex:none; }
+  .sheet .small{ font-size:.88em; color:#444; }
+  .sheet .sign{ display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; margin-top:2rem; }
+  .sheet .sign div{ border-top:1.5px solid #555; padding-top:.3rem; font-size:.88em; color:#444; }
+  .sheet .box{ border:1px solid #bbb; border-radius:6px; padding:.7rem .9rem; margin-top:1rem; }
+
+  @media print{
+    body{ background:#fff; }
+    header, footer, .noprint, #v-start, #v-intro, #v-q, #v-res, #v-quiz{ display:none !important; }
+    .wrap{ max-width:none; padding:0; }
+    .sheet{ border:0; padding:0; }
+    .sheet input[type=text]{ border-bottom:1px solid #000; }
+    .sheet input::placeholder{ color:transparent; }
+  }
+  @page{ size:A4; margin:16mm 18mm; }
+
+  footer{ margin-top:2rem; font-size:.85rem; color:var(--muted); border-top:1px solid var(--line); padding-top:1rem; }
+  .hidden{ display:none !important; }
+  @media (prefers-reduced-motion: reduce){ *{ transition:none !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="chip" id="chip">Tjek før du deler</div>
+    <h1>Må det komme med?</h1>
+    <p class="sub" id="sub">Et hurtigt tjek, før et billede, en lydbid eller en tekst kommer med i jeres album eller historie.</p>
+  </header>
+
+  <main id="app" aria-live="polite">
+    <!-- START: tre døre -->
+    <section id="v-start">
+      <p>Vælg den udgave, der passer til dig:</p>
+      <div class="doors">
+        <button class="door b" data-lvl="b"><span class="icon" aria-hidden="true">🎒</span><strong>5. klasse</strong><span>Kort og enkelt – spørg først, foto bagefter</span></button>
+        <button class="door u" data-lvl="u"><span class="icon" aria-hidden="true">🎓</span><strong>Ung / uddannelse</strong><span>9. klasse, erhvervsskole og SOSU</span></button>
+        <button class="door s" data-lvl="s"><span class="icon" aria-hidden="true">☕</span><strong>60+</strong><span>Stor skrift og god ro</span></button>
+      </div>
+    </section>
+
+    <!-- INTRO: tre regler -->
+    <section id="v-intro" class="hidden">
+      <div class="card">
+        <h2 id="intro-h"></h2>
+        <ol class="rules" id="intro-rules"></ol>
+        <p class="note" id="intro-note"></p>
+      </div>
+      <h2 style="margin-top:1.4rem">Hvad vil du lave?</h2>
+      <div class="tiles">
+        <button class="tile" id="go-check"><span class="icon" aria-hidden="true">🚦</span><strong>Tjek-lyset</strong><span>Må dit billede, din lyd eller din tekst komme med?</span></button>
+        <button class="tile" id="go-quiz"><span class="icon" aria-hidden="true">🤔</span><strong>Hvad ville du gøre?</strong><span>Små situationer at øve sig på</span></button>
+        <button class="tile" id="go-seddel"><span class="icon" aria-hidden="true">🖊️</span><strong>Samtykke-seddel</strong><span>Udfyld og udskriv</span></button>
+      </div>
+      <div class="nav">
+        <button class="btn ghost" data-act="home">Vælg en anden udgave</button>
+      </div>
+    </section>
+
+    <!-- SCENARIER -->
+    <section id="v-quiz" class="hidden">
+      <div class="progress" aria-hidden="true"><div id="qz-bar"></div></div>
+      <div class="card" id="qz-card">
+        <p class="chip soft" id="qz-count"></p>
+        <h2 id="qz-sit"></h2>
+        <div class="answers" id="qz-ans"></div>
+        <div id="qz-fb" class="fb hidden" role="status"></div>
+      </div>
+      <div class="card hidden" id="qz-end">
+        <h2 id="qz-end-h"></h2>
+        <p id="qz-end-p"></p>
+      </div>
+      <div class="nav">
+        <button class="btn primary hidden" id="qz-next">Næste situation →</button>
+        <button class="btn ghost hidden" id="qz-again">Prøv igen</button>
+        <button class="btn ghost" data-act="menu">Til menuen</button>
+      </div>
+    </section>
+
+    <!-- SAMTYKKE-SEDDEL -->
+    <section id="v-seddel" class="hidden">
+      <div class="card noprint">
+        <h2>Samtykke-seddel</h2>
+        <p class="help">Vælg hvilken seddel du skal bruge. Felterne kan udfyldes på skærmen eller med kuglepen efter udskrift.</p>
+        <div class="seg" role="radiogroup" aria-label="Vælg seddel">
+          <button class="segb" data-v="barn" role="radio">Barn under 18 <small>(forælder skriver under)</small></button>
+          <button class="segb" data-v="voksen" role="radio">Voksen deltager <small>(billeder)</small></button>
+          <button class="segb" data-v="lyd" role="radio">Lydoptagelse <small>(interview / fortælling)</small></button>
+        </div>
+      </div>
+      <div class="sheet" id="sheet"></div>
+      <p class="help noprint" id="print-note">Udskrift virker, når filen er åbnet direkte i browseren. Ellers brug browserens egen udskriv-funktion (Cmd/Ctrl + P).</p>
+      <div class="nav noprint">
+        <button class="btn primary" id="print">🖨️ Udskriv</button>
+        <button class="btn ghost" data-act="menu">Til menuen</button>
+      </div>
+    </section>
+
+    <!-- SPØRGSMÅL -->
+    <section id="v-q" class="hidden">
+      <div class="progress" aria-hidden="true"><div id="bar"></div></div>
+      <div class="card">
+        <h2 id="q-h"></h2>
+        <p class="help" id="q-help"></p>
+        <div class="answers" id="q-ans"></div>
+      </div>
+      <div class="nav">
+        <button class="btn ghost" id="back">← Tilbage</button>
+        <button class="btn ghost" data-act="restart">Start forfra</button>
+        <button class="btn ghost" data-act="menu">Til menuen</button>
+      </div>
+    </section>
+
+    <!-- RESULTAT -->
+    <section id="v-res" class="hidden">
+      <div class="card" id="res-card">
+        <div class="light"><div class="lamp" id="res-lamp" aria-hidden="true"></div><h2 id="res-h"></h2></div>
+        <p id="res-p"></p>
+        <h3 id="res-tips-h"></h3>
+        <ul class="tips" id="res-tips"></ul>
+      </div>
+      <div class="card">
+        <h3 style="margin-top:0">Dine svar</h3>
+        <ol class="trail" id="trail"></ol>
+      </div>
+      <div class="nav">
+        <button class="btn primary" data-act="restart">Tjek det næste</button>
+        <button class="btn ghost" data-act="menu">Til menuen</button>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    Reglerne her er med vilje mere forsigtige end loven, så de er nemme at følge.
+    Det her er en vejledning – ikke juridisk rådgivning. I tvivl? Spørg holdlederen.
+  </footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var lvl = null, kind = null, path = [], trail = [];
+
+  // Tekst-hjælper: obj kan være en streng eller {b,u,s} eventuelt {all}
+  function t(o){ if(o==null) return ""; if(typeof o==="string") return o; return o[lvl] || o.all || ""; }
+  function k(o){ return (o && typeof o==="object" && o[kind]) ? o[kind] : o; } // vælg efter materialetype
+
+  var LEVELS = {
+    b:{ chip:"5. klasse", intro:"Tre ting du skal huske",
+        rules:["Spørg først – foto bagefter.","Børn må ikke selv sige ja. En voksen skal også sige ja.","Er du i tvivl, så spørg din lærer, før du gemmer eller viser noget."],
+        note:"Det gælder ikke kun billeder. En stemme på en optagelse og et navn i en tekst tæller også!" },
+    u:{ chip:"Ung / uddannelse", intro:"Tre regler",
+        rules:["Kan man genkende en person – på ansigt, stemme, navn eller kendetegn – skal personen sige ja.","Er personen under 18, skal en forælder også give samtykke – ikke kun den unge selv.","I tvivl? Behold materialet lokalt og spørg holdlederen, før det bruges."],
+        note:"Det er det færdige værk, der tæller: hvad er med i albummet eller historien – og hvor bliver det vist?" },
+    s:{ chip:"60+", intro:"Det er nemt at huske",
+        rules:["Spørg altid først: »Må jeg tage et billede af dig?« – også når I kender hinanden godt.","Børn og børnebørn under 18 kan ikke selv sige ja. Spørg en voksen i familien.","Der er ingen dumme spørgsmål – spørg blot holdlederen."],
+        note:"Det samme gælder, når I optager en samtale eller skriver en erindring, hvor andre bliver nævnt." }
+  };
+
+  var Q = {
+    type:{ h:{ b:"Hvad vil du have med?", u:"Hvad vil du bruge?", s:"Hvad vil du gerne have med?" },
+      help:{ b:"Tryk på det, der passer.", u:"Vælg den type materiale, du vil tjekke.", s:"Vælg ét stykke ad gangen." },
+      a:[ {e:"📷", l:"Et billede", set:"billede", go:"genk"},
+          {e:"🎙️", l:"En lydoptagelse", set:"lyd", go:"genk"},
+          {e:"📝", l:"En tekst eller historie", set:"tekst", go:"genk"} ] },
+
+    genk:{ dyn:true }, // tekst afhænger af materialetypen, se dynQ()
+
+    alder:{ h:{ b:"Er personen et barn eller under 18 år?", u:"Er personen under 18 år?", s:"Er personen under 18 år?" },
+      help:{ b:"Fx en klassekammerat, en lillebror eller en anden elev.", u:"", s:"Fx et barnebarn eller et barn, I mødte på turen." },
+      a:[ {e:"🧒", l:"Ja, under 18", go:"foraelder"},
+          {e:"🧑", l:"Nej, en voksen", go:"ja"},
+          {e:"❓", l:"Ved ikke", go:"R:gul_tvivl"} ] },
+
+    foraelder:{ h:{ b:"Har en voksen fra familien sagt ja?", u:"Har en forælder (eller en anden med forældremyndighed) givet samtykke?", s:"Har en forælder eller en anden voksen i familien sagt ja?" },
+      help:{ b:"Det er ikke nok, at din ven selv siger ja.", u:"Den unges eget ja er ikke nok alene.", s:"" },
+      a:[ {e:"✅", l:"Ja", go:"privat"},
+          {e:"✋", l:"Nej / ikke endnu", go:"R:rod_barn"} ] },
+
+    ja:{ h:{ b:"Har personen sagt ja – før du tog billedet eller optog?", u:"Har personen selv givet samtykke – til netop dette?", s:"Har du spurgt og fået et »ja«?" },
+      help:{ b:"", u:"Et ja til at blive fotograferet er ikke automatisk et ja til at komme på nettet.", s:"" },
+      a:[ {e:"✅", l:"Ja", go:"privat"},
+          {e:"🙋", l:"Det er mig selv", go:"privat"},
+          {e:"✋", l:"Nej / ikke endnu", go:"R:rod_voksen"} ] },
+
+    privat:{ dyn:true },
+
+    hvor:{ h:{ b:"Hvem skal kunne se det?", u:"Hvor skal det vises?", s:"Hvor skal det bruges?" },
+      a:[ {e:"👪", l:{ b:"Kun klassen eller familien", u:"Kun i gruppen eller hos dem, der er med", s:"Kun i holdet eller i familien" }, go:"R:gron_ja"},
+          {e:"🌍", l:{ b:"Alle – fx på hjemmesiden eller i en e-bog", u:"Offentligt – hjemmeside, e-bog, udstilling", s:"Hvor alle kan se det – fx hjemmesiden, en e-bog eller en udstilling" }, go:"ved"} ] },
+
+    ved:{ h:{ b:"Ved personen, at alle kan komme til at se det?", u:"Ved personen, at det bliver offentligt?", s:"Ved personen, at det kommer ud, hvor alle kan se det?" },
+      a:[ {e:"✅", l:"Ja, det har vi talt om", go:"R:gron_ja"},
+          {e:"🤷", l:"Nej / det er jeg ikke sikker på", go:"R:gul_hvor"} ] }
+  };
+
+  // Dynamiske spørgsmål afhænger af materialetypen
+  function dynQ(id){
+    if(id==="genk") return {
+      h: k({ billede:{ b:"Kan man se, hvem nogen på billedet er?", u:"Kan en person på billedet genkendes?", s:"Kan man genkende nogen på billedet?" },
+             lyd:{ b:"Kan man høre, hvem der taler – eller bliver nogen sagt ved navn?", u:"Kan en person genkendes – på stemmen eller fordi vedkommende nævnes?", s:"Kan man høre, hvem der taler, eller bliver nogen nævnt ved navn?" },
+             tekst:{ b:"Står der et navn – eller kan man gætte, hvem det handler om?", u:"Kan en bestemt person identificeres i teksten – navn, adresse, særlige kendetegn?", s:"Står der navne, eller kan man regne ud, hvem der fortælles om?" } }),
+      help: k({ billede:{ b:"Bagfra, på lang afstand og kun steder eller ting tæller som »nej«.", u:"Tænk også på kendetegn som tøj, navneskilte eller tatoveringer i nærbillede.", s:"Folk bagfra eller langt væk tæller som »nej«." },
+                lyd:{ all:"En stemme kan genkendes lige så godt som et ansigt." },
+                tekst:{ all:"»Ham bageren på hjørnet i 1962« kan være lige så tydeligt som et navn." } }),
+      a:[ {e:"👤", l:"Ja", go:"alder"},
+          {e:"🏠", l:k({ billede:"Nej – kun steder, ting eller folk man ikke kan genkende", lyd:"Nej – kun mig selv eller lyde fra stedet", tekst:"Nej – ingen kan regnes ud" }), go:"R:gron_none"},
+          {e:"❓", l:"Ved ikke", go:"R:gul_tvivl"} ] };
+    if(id==="privat") return {
+      h: k({ billede:{ b:"Viser billedet noget, der kan være pinligt eller privat?", u:"Viser billedet noget privat eller følsomt?", s:"Viser billedet noget privat eller noget, der kunne være pinligt?" },
+             lyd:{ b:"Bliver der sagt noget privat om nogen?", u:"Indeholder optagelsen private eller følsomme oplysninger om nogen?", s:"Bliver der fortalt noget privat om nogen?" },
+             tekst:{ b:"Fortæller teksten noget privat om nogen?", u:"Indeholder teksten private eller følsomme oplysninger om nogen?", s:"Fortæller historien noget privat om nogen?" } }),
+      help:{ b:"Fx at nogen er syg, er kommet til skade, eller noget de ville blive flove over.",
+             u:"Fx helbred, familieforhold, økonomi, religion – også om personer, der ikke selv er med.",
+             s:"Fx sygdom, uenighed i familien, penge – også om folk, der ikke selv er med." },
+      a:[ {e:"⚠️", l:"Ja", go:"R:gul_privat"},
+          {e:"👍", l:"Nej", go:"hvor"} ] };
+  }
+
+  var ALT = {
+    billede:["Tag billedet om – bagfra, fra siden eller på afstand.","Beskær billedet, så ansigtet ikke er med.","Vælg et andet billede, hvor stedet er i fokus."],
+    lyd:["Klip den del ud, hvor personen taler eller bliver nævnt.","Fortæl det selv med dine egne ord.","Spørg om lov – og optag igen bagefter."],
+    tekst:["Fjern navnet og det, der afslører hvem det er.","Skriv fx »en nabo« eller »en af de ældre« i stedet for navnet.","Spørg om lov – så kan navnet komme med."]
+  };
+
+  var R = {
+    gron_none:{ c:"green", s:"✓",
+      h:{ b:"Super – det må gerne komme med!", u:"Grønt lys", s:"Det må gerne komme med" },
+      p:{ b:"Der er ingen, man kan genkende. Steder, huse, natur og ting er altid trygge at bruge.",
+          u:"Når ingen kan identificeres, er der ingen personoplysninger i spil. Det kan bruges i album, e-bog og på hjemmesiden.",
+          s:"Når ingen kan genkendes, er der ikke noget at spørge om. Huse, natur og grupper på afstand er altid fine." },
+      th:"Godt at vide", tips:{ all:["Skriv gerne, hvor og hvornår det er taget eller optaget – det gør det mere værd for eftertiden."] } },
+    gron_ja:{ c:"green", s:"✓",
+      h:{ b:"Det må gerne komme med!", u:"Grønt lys", s:"Det må gerne komme med" },
+      p:{ b:"Der er sagt ja, og alle ved, hvor det skal vises. Flot klaret!",
+          u:"Der er samtykke, og personen ved, hvor det bliver vist. Husk at gemme dokumentation for samtykket.",
+          s:"Du har spurgt, fået et ja, og personen ved, hvor det skal bruges. Så er alt i orden." },
+      th:"Husk", tips:{ b:["Fortæl din lærer, hvem der har sagt ja."], u:["Notér, hvem der har sagt ja, og hvornår – fx på en samtykke-seddel.","Personen kan altid trække sit ja tilbage. Så skal materialet fjernes."], s:["Skriv ned, hvem der sagde ja, og hvornår.","Man må gerne ombestemme sig senere – så tager vi det ud igen."] } },
+    gul_tvivl:{ c:"yellow", s:"?",
+      h:{ b:"Spørg din lærer først", u:"Gult lys – afklar først", s:"Spørg holdlederen først" },
+      p:{ b:"Det er helt fint at være i tvivl. Gem det, men vis det ikke til nogen, før du har spurgt.",
+          u:"Når du ikke kan svare sikkert, så behold materialet lokalt og tag det med til holdlederen, før det bruges.",
+          s:"Det er helt i orden at være i tvivl. Gem det, og tag det med til holdlederen – der er ingen dumme spørgsmål." },
+      th:"Mens du venter", tips:{ all:["Slet det ikke – men del det heller ikke endnu."] } },
+    gul_privat:{ c:"yellow", s:"!",
+      h:{ b:"En voksen skal se på det", u:"Gult lys – følsomt indhold", s:"Lad holdlederen se på det" },
+      p:{ b:"Selvom der er sagt ja, kan det være træls for nogen, hvis alle får det at vide. Vis det til din lærer først.",
+          u:"Private eller følsomme oplysninger om andre kræver ekstra omtanke – også med samtykke, og især om personer, der ikke selv er med.",
+          s:"Selv med et ja kan private oplysninger gøre ondt, når de først er ude. Lad holdlederen kigge med, før det bruges." },
+      th:"Det kan du prøve", tips:{ all:["Kan historien fortælles uden den private del?","Kan navnet eller kendetegnene fjernes?"] } },
+    gul_hvor:{ c:"yellow", s:"!",
+      h:{ b:"Spørg igen, før det kommer ud", u:"Gult lys – samtykket rækker måske ikke", s:"Spørg igen, før det kommer ud" },
+      p:{ b:"Måske sagde personen kun ja til billedet – ikke til at alle kan se det. Spørg igen.",
+          u:"Et ja til at være med i gruppens album er ikke det samme som et ja til hjemmesiden. Spørg konkret om den offentlige brug.",
+          s:"Et ja til et billede i holdet er ikke det samme som et ja til hjemmesiden. Spørg venligt igen." },
+      th:"Sig fx", tips:{ b:["»Må billedet også komme på hjemmesiden, hvor alle kan se det?«"], u:["»Er det okay, at det kommer på foreningens hjemmeside og i e-bogen?«"], s:["»Må det også komme på foreningens hjemmeside, hvor alle kan se det?«"] } },
+    rod_barn:{ c:"red", s:"✕",
+      h:{ b:"Ikke endnu", u:"Rødt lys – mangler forældresamtykke", s:"Ikke endnu" },
+      p:{ b:"Børn må ikke selv sige ja. En voksen fra familien skal også sige ja, før det må komme med.",
+          u:"Under 18 skal en forælder eller en anden med forældremyndighed give samtykke. Den unges eget ja er ikke nok her.",
+          s:"Børn og unge under 18 kan ikke selv give lov. En forælder skal spørges først." },
+      th:"Det kan du gøre i stedet", tips:null },
+    rod_voksen:{ c:"red", s:"✕",
+      h:{ b:"Ikke endnu", u:"Rødt lys – mangler samtykke", s:"Ikke endnu" },
+      p:{ b:"Når man kan se eller høre, hvem det er, skal personen have sagt ja først.",
+          u:"Uden samtykke kommer genkendelige personer ikke med – heller ikke når det er optaget på et offentligt sted.",
+          s:"Når man kan genkende nogen, skal de spørges først – også selvom I kender hinanden godt." },
+      th:"Det kan du gøre i stedet", tips:null }
+  };
+
+  var STEPS = 6; // til fremskridtsbjælken
+
+  var $ = function(id){ return document.getElementById(id); };
+  function show(v){ ["v-start","v-intro","v-q","v-res","v-quiz","v-seddel"].forEach(function(x){ $(x).classList.toggle("hidden", x!==v); }); window.scrollTo(0,0); }
+
+  function setLevel(l){
+    lvl = l; document.body.className = "lvl-"+l; document.documentElement.className = "lvl-"+l;
+    var L = LEVELS[l];
+    $("chip").textContent = L.chip;
+    $("intro-h").textContent = L.intro;
+    $("intro-rules").innerHTML = "";
+    L.rules.forEach(function(r){ var li=document.createElement("li"); li.textContent=r; $("intro-rules").appendChild(li); });
+    $("intro-note").textContent = L.note;
+    show("v-intro"); $("go-check").focus();
+  }
+
+  function home(){ lvl=null; document.body.className=""; document.documentElement.className=""; $("chip").textContent="Tjek før du deler"; show("v-start"); }
+
+  function restart(){ kind=null; path=[]; trail=[]; ask("type"); }
+
+  function ask(id){
+    var q = Q[id].dyn ? dynQ(id) : Q[id];
+    $("q-h").textContent = t(q.h);
+    var help = t(q.help); $("q-help").textContent = help; $("q-help").classList.toggle("hidden", !help);
+    $("bar").style.width = Math.min(100, Math.round((path.length)/STEPS*100)) + "%";
+    var box = $("q-ans"); box.innerHTML = "";
+    q.a.forEach(function(a){
+      var b = document.createElement("button"); b.className="ans"; b.type="button";
+      var label = t(a.l);
+      b.innerHTML = '<span class="e" aria-hidden="true">'+a.e+'</span><span></span>';
+      b.lastChild.textContent = label;
+      b.addEventListener("click", function(){
+        path.push({ id:id, kind:kind });
+        trail.push(t(q.h) + " → " + label);
+        if(a.set) kind = a.set;
+        if(a.go.indexOf("R:")===0) result(a.go.slice(2)); else ask(a.go);
+      });
+      box.appendChild(b);
+    });
+    $("back").classList.toggle("hidden", path.length===0);
+    show("v-q");
+    var first = box.querySelector("button"); if(first) first.focus({preventScroll:true});
+  }
+
+  function back(){
+    if(!path.length) return;
+    var p = path.pop(); trail.pop(); kind = p.kind; ask(p.id);
+  }
+
+  function result(id){
+    var r = R[id];
+    var card = $("res-card"); card.className = "card res-"+r.c;
+    $("res-lamp").textContent = r.s;
+    $("res-h").textContent = t(r.h);
+    $("res-p").textContent = t(r.p);
+    $("res-tips-h").textContent = r.th;
+    var tips = r.tips ? t(r.tips) : ALT[kind];
+    $("res-tips").innerHTML = "";
+    (tips||[]).forEach(function(x){ var li=document.createElement("li"); li.textContent=x; $("res-tips").appendChild(li); });
+    $("trail").innerHTML = "";
+    trail.forEach(function(x){ var li=document.createElement("li"); li.textContent=x; $("trail").appendChild(li); });
+    show("v-res"); $("res-h").setAttribute("tabindex","-1"); $("res-h").focus({preventScroll:true});
+  }
+
+  /* ---------- HVAD VILLE DU GØRE? ---------- */
+  // Hver situation: sit (tekst pr. niveau), opts (l = svar, ok = rigtigt), ex (forklaring)
+  var SC = [
+    { sit:{ b:"Din klassekammerat siger: »Tag bare et billede af mig!« Må billedet komme med i albummet?",
+            u:"En 16-årig på holdet siger selv ja til at være med på et nærbillede til e-bogen. Er det nok?",
+            s:"Dit barnebarn på 12 år vil gerne med på et billede til holdets album og siger selv ja. Er det nok?" },
+      opts:[ {l:{ b:"Ja, han har jo selv sagt ja", u:"Ja, han er gammel nok til selv at bestemme", s:"Ja, hun har jo selv sagt ja" }},
+             {l:{ b:"Nej, en voksen fra hans familie skal også sige ja", u:"Nej, en forælder skal også give samtykke", s:"Nej, en forælder skal også spørges" }, ok:true},
+             {l:{ all:"Kun hvis billedet er godt" }} ],
+      ex:{ b:"Børn må ikke selv sige ja. Både barnet og en voksen fra familien skal sige ja.",
+           u:"Her gælder: under 18 kræver samtykke fra en forælder – ikke kun den unges eget ja. Den unges eget ønske skal selvfølgelig også respekteres.",
+           s:"Under 18 år kan man ikke selv give lov. Spørg barnets forælder – også selvom det er ens eget barnebarn." } },
+
+    { sit:{ b:"Du tager et billede af torvet. Der går mange mennesker, men alle er langt væk eller vender ryggen til. Må det komme med?",
+            u:"Et billede af Stændertorvet med en folkemængde på lang afstand – ingen ansigter kan skelnes. Kræver det samtykke?",
+            s:"Du fotograferer torvet en lørdag. Der er mange mennesker, men alle er langt væk. Skal du spørge dem alle sammen?" },
+      opts:[ {l:{ b:"Ja, det må gerne komme med", u:"Nej, det kan bruges uden samtykke", s:"Nej, det er fint, som det er" }, ok:true},
+             {l:{ b:"Nej, jeg skal spørge alle først", u:"Ja, alle på billedet skal give samtykke", s:"Ja, jeg skal spørge hver enkelt" }} ],
+      ex:{ b:"Når ingen kan genkendes, er billedet trygt. Det er lige præcis den nemme løsning!",
+           u:"Når ingen kan identificeres, er der ingen personoplysninger i spil. Det er den enkleste vej i felten.",
+           s:"Når ingen kan genkendes, er der ikke noget at spørge om. Grupper på afstand er altid fine." } },
+
+    { sit:{ b:"Du optager din nabo, der fortæller om gamle dage. Hun siger også, at en anden nabo var meget syg dengang. Hvad gør du?",
+            u:"I et interview fortæller en ældre beboer, at en navngiven nabo var alkoholiker. Beboeren selv har givet samtykke. Kan klippet bruges?",
+            s:"Under en optaget snak om gaden fortæller din gamle nabo, at en bestemt familie havde store pengeproblemer. Kan det komme med?" },
+      opts:[ {l:{ all:"Ja, den der fortæller har jo sagt ja" }},
+             {l:{ b:"Spørg en voksen – og tag måske den del ud", u:"Nej – klip det ud eller fjern navnet, og spørg holdlederen", s:"Tag den del ud eller fjern navnet – og spørg holdlederen" }, ok:true},
+             {l:{ all:"Det er lige meget, når det er så længe siden" }} ],
+      ex:{ b:"Den, der fortæller, har sagt ja – men den syge nabo har ikke. Private ting om andre skal en voksen kigge på.",
+           u:"Samtykket dækker fortælleren, ikke den nabo der omtales. Helbred er særligt følsomme oplysninger. Fjern navnet eller den del – og tal med holdlederen.",
+           s:"Fortælleren har sagt ja, men familien har ikke. Private ting om andre kan gøre ondt, også længe efter. Tag det ud eller lad holdlederen se på det." } },
+
+    { sit:{ b:"Din ven sagde ja til et billede til klassens album. Nu vil I også sætte det på hjemmesiden. Hvad gør du?",
+            u:"En deltager sagde ja til at være med i gruppens album. Nu vil I bruge billedet på foreningens hjemmeside. Er det i orden?",
+            s:"En på holdet sagde ja til et billede i jeres album. Nu vil I også lægge det på foreningens hjemmeside. Er det i orden?" },
+      opts:[ {l:{ all:"Ja, der er jo allerede sagt ja" }},
+             {l:{ b:"Spørg igen – og husk en voksen fra familien", u:"Nej, spørg igen om netop hjemmesiden", s:"Spørg venligt igen om hjemmesiden" }, ok:true} ],
+      ex:{ b:"Et ja til klassens album er ikke det samme som et ja til, at alle kan se det. Spørg igen – og fordi din ven er under 18, skal en voksen også sige ja.",
+           u:"Samtykke gælder til det, personen har sagt ja til. Offentlig brug er noget andet end gruppens album – spørg konkret.",
+           s:"Et ja til holdets album er ikke et ja til hjemmesiden. Det er nemt at spørge, og det giver tryghed." } },
+
+    { sit:{ b:"Du tager et billede af en sjov gammel dør på gaden. En fremmed mand står lige foran, og man kan tydeligt se hans ansigt. Hvad gør du?",
+            u:"Et billede taget på en offentlig gade viser en fremmed person tydeligt i forgrunden. Må det bruges, fordi det er taget offentligt?",
+            s:"Du fotograferer et gammelt hus. En fremmed står tydeligt foran. Det er jo en offentlig gade – må billedet bruges?" },
+      opts:[ {l:{ all:"Ja, gaden er offentlig" }},
+             {l:{ b:"Vent til han er gået – eller tag et nyt billede", u:"Nej – spørg, beskær eller tag et nyt billede", s:"Spørg ham, eller tag et nyt billede, når han er gået" }, ok:true} ],
+      ex:{ b:"Det er døren, der er det spændende. Vent lidt, og tag billedet igen uden manden.",
+           u:"At billedet er taget på et offentligt sted, ændrer ikke på, at en genkendelig person er personoplysninger. Ofte er et nyt billede den nemmeste løsning.",
+           s:"Også på en offentlig gade skal man spørge, når en person er tydelig på billedet. Det er huset, det handler om – så tag gerne et nyt." } },
+
+    { sit:{ b:"Du optager dig selv, mens du fortæller om din gade. Må det komme med?",
+            u:"Du laver en lydfortælling, hvor kun du selv taler, og du nævner ingen andre ved navn. Er der noget at tjekke?",
+            s:"Du optager dig selv, hvor du fortæller om din barndomsgade. Ingen andre nævnes. Må det komme med?" },
+      opts:[ {l:{ b:"Ja – men spørg også en voksen derhjemme, før det kommer på hjemmesiden", u:"Ja, det er dit eget materiale", s:"Ja, det er din egen fortælling" }, ok:true},
+             {l:{ all:"Nej, lyd må slet ikke bruges" }} ],
+      ex:{ b:"Din egen fortælling er fin! Men du er under 18, så hvis den skal ud, hvor alle kan høre den, skal en voksen også sige ja.",
+           u:"Når det kun er dig selv, og ingen andre kan genkendes, bestemmer du selv. Er du under 18, gælder reglen om forældresamtykke stadig ved offentlig brug.",
+           s:"Din egen fortælling bestemmer du selv over. Det er en af de bedste måder at bevare historien på." } },
+
+    { sit:{ b:"Din ven har ombestemt sig og vil ikke være med på billedet alligevel. Hvad gør I?",
+            u:"En deltager trækker sit samtykke tilbage, efter albummet er lavet. Hvad nu?",
+            s:"En på holdet fortryder og vil alligevel ikke være med i albummet. Hvad gør I?" },
+      opts:[ {l:{ all:"Det er for sent – albummet er jo lavet" }},
+             {l:{ b:"Billedet bliver taget ud", u:"Billedet fjernes de steder, I selv har lagt det", s:"Billedet tages ud igen" }, ok:true} ],
+      ex:{ b:"Man må altid ombestemme sig. Så tager I billedet ud – det er helt i orden.",
+           u:"Et samtykke kan altid trækkes tilbage. Så skal materialet fjernes fremadrettet. Derfor er det smart at have styr på, hvor det er brugt.",
+           s:"Man må altid fortryde. Så tager vi billedet ud igen – uden at gøre noget stort ud af det." } }
+  ];
+
+  var qi = 0, score = 0;
+  function quizStart(){ qi = 0; score = 0; $("qz-end").classList.add("hidden"); $("qz-card").classList.remove("hidden"); $("qz-again").classList.add("hidden"); quizShow(); show("v-quiz"); }
+  function quizShow(){
+    var s = SC[qi];
+    $("qz-count").textContent = "Situation " + (qi+1) + " af " + SC.length;
+    $("qz-bar").style.width = Math.round(qi/SC.length*100) + "%";
+    $("qz-sit").textContent = t(s.sit);
+    $("qz-fb").className = "fb hidden"; $("qz-next").classList.add("hidden");
+    var box = $("qz-ans"); box.innerHTML = "";
+    s.opts.forEach(function(o){
+      var b = document.createElement("button"); b.type="button"; b.className="ans";
+      b.textContent = t(o.l);
+      b.addEventListener("click", function(){
+        Array.prototype.forEach.call(box.children, function(x,i){ x.disabled = true; if(s.opts[i].ok) x.classList.add("right"); });
+        if(!o.ok) b.classList.add("wrong"); else score++;
+        var fb = $("qz-fb");
+        fb.className = "fb " + (o.ok ? "ok" : "no");
+        fb.innerHTML = "<strong></strong><span></span>";
+        fb.firstChild.textContent = o.ok ? ({ b:"Rigtigt!", u:"Korrekt.", s:"Helt rigtigt." })[lvl] : ({ b:"Ikke helt …", u:"Ikke helt.", s:"Ikke helt – men godt, du øver dig." })[lvl];
+        fb.lastChild.textContent = t(s.ex);
+        var nx = $("qz-next"); nx.textContent = qi < SC.length-1 ? "Næste situation →" : "Se resultat →";
+        nx.classList.remove("hidden"); nx.focus({preventScroll:true});
+      });
+      box.appendChild(b);
+    });
+    window.scrollTo(0,0);
+  }
+  function quizNext(){
+    qi++;
+    if(qi < SC.length){ quizShow(); return; }
+    $("qz-bar").style.width = "100%";
+    $("qz-card").classList.add("hidden"); $("qz-next").classList.add("hidden");
+    $("qz-end").classList.remove("hidden"); $("qz-again").classList.remove("hidden");
+    $("qz-end-h").textContent = score + " af " + SC.length + " rigtige";
+    $("qz-end-p").textContent = ({
+      b:"Godt gået! Det vigtigste er at huske: spørg først – og spørg en voksen, hvis du er i tvivl.",
+      u:"Tommelfingerregel: ingen genkendelige personer uden samtykke – og aldrig børns eget samtykke alene.",
+      s:"Godt gået. Husk blot: et venligt spørgsmål først gør det trygt for alle."
+    })[lvl];
+  }
+
+  /* ---------- SAMTYKKE-SEDLER ---------- */
+  function F(label, ph){ return '<div class="f"><label>'+label+'</label><input type="text" aria-label="'+label.replace(/:$/,"")+'" placeholder="'+(ph||"")+'"></div>'; }
+  function C(text, checked){ return '<label class="cb"><input type="checkbox"'+(checked?" checked":"")+'><span>'+text+'</span></label>'; }
+  var WHERE = C("Kun i gruppen / holdet og hos dem, der var med") +
+              C("I album, e-bog eller lydfortælling, der deles med familier og deltagere") +
+              C("På foreningens hjemmeside, hvor alle kan se det") +
+              C("I en udstilling eller ved et foredrag");
+  var COMMON_END =
+      '<div class="box small"><strong>Godt at vide</strong><br>' +
+      'Materialet bruges kun til lokalhistorisk formidling hos den ansvarlige, der står nedenfor. ' +
+      'Du kan til enhver tid trække dit ja tilbage – så fjerner vi materialet fra de steder, vi selv har lagt det. ' +
+      'Det koster ingenting og kræver ingen forklaring.</div>' +
+      F("Ansvarlig:", "Forening / skole / hold") + F("Kontakt:", "Navn og telefon eller mail");
+  var SHEETS = {
+    barn:'<h2>Samtykke – billeder og lyd af mit barn</h2>' +
+      '<p class="lead">Til forælder eller anden med forældremyndighed</p>' +
+      F("Barnets navn:") + F("Aktivitet / dato:", "Fx byvandring Syd for Banen, 12. maj") +
+      '<h4>Billeder og lyd af mit barn må bruges</h4>' + WHERE +
+      '<h4>Navn</h4>' + C("Barnets fornavn må stå ved billedet eller fortællingen") + C("Der må ikke stå noget navn") +
+      '<h4>Barnets eget ønske</h4>' + C("Jeg har talt med mit barn om det, og barnet vil gerne være med") +
+      COMMON_END +
+      '<div class="sign"><div>Dato</div><div>Underskrift (forælder)</div></div>' +
+      '<div class="sign"><div>Navn med blokbogstaver</div><div>Barnets underskrift (frivillig)</div></div>',
+    voksen:'<h2>Samtykke – billeder af mig</h2>' +
+      '<p class="lead">Til voksne deltagere og andre over 18 år</p>' +
+      F("Mit navn:") + F("Aktivitet / dato:", "Fx byvandring Syd for Banen, 12. maj") +
+      '<h4>Billeder af mig må bruges</h4>' + WHERE +
+      '<h4>Navn</h4>' + C("Mit navn må stå ved billedet") + C("Mit fornavn må stå ved billedet") + C("Der må ikke stå noget navn") +
+      COMMON_END +
+      '<div class="sign"><div>Dato</div><div>Underskrift</div></div>',
+    lyd:'<h2>Samtykke – optagelse af min fortælling</h2>' +
+      '<p class="lead">Til interview og lydfortællinger</p>' +
+      F("Mit navn:") + F("Emne for fortællingen:", "Fx Livet på Hersegade i 1950'erne") + F("Optaget den:") +
+      '<h4>Optagelsen må bruges</h4>' + WHERE +
+      '<h4>Navn</h4>' + C("Mit navn må nævnes sammen med fortællingen") + C("Fortællingen må kun bruges uden mit navn") +
+      '<h4>Andre personer i fortællingen</h4>' +
+      C("Jeg er indforstået med, at holdet fjerner navne eller private oplysninger om andre, hvis det er nødvendigt") +
+      C("Jeg vil gerne høre eller se den færdige fortælling, før den bliver vist offentligt") +
+      '<p class="small">Er fortælleren under 18 år, skal en forælder også skrive under.</p>' +
+      COMMON_END +
+      '<div class="sign"><div>Dato</div><div>Underskrift (fortæller)</div></div>' +
+      '<div class="sign"><div>Navn med blokbogstaver</div><div>Underskrift (forælder, hvis under 18)</div></div>'
+  };
+  function seddel(v){
+    $("sheet").innerHTML = SHEETS[v];
+    document.querySelectorAll(".segb").forEach(function(b){ var valgt = b.dataset.v===v; b.setAttribute("aria-checked", valgt ? "true" : "false"); b.tabIndex = valgt ? 0 : -1; });
+  }
+  function seddelStart(){ seddel(lvl==="b" ? "barn" : "voksen"); show("v-seddel"); }
+  document.querySelectorAll(".segb").forEach(function(b){ b.addEventListener("click", function(){ seddel(b.dataset.v); }); });
+  // Valget af seddel kan også styres med piletasterne, som en almindelig radiogruppe.
+  document.querySelector(".seg").addEventListener("keydown", function(e){
+    var knapper = Array.prototype.slice.call(document.querySelectorAll(".segb"));
+    var i = knapper.indexOf(document.activeElement); if(i < 0) return;
+    var n = { ArrowRight:1, ArrowDown:1, ArrowLeft:-1, ArrowUp:-1 }[e.key]; if(!n) return;
+    e.preventDefault(); var ny = knapper[(i + n + knapper.length) % knapper.length]; ny.focus(); seddel(ny.dataset.v);
+  });
+  $("print").addEventListener("click", function(){
+    try { window.print(); } catch(e){ $("print-note").style.fontWeight = "700"; }
+  });
+
+  /* ---------- NAVIGATION ---------- */
+  document.querySelectorAll(".door").forEach(function(d){ d.addEventListener("click", function(){ setLevel(d.dataset.lvl); }); });
+  $("go-check").addEventListener("click", restart);
+  $("go-quiz").addEventListener("click", quizStart);
+  $("go-seddel").addEventListener("click", seddelStart);
+  $("qz-next").addEventListener("click", quizNext);
+  $("qz-again").addEventListener("click", quizStart);
+  $("back").addEventListener("click", back);
+  document.addEventListener("click", function(e){
+    var a = e.target.closest("[data-act]"); if(!a) return;
+    if(a.dataset.act==="home") home();
+    else if(a.dataset.act==="restart") restart();
+    else if(a.dataset.act==="menu"){ show("v-intro"); }
+  });
+})();
+</script>
+</body>
+</html>

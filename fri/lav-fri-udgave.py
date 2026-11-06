@@ -680,7 +680,7 @@ def lav_emneord():
 
 
 # Værktøjer, der allerede er generelle, og som bare kopieres med.
-KOPIER = ['tools/feltoptager.html', 'tools/lydlab.html', 'tools/fotolab.html', 'tools/skyggeramme.html']
+KOPIER = ['tools/feltoptager.html', 'tools/lydlab.html', 'tools/fotolab.html', 'tools/skyggeramme.html', 'tools/maa-det-komme-med.html']
 
 
 ZIP_NAVN = 'lokalhistorier-fri-udgave.zip'
