@@ -3,35 +3,45 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Må det komme med? – Fotosafari</title>
-<meta name="DC.title" content="Må det komme med? – Fotosafari">
+<!-- Må det komme med? · version 1.0 (nov. 2026)
+     Et tjek-lys om billeder, lyd og tekst med mennesker i, i tre udgaver: 5. klasse,
+     unge/uddannelse og 60+. Med små øvelser og samtykkesedler til udskrift.
+     Reglerne er med vilje strengere end loven, så de er lette at følge.
+     Vejledning, ikke juridisk rådgivning. Alt sker i browseren; intet sendes nogen steder hen. -->
+<title>Må det komme med?</title>
+<meta name="DC.title" content="Må det komme med?">
 <meta name="DC.description" content="Interaktivt tjek-lys om billeder, lyd og tekst med mennesker i – i tre udgaver: 5. klasse, unge/uddannelse og 60+.">
-<meta name="DC.subject" content="GDPR; samtykke; Fotosafari; formidling">
+<meta name="DC.subject" content="GDPR; samtykke; formidling; lokalhistorie">
 <meta name="DC.language" content="da">
 <meta name="DC.type" content="InteractiveResource">
 <meta name="DC.format" content="text/html">
 <meta name="DC.date" content="2026-11-06">
-<meta name="DC.rights" content="Udkast. Vejledning – ikke juridisk rådgivning.">
+<meta name="DC.rights" content="Vejledning, ikke juridisk rådgivning. Må bruges og deles frit.">
 <style>
+  /* Værktøjskassens egne farver (som Fotolab og Fælles emneord). Trafiklysets grøn,
+     gul og rød betyder noget og er de samme i alle tre udgaver. Udgaverne adskiller
+     sig kun ved skriftstørrelsen. */
   :root{
-    --bg:#f5f8fb; --card:#ffffff; --ink:#1b2a3a; --muted:#4a5d70; --line:#d5dfe8;
-    --accent:#2a7fc4; --accent-ink:#ffffff; --soft:#e8f3fc;
-    --green:#1e8a4c; --green-soft:#e6f5ec;
+    --bg:#EDE7D8; --card:#FBF8EF; --ink:#211E19; --muted:#5F5A4B; --line:#cbc2a8;
+    --accent:#9A4630; --accent-ink:#FDF8EE; --soft:#F4E4DC;
+    --green:#1e8a4c; --green-ink:#166534; --green-soft:#e6f5ec;
     --yellow:#b7790d; --yellow-soft:#fdf3dc;
     --red:#c0392b; --red-soft:#fbe9e7;
-    --radius:18px; --base:18px;
-    --font:"Segoe UI", "Helvetica Neue", Arial, system-ui, sans-serif;
+    --radius:14px; --base:18px;
+    --font:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --serif:Georgia, 'Iowan Old Style', 'Palatino Linotype', Palatino, serif;
   }
-  body.lvl-b{ --bg:#f3f9fd; --accent:#2a8fd8; --soft:#e3f2fc; --base:19px; }
-  body.lvl-u{ --bg:#f4f5f7; --ink:#1c2533; --accent:#33465e; --soft:#e7ebf1; --base:17px; }
-  body.lvl-s{ --bg:#faf5ec; --ink:#2e2418; --muted:#5c4d3b; --line:#e4d8c4; --accent:#276b70; --soft:#e7f0ee; --base:21px; }
+  /* Skriftstørrelsen sættes på hele siden (html), så rem-målene følger med. */
+  html.lvl-b{ --base:19px; }
+  html.lvl-u{ --base:18px; }
+  html.lvl-s{ --base:21px; }
 
   *{ box-sizing:border-box; }
   html{ font-size:var(--base); }
   body{ margin:0; background:var(--bg); color:var(--ink); font-family:var(--font); line-height:1.5; }
   .wrap{ max-width:760px; margin:0 auto; padding:1.4rem 1.1rem 3rem; }
   header{ margin-bottom:1.4rem; }
-  h1{ font-size:1.9rem; line-height:1.15; margin:0 0 .3rem; letter-spacing:-.01em; }
+  h1{ font-family:var(--serif); font-size:1.9rem; line-height:1.15; margin:0 0 .3rem; }
   .sub{ color:var(--muted); margin:0; }
   .chip{ display:inline-block; font-size:.75rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase;
          background:var(--accent); color:var(--accent-ink); padding:.25rem .7rem; border-radius:99px; margin-bottom:.7rem; }
@@ -42,11 +52,11 @@
   .door{ text-align:left; border:2px solid var(--line); background:var(--card); border-radius:var(--radius);
          padding:1.2rem; cursor:pointer; font:inherit; color:inherit; display:flex; flex-direction:column; gap:.4rem;
          transition:border-color .15s, transform .15s; }
-  .door:hover,.door:focus-visible{ border-color:#2a7fc4; transform:translateY(-2px); outline:none; }
+  .door:hover,.door:focus-visible{ border-color:var(--accent); transform:translateY(-2px); }
   .door .icon{ font-size:2rem; line-height:1; }
   .door strong{ font-size:1.15rem; }
-  .door span{ color:#4a5d70; font-size:.9rem; }
-  .door.b{ background:#eef7fd; } .door.u{ background:#eef1f5; } .door.s{ background:#fbf3e6; font-size:1.05rem; }
+  .door span{ color:var(--muted); font-size:.9rem; }
+  .door.s{ font-size:1.05rem; }
 
   .card{ background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:1.4rem; margin-bottom:1rem; }
   .rules{ list-style:none; padding:0; margin:0 0 1rem; counter-reset:r; }
@@ -61,7 +71,7 @@
   .answers{ display:grid; gap:.7rem; margin-top:1rem; }
   .ans{ font:inherit; color:inherit; text-align:left; background:var(--card); border:2px solid var(--line); border-radius:14px;
         padding:.9rem 1.1rem; cursor:pointer; display:flex; gap:.8rem; align-items:center; min-height:3.2rem; }
-  .ans:hover,.ans:focus-visible{ border-color:var(--accent); background:var(--soft); outline:none; }
+  .ans:hover,.ans:focus-visible{ border-color:var(--accent); background:var(--soft); }
   .ans .e{ font-size:1.5rem; width:2rem; text-align:center; flex:none; }
   .ans small{ display:block; color:var(--muted); font-size:.85rem; }
 
@@ -69,7 +79,8 @@
   .btn{ font:inherit; font-weight:600; border-radius:12px; padding:.7rem 1.2rem; cursor:pointer; border:2px solid var(--accent); }
   .btn.primary{ background:var(--accent); color:var(--accent-ink); }
   .btn.ghost{ background:transparent; color:var(--accent); }
-  .btn:focus-visible{ outline:3px solid var(--ink); outline-offset:2px; }
+  /* Tydelig ramme for dem, der bruger tastaturet (Builder-standard afsnit 9). */
+  .btn:focus-visible, .door:focus-visible, .ans:focus-visible, .tile:focus-visible, .segb:focus-visible{ outline:3px solid var(--accent); outline-offset:2px; }
 
   .light{ display:flex; gap:1.2rem; align-items:center; margin-bottom:1rem; }
   .lamp{ width:5.5rem; height:5.5rem; border-radius:50%; flex:none; display:flex; align-items:center; justify-content:center;
@@ -77,7 +88,7 @@
   .res-green{ border-color:var(--green); background:var(--green-soft); } .res-green .lamp{ background:var(--green); }
   .res-yellow{ border-color:var(--yellow); background:var(--yellow-soft); } .res-yellow .lamp{ background:var(--yellow); }
   .res-red{ border-color:var(--red); background:var(--red-soft); } .res-red .lamp{ background:var(--red); }
-  .res-green h2{ color:var(--green); } .res-yellow h2{ color:#8a5a06; } .res-red h2{ color:var(--red); }
+  .res-green h2{ color:var(--green-ink); } .res-yellow h2{ color:#8a5a06; } .res-red h2{ color:var(--red); }
   .tips{ margin:.4rem 0 0; padding-left:1.2rem; } .tips li{ margin-bottom:.35rem; }
   h3{ font-size:1rem; margin:1rem 0 .3rem; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); }
   .trail{ font-size:.9rem; color:var(--muted); margin:0; padding-left:1.2rem; }
@@ -85,7 +96,7 @@
   .tiles{ display:grid; gap:.8rem; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); }
   .tile{ text-align:left; font:inherit; color:inherit; background:var(--card); border:2px solid var(--line); border-radius:var(--radius);
          padding:1.1rem; cursor:pointer; display:flex; flex-direction:column; gap:.3rem; }
-  .tile:hover,.tile:focus-visible{ border-color:var(--accent); background:var(--soft); outline:none; }
+  .tile:hover,.tile:focus-visible{ border-color:var(--accent); background:var(--soft); }
   .tile .icon{ font-size:1.8rem; line-height:1; } .tile strong{ font-size:1.1rem; } .tile span{ color:var(--muted); font-size:.9rem; }
   .chip.soft{ background:var(--soft); color:var(--accent); }
 
@@ -136,7 +147,7 @@
 <body>
 <div class="wrap">
   <header>
-    <div class="chip" id="chip">Fotosafari</div>
+    <div class="chip" id="chip">Tjek før du deler</div>
     <h1>Må det komme med?</h1>
     <p class="sub" id="sub">Et hurtigt tjek, før et billede, en lydbid eller en tekst kommer med i jeres album eller historie.</p>
   </header>
@@ -244,7 +255,7 @@
   </main>
 
   <footer>
-    Projektets regler er med vilje mere forsigtige end loven, så de er nemme at følge.
+    Reglerne her er med vilje mere forsigtige end loven, så de er nemme at følge.
     Det her er en vejledning – ikke juridisk rådgivning. I tvivl? Spørg holdlederen.
   </footer>
 </div>
@@ -259,13 +270,13 @@
   function k(o){ return (o && typeof o==="object" && o[kind]) ? o[kind] : o; } // vælg efter materialetype
 
   var LEVELS = {
-    b:{ chip:"Fotosafari · 5. klasse", intro:"Tre ting du skal huske",
+    b:{ chip:"5. klasse", intro:"Tre ting du skal huske",
         rules:["Spørg først – foto bagefter.","Børn må ikke selv sige ja. En voksen skal også sige ja.","Er du i tvivl, så spørg din lærer, før du gemmer eller viser noget."],
         note:"Det gælder ikke kun billeder. En stemme på en optagelse og et navn i en tekst tæller også!" },
-    u:{ chip:"Fotosafari · ung / uddannelse", intro:"Tre regler i projektet",
+    u:{ chip:"Ung / uddannelse", intro:"Tre regler",
         rules:["Kan man genkende en person – på ansigt, stemme, navn eller kendetegn – skal personen sige ja.","Er personen under 18, skal en forælder også give samtykke – ikke kun den unge selv.","I tvivl? Behold materialet lokalt og spørg holdlederen, før det bruges."],
         note:"Det er det færdige værk, der tæller: hvad er med i albummet eller historien – og hvor bliver det vist?" },
-    s:{ chip:"Fotosafari · 60+", intro:"Det er nemt at huske",
+    s:{ chip:"60+", intro:"Det er nemt at huske",
         rules:["Spørg altid først: »Må jeg tage et billede af dig?« – også når I kender hinanden godt.","Børn og børnebørn under 18 kan ikke selv sige ja. Spørg en voksen i familien.","Der er ingen dumme spørgsmål – spørg blot holdlederen."],
         note:"Det samme gælder, når I optager en samtale eller skriver en erindring, hvor andre bliver nævnt." }
   };
@@ -324,7 +335,7 @@
              lyd:{ b:"Bliver der sagt noget privat om nogen?", u:"Indeholder optagelsen private eller følsomme oplysninger om nogen?", s:"Bliver der fortalt noget privat om nogen?" },
              tekst:{ b:"Fortæller teksten noget privat om nogen?", u:"Indeholder teksten private eller følsomme oplysninger om nogen?", s:"Fortæller historien noget privat om nogen?" } }),
       help:{ b:"Fx at nogen er syg, er kommet til skade, eller noget de ville blive flove over.",
-             u:"Fx helbred, familieforhold, økonomi, religion – også om personer, der ikke selv er med i projektet.",
+             u:"Fx helbred, familieforhold, økonomi, religion – også om personer, der ikke selv er med.",
              s:"Fx sygdom, uenighed i familien, penge – også om folk, der ikke selv er med." },
       a:[ {e:"⚠️", l:"Ja", go:"R:gul_privat"},
           {e:"👍", l:"Nej", go:"hvor"} ] };
@@ -370,7 +381,7 @@
     rod_barn:{ c:"red", s:"✕",
       h:{ b:"Ikke endnu", u:"Rødt lys – mangler forældresamtykke", s:"Ikke endnu" },
       p:{ b:"Børn må ikke selv sige ja. En voksen fra familien skal også sige ja, før det må komme med.",
-          u:"Under 18 skal en forælder eller en anden med forældremyndighed give samtykke. Den unges eget ja er ikke nok i projektet.",
+          u:"Under 18 skal en forælder eller en anden med forældremyndighed give samtykke. Den unges eget ja er ikke nok her.",
           s:"Børn og unge under 18 kan ikke selv give lov. En forælder skal spørges først." },
       th:"Det kan du gøre i stedet", tips:null },
     rod_voksen:{ c:"red", s:"✕",
@@ -387,7 +398,7 @@
   function show(v){ ["v-start","v-intro","v-q","v-res","v-quiz","v-seddel"].forEach(function(x){ $(x).classList.toggle("hidden", x!==v); }); window.scrollTo(0,0); }
 
   function setLevel(l){
-    lvl = l; document.body.className = "lvl-"+l;
+    lvl = l; document.body.className = "lvl-"+l; document.documentElement.className = "lvl-"+l;
     var L = LEVELS[l];
     $("chip").textContent = L.chip;
     $("intro-h").textContent = L.intro;
@@ -397,7 +408,7 @@
     show("v-intro"); $("go-check").focus();
   }
 
-  function home(){ lvl=null; document.body.className=""; $("chip").textContent="Fotosafari"; show("v-start"); }
+  function home(){ lvl=null; document.body.className=""; document.documentElement.className=""; $("chip").textContent="Tjek før du deler"; show("v-start"); }
 
   function restart(){ kind=null; path=[]; trail=[]; ask("type"); }
 
@@ -455,7 +466,7 @@
              {l:{ b:"Nej, en voksen fra hans familie skal også sige ja", u:"Nej, en forælder skal også give samtykke", s:"Nej, en forælder skal også spørges" }, ok:true},
              {l:{ all:"Kun hvis billedet er godt" }} ],
       ex:{ b:"Børn må ikke selv sige ja. Både barnet og en voksen fra familien skal sige ja.",
-           u:"I projektet gælder: under 18 kræver samtykke fra en forælder – ikke kun den unges eget ja. Den unges eget ønske skal selvfølgelig også respekteres.",
+           u:"Her gælder: under 18 kræver samtykke fra en forælder – ikke kun den unges eget ja. Den unges eget ønske skal selvfølgelig også respekteres.",
            s:"Under 18 år kan man ikke selv give lov. Spørg barnets forælder – også selvom det er ens eget barnebarn." } },
 
     { sit:{ b:"Du tager et billede af torvet. Der går mange mennesker, men alle er langt væk eller vender ryggen til. Må det komme med?",
@@ -501,7 +512,7 @@
       opts:[ {l:{ b:"Ja – men spørg også en voksen derhjemme, før det kommer på hjemmesiden", u:"Ja, det er dit eget materiale", s:"Ja, det er din egen fortælling" }, ok:true},
              {l:{ all:"Nej, lyd må slet ikke bruges" }} ],
       ex:{ b:"Din egen fortælling er fin! Men du er under 18, så hvis den skal ud, hvor alle kan høre den, skal en voksen også sige ja.",
-           u:"Når det kun er dig selv, og ingen andre kan genkendes, bestemmer du selv. Er du under 18, gælder projektets regel om forældresamtykke stadig ved offentlig brug.",
+           u:"Når det kun er dig selv, og ingen andre kan genkendes, bestemmer du selv. Er du under 18, gælder reglen om forældresamtykke stadig ved offentlig brug.",
            s:"Din egen fortælling bestemmer du selv over. Det er en af de bedste måder at bevare historien på." } },
 
     { sit:{ b:"Din ven har ombestemt sig og vil ikke være med på billedet alligevel. Hvad gør I?",
@@ -564,13 +575,13 @@
               C("I en udstilling eller ved et foredrag");
   var COMMON_END =
       '<div class="box small"><strong>Godt at vide</strong><br>' +
-      'Materialet bruges kun til lokalhistorisk formidling i projektet Fotosafari. ' +
+      'Materialet bruges kun til lokalhistorisk formidling hos den ansvarlige, der står nedenfor. ' +
       'Du kan til enhver tid trække dit ja tilbage – så fjerner vi materialet fra de steder, vi selv har lagt det. ' +
       'Det koster ingenting og kræver ingen forklaring.</div>' +
       F("Ansvarlig:", "Forening / skole / hold") + F("Kontakt:", "Navn og telefon eller mail");
   var SHEETS = {
     barn:'<h2>Samtykke – billeder og lyd af mit barn</h2>' +
-      '<p class="lead">Fotosafari · til forælder eller anden med forældremyndighed</p>' +
+      '<p class="lead">Til forælder eller anden med forældremyndighed</p>' +
       F("Barnets navn:") + F("Aktivitet / dato:", "Fx byvandring Syd for Banen, 12. maj") +
       '<h4>Billeder og lyd af mit barn må bruges</h4>' + WHERE +
       '<h4>Navn</h4>' + C("Barnets fornavn må stå ved billedet eller fortællingen") + C("Der må ikke stå noget navn") +
@@ -579,14 +590,14 @@
       '<div class="sign"><div>Dato</div><div>Underskrift (forælder)</div></div>' +
       '<div class="sign"><div>Navn med blokbogstaver</div><div>Barnets underskrift (frivillig)</div></div>',
     voksen:'<h2>Samtykke – billeder af mig</h2>' +
-      '<p class="lead">Fotosafari · til voksne deltagere og andre over 18 år</p>' +
+      '<p class="lead">Til voksne deltagere og andre over 18 år</p>' +
       F("Mit navn:") + F("Aktivitet / dato:", "Fx byvandring Syd for Banen, 12. maj") +
       '<h4>Billeder af mig må bruges</h4>' + WHERE +
       '<h4>Navn</h4>' + C("Mit navn må stå ved billedet") + C("Mit fornavn må stå ved billedet") + C("Der må ikke stå noget navn") +
       COMMON_END +
       '<div class="sign"><div>Dato</div><div>Underskrift</div></div>',
     lyd:'<h2>Samtykke – optagelse af min fortælling</h2>' +
-      '<p class="lead">Fotosafari · til interview og lydfortællinger</p>' +
+      '<p class="lead">Til interview og lydfortællinger</p>' +
       F("Mit navn:") + F("Emne for fortællingen:", "Fx Livet på Hersegade i 1950'erne") + F("Optaget den:") +
       '<h4>Optagelsen må bruges</h4>' + WHERE +
       '<h4>Navn</h4>' + C("Mit navn må nævnes sammen med fortællingen") + C("Fortællingen må kun bruges uden mit navn") +
@@ -600,10 +611,17 @@
   };
   function seddel(v){
     $("sheet").innerHTML = SHEETS[v];
-    document.querySelectorAll(".segb").forEach(function(b){ b.setAttribute("aria-checked", b.dataset.v===v ? "true" : "false"); });
+    document.querySelectorAll(".segb").forEach(function(b){ var valgt = b.dataset.v===v; b.setAttribute("aria-checked", valgt ? "true" : "false"); b.tabIndex = valgt ? 0 : -1; });
   }
   function seddelStart(){ seddel(lvl==="b" ? "barn" : "voksen"); show("v-seddel"); }
   document.querySelectorAll(".segb").forEach(function(b){ b.addEventListener("click", function(){ seddel(b.dataset.v); }); });
+  // Valget af seddel kan også styres med piletasterne, som en almindelig radiogruppe.
+  document.querySelector(".seg").addEventListener("keydown", function(e){
+    var knapper = Array.prototype.slice.call(document.querySelectorAll(".segb"));
+    var i = knapper.indexOf(document.activeElement); if(i < 0) return;
+    var n = { ArrowRight:1, ArrowDown:1, ArrowLeft:-1, ArrowUp:-1 }[e.key]; if(!n) return;
+    e.preventDefault(); var ny = knapper[(i + n + knapper.length) % knapper.length]; ny.focus(); seddel(ny.dataset.v);
+  });
   $("print").addEventListener("click", function(){
     try { window.print(); } catch(e){ $("print-note").style.fontWeight = "700"; }
   });

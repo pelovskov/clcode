@@ -60,7 +60,7 @@ Projektet startede som "Lokalhistorie på tværs af generationer" i Syd for Bane
 | Samling | forside, der binder flere filer sammen |
 | Piwigo Album | album hentet fra foreningens billedgalleri |
 
-**Værktøjer:** Feltoptager (optag lyd i marken), Lydlab og Fotolab (gør lyd og billeder klar), Metadata-hjælper (lader en AI foreslå metadata og kontrollerer svaret), Musikpakke, Skyggeramme, Billedarkiv (ordner billeder i albums) og et værktøj til sikre adgangskoder.
+**Værktøjer:** Feltoptager (optag lyd i marken), Lydlab og Fotolab (gør lyd og billeder klar), Metadata-hjælper (lader en AI foreslå metadata og kontrollerer svaret), Musikpakke, Skyggeramme, Billedarkiv (ordner billeder i albums), Galleriarkiv (gemmer et helt Piwigo-album som en mappe), «Må det komme med?» (tjek af samtykke til billeder, lyd og tekst med mennesker i, til skoleklasser, unge og 60+) og et værktøj til sikre adgangskoder.
 
 **Fælles regler:** Builder-standarden (version 2.22) sørger for, at alle byggere ser ens ud, har de samme syv farvetemaer og de samme udgivere og håndterer metadata ens.
 
