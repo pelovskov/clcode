@@ -63,6 +63,6 @@ Spørgsmål og idéer er meget velkomne. Skriv til mig på pel@lovskov.com.
 
 ## Noter til udkastet
 
-- Ca. 850 ord. Overskrifterne kan sættes direkte ind i WordPress som mellemrubrikker.
+- Ca. 750 ord. Overskrifterne kan sættes direkte ind i WordPress som mellemrubrikker.
 - Adressen til afspilleren og hylden er ikke med, så den ikke deles bredt, før I er klar. Den kan sættes ind under «Fra skuffen til lommen», hvis I vil.
 - Tal og fakta passer med det, der er lavet: Domkirken (572 billeder, 9 album, 310 MB), lyd med slukket skærm på Android og iOS, mærket «Nyt» på hylden og den frie udgave med *Må det komme med?*.
