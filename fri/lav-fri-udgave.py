@@ -37,7 +37,7 @@ UD = ROD / 'fri'
 # De byggere, der laves i fri udgave. Flere kommer til trin for trin.
 BYGGERE = ['side-bygger.html', 'album-bygger.html', 'enkeltbillede-bygger.html', 'foer-og-nu-bygger.html',
            'bog-bygger.html', 'lydfortaelling-bygger.html', 'mediekort-bygger.html',
-           'praesentation-bygger.html', 'samling-bygger.html']
+           'praesentation-bygger.html', 'samling-bygger.html', 'vejledning-bygger.html']
 
 THEMES = """const THEMES = {
   vinter: {

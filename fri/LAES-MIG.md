@@ -21,7 +21,7 @@ Filformatet er det samme. En fil fra den frie udgave kan derfor åbnes i forenin
 | Hvad | Fil |
 |---|---|
 | Forside | `index.html` |
-| Sidebygger, Album, Enkeltbillede, Før og Nu, Bog, Lydfortælling, Mediekort, Præsentation | `…-bygger.html` |
+| Sidebygger, Album, Enkeltbillede, Før og Nu, Bog, Lydfortælling, Mediekort, Præsentation, Vejledning | `…-bygger.html` |
 | Samling · Bygger, som binder 2–6 filer sammen | `samling-bygger.html` |
 | Søgeside · Bygger, som laver en søgeside til en mappe | `soegeside-bygger.html` |
 | Feltoptager, Lydlab, Fotolab og Skyggeramme | `feltoptager.html`, `lydlab.html`, `fotolab.html`, `skyggeramme.html` |
