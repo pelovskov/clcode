@@ -9,20 +9,21 @@
      QR-koden fører til https://pelovskov.github.io/clcode/fri/ og er lavet med Python-pakken segno. -->
 <title>Har du en historie i skuffen?</title>
 <style>
-  /* Samme blå som temaet Vinter i den frie udgave. */
+  /* Samme farver som temaet Sommer i den frie udgave, så arket til alle er grønt
+     og arket til skoler blåt (Vinter). */
   :root{
-    --accent:#2F5D8A;      /* 6,6:1 mod hvid */
-    --accent-lys:#EEF2F6;
-    --ink:#14202B;
-    --body:#25323D;
-    --muted:#4F5C68;       /* 6,9:1 mod hvid */
-    --line:#D6DEE6;
+    --accent:#2F7A46;
+    --accent-lys:#F3F7EE;
+    --ink:#1F2418;
+    --body:#2E3427;
+    --muted:#5E6553;
+    --line:#E6DFC6;
     --gul:#F4C542;
     --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
   }
   *{box-sizing:border-box}
   html{font-size:100%}
-  body{margin:0;background:#E4E9EF;color:var(--body);font-family:var(--sans);font-size:1.05rem;line-height:1.55}
+  body{margin:0;background:#FBF7EA;color:var(--body);font-family:var(--sans);font-size:1.05rem;line-height:1.55}
   a{color:var(--accent)}
   :focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 
@@ -30,10 +31,10 @@
   .vaerktoej p{margin:0;font-size:.98rem;color:var(--muted)}
   .vaerktoej button{font:inherit;font-weight:600;cursor:pointer;min-height:46px;padding:.45rem 1.2rem;border-radius:999px;
     border:2px solid var(--accent);background:var(--accent);color:#fff}
-  .vaerktoej button:hover{background:#244A6E;border-color:#244A6E}
+  .vaerktoej button:hover{background:#245F37;border-color:#245F37}
 
   /* Arket: ser ud som et stykke A4-papir på skærmen. */
-  .ark{max-width:210mm;margin:1rem auto 2rem;background:#fff;box-shadow:0 6px 24px rgba(20,32,43,.15);
+  .ark{max-width:210mm;margin:1rem auto 2rem;background:#fff;box-shadow:0 6px 24px rgba(31,36,24,.15);
     border-radius:6px;overflow:hidden}
   .hoved{background:var(--accent);color:#fff;padding:1.6rem 1.8rem 1.4rem;position:relative}
   .prikker{display:flex;gap:6px;margin-bottom:.7rem}
@@ -130,7 +131,7 @@
 
 <main class="ark">
   <header class="hoved">
-    <div class="prikker" aria-hidden="true"><i style="background:#BFD7EA"></i><i style="background:#fff"></i><i style="background:#2F7A46"></i><i style="background:#F4C542"></i></div>
+    <div class="prikker" aria-hidden="true"><i style="background:#F4C542"></i><i style="background:#FBF7EA"></i><i style="background:#CFE3C9"></i><i style="background:#fff"></i></div>
     <p class="over">Lokalhistorier · fri udgave · til alle</p>
     <h1>Har du en historie i skuffen?</h1>
     <p class="lead"><strong>Fortæl din egen lokalhistorie</strong>, gratis og uden login. Lav fotoalbum, erindringer,
