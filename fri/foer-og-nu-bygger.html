@@ -580,7 +580,7 @@ var DC_FIELDS = [
   ['creator',     'Ophav / skaber',     'fotograf, optager eller den der har skabt materialet', ''],
   ['subject',     'Emne / nøgleord',    'adskil med semikolon', ''],
   ['description', 'Beskrivelse',        'udfyldes automatisk fra teksten', ''],
-  ['publisher',   'Udgiver',   'skriv, hvem der står bag, fx en klasse, en skole eller dit navn', ''],
+  ['publisher',   'Udgiver',   'skriv, hvem der står bag, fx dit navn, din familie, en forening eller en klasse', ''],
   ['contributor', 'Bidragyder',         'den der har scannet, redigeret eller registreret', ''],
   ['date',        'Dato',               'helst ÅÅÅÅ-MM-DD, men fx "ca. 1955" er også i orden', ''],
   ['type',        'Type',               'DCMI-typeordforråd', 'Image'],
@@ -1031,7 +1031,7 @@ function buildDcFields(){
       // Fri udgave: udgiveren skrives som almindelig tekst.
       input = document.createElement('input');
       input.type = 'text';
-      input.placeholder = 'fx 7.b, Roskilde Lille Skole eller dit eget navn';
+      input.placeholder = 'fx dit eget navn, din familie eller 7.b, Roskilde Lille Skole';
     }else{
       input = document.createElement('input');
       input.type = 'text';
