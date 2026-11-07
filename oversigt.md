@@ -1,6 +1,6 @@
 # Oversigt over byggere og værktøjer
 
-Status: 18. oktober 2026 · Builder-standard version 2.24 (`builder-standard.md`)
+Status: 18. oktober 2026 · Builder-standard version 2.25 (`builder-standard.md`)
 
 Versionsnummeret står i byggerens eller værktøjets topbar (eller, hvor der ikke er en topbar, i en kommentar øverst i filen). **Filformat** er det tal, en bygger skriver i sine færdige filer som `builderVersion`. Det tælles op, når formatet ændres, og en bygger afviser filer med et lavere tal end sit eget.
 
@@ -22,6 +22,7 @@ Byggerne laver en færdig fil, som kan gemmes, deles og åbnes uden internet. De
 | Samling · Bygger | `samling-bygger.html` | 2.1 | 2 | forside der binder 2–6 færdige filer sammen | Collection |
 | Podcastserie · Bygger | `podcastserie-bygger.html` | 1.0 | 1 | én side med afspilningsliste til en serie på 2–6 lydafsnit, med lydfilerne i mappen ved siden af (mappeformatet), reserve på nettet og kontroltal. Afsnit kan hentes fra færdige mediekort | Sound |
 | Piwigo Albumbygger | `piwigo-album-bygger.html` | 2.1 | 1 | billedalbum hentet fra et album i et Piwigo-galleri | Image |
+| Vejledningsbygger | `vejledning-bygger.html` | 2.0 | 1 | trin-for-trin vejledning, hvor hvert trin har et skærmbillede (sat ind med ⌘V), en video eller kun tekst og en forklaring | Text |
 
 **Piwigo Albumbygger** skal ligge på galleriets egen webadresse for at kunne hente fra Piwigo. De andre kører lokalt.
 
@@ -74,7 +75,7 @@ I mappen `fri/` ligger **Lokalhistorier · fri udgave** til enkeltpersoner, skol
 | Søgeindeks · Online | `sbtv/` | den samme søgeside som Søgeside · Bygger, men med login, upload, administration og en enkel statistik over besøg, klik og søgeord på et webhotel med PHP. Se `sbtv/LAES-MIG.md` |
 | SFB-afspiller | `afspiller/` | afspiller historier direkte fra zip-filer (mappeformatet), uden udpakning. Kan lægges på hjemmeskærmen som en app (PWA) og virker uden internet. Historiehylden på webhotellet henter historier ind i appen med ét tryk. Version 0.13, prøveudgave. Adminsiden i `afspiller/admin/` (login, upload i stykker, flyt og slet) passer hylden uden FTP. Kan også vise et galleriarkiv. Mappen er selvstændig og kan blive sit eget projekt. Se `afspiller/LAES-MIG.md` |
 | Formidling | `formidling/` | præsentationsmateriale, der kan ses på skærmen og printes som ét A4-ark. `fri-til-skoler.html` er et ark til skoler om den frie udgave, `fri-udgave.html` er den grundige side med trin, forløb og spørgsmål og svar, `forening.html` og `forening-ark.html` er den grundige side og arket til foreninger, med pladser til tre videoer, og `overblik.html` fortæller om hele projektet og idéen bag (afløser de ældre sider start.html og index.html fra Syd for Banen) |
-| Builder-standarden | `builder-standard.md` | fælles regler for byggerne, version 2.24 |
+| Builder-standarden | `builder-standard.md` | fælles regler for byggerne, version 2.25 |
 | Projektresumé | `projekt-resume.md` | kort fortælling om hele projektet til idéudvikling og sparring med mennesker og Claude |
 | Fælles emneord | `emneord.md` | emneord, som alle foreninger staver ens, fx Musik og Arkitektur, så man kan finde et emne på tværs af foreningerne |
 | Husregler | `CLAUDE.md` | regler for samarbejdet med Claude |
@@ -88,7 +89,7 @@ I mappen `fri/` ligger **Lokalhistorier · fri udgave** til enkeltpersoner, skol
 
 ## Nævnt i standarden, men ikke i repoet endnu
 
-Vejledningsbygger og PWA · Bygger. Standarden beskriver dem, men filerne ligger ikke her.
+PWA · Bygger. Standarden beskriver den, men filen ligger ikke her.
 
 ## Filnavne
 

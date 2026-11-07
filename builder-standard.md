@@ -1,7 +1,7 @@
 # Builder-standard
 
 **Fælles specifikation for værktøjskassen**
-Version 2.24 · november 2026
+Version 2.25 · november 2026
 
 Referenceimplementering: **Sidebygger** (`side-bygger.html`, version 1.5).
 Når noget er i tvivl, er det referencefilen der gælder.
@@ -26,12 +26,12 @@ Værktøjskassen består af flere små, uafhængige builder-apps:
 | Samling · Bygger | forside der binder 2-6 færdige filer sammen til en kurateret samling | Collection |
 | Podcastserie · Bygger | én side med afspilningsliste til en serie på 2-6 lydafsnit, med lydfilerne i mappeformatet (5.7) | Sound |
 | Henvisning · Bygger | "skilt" der sender videre til en ekstern side | Text som standard; vælges efter det, der henvises til |
-| Vejledningsbygger | trin-for-trin vejledning | afklares |
+| Vejledningsbygger | trin-for-trin vejledning med skærmbilleder, video eller tekst i hvert trin | Text |
 | PWA · Bygger | samler færdige filer til en app til hjemmeskærmen | afklares |
 | Metadata-hjælper | ingen fil; laver en AI-prompt til Dublin Core og kontrollerer svaret (se afsnit 11) | - |
 | Galleriarkiv (`tools/galleriarkiv.html`, v1.0, se 5.8) | en mappe med et helt album fra Piwigo, med underalbum, billeder og tekster | Collection |
 
-Bragt i overensstemmelse med standarden: Sidebygger (v1.5, `side-bygger.html`), Album · Bygger (v3.1, `album-bygger.html`, følger 2.3), Enkeltbillede · Bygger (v3.0, `enkeltbillede-bygger.html`, følger 1.9), Præsentation · Bygger (v1.0, `praesentation-bygger.html`, følger 2.1), Samling · Bygger (v2.0, `samling-bygger.html`, følger 1.5), Mediekort · Bygger (v1.2, `mediekort-bygger.html`, følger 1.6), Piwigo Albumbygger (v2.0, `piwigo-album-bygger.html`, følger 1.6), Henvisning · Bygger (v2.0, `henvisning-bygger.html`, følger 1.8), Bogbygger (v4.0, `bog-bygger.html`, følger 1.9), Før og Nu · Bygger (v2.0, `foer-og-nu-bygger.html`, følger 2.4) og Lydfortælling · Bygger (v4.0, `lydfortaelling-bygger.html`, følger 1.9).
+Bragt i overensstemmelse med standarden: Sidebygger (v1.5, `side-bygger.html`), Album · Bygger (v3.1, `album-bygger.html`, følger 2.3), Enkeltbillede · Bygger (v3.0, `enkeltbillede-bygger.html`, følger 1.9), Præsentation · Bygger (v1.0, `praesentation-bygger.html`, følger 2.1), Samling · Bygger (v2.0, `samling-bygger.html`, følger 1.5), Mediekort · Bygger (v1.2, `mediekort-bygger.html`, følger 1.6), Piwigo Albumbygger (v2.0, `piwigo-album-bygger.html`, følger 1.6), Henvisning · Bygger (v2.0, `henvisning-bygger.html`, følger 1.8), Bogbygger (v4.0, `bog-bygger.html`, følger 1.9), Før og Nu · Bygger (v2.0, `foer-og-nu-bygger.html`, følger 2.4) og Lydfortælling · Bygger (v4.0, `lydfortaelling-bygger.html`, følger 1.9) og Vejledningsbygger (v2.0, `vejledning-bygger.html`, følger 2.25).
 
 Den Talende Booklet er udgået. Dens opgave, ét billede med lyd og tekst, løses nu af Mediekort · Bygger med typen **Talende billede**. Lydfortælling · Bygger består dog som den enkle udgave til dem, der kun skal bruge ét billede, lyd og tekst.
 
@@ -39,7 +39,9 @@ De løser hver sin opgave, men skal se ens ud, opføre sig ens og producere file
 
 Piwigo Albumbygger afviger bevidst på ét punkt: den kører ikke lokalt uden server, men skal ligge på galleriets egen webadresse, fordi den henter albummets oplysninger og billeder fra Piwigos egen grænseflade (`ws.php`). Åbnes den direkte fra computeren, kan den stadig indlæse og rette et album, man allerede har lavet, men ikke hente fra Piwigo, og den siger det selv. Den færdige fil er som i alle andre byggere en selvstændig HTML-fil uden server. Byggeren kan desuden gemme de hentede originaler som ZIP-fil og albummets oplysninger som `album.json`.
 
-Vejledningsbygger og PWA · Bygger afviger bevidst på enkelte punkter, fordi de ikke laver indhold på samme måde som de andre. Afvigelserne skal stå i appens egen beskrivelse.
+PWA · Bygger afviger bevidst på enkelte punkter, fordi den ikke laver indhold på samme måde som de andre. Afvigelserne skal stå i appens egen beskrivelse.
+
+Vejledningsbygger (`vejledning-bygger.html`, v2.0) følger standarden med to bevidste afvigelser: Skærmbilleder gemmes efter undtagelsen i afsnit 8, og et trin kan vise en video fra YouTube, Vimeo eller Screenpal. Der står altid også et almindeligt link til videoen, og der tages kun imod adresser, ikke indlejringskode.
 
 Metadata-hjælper laver ingen outputfil og har derfor hverken temaer, forhåndsvisning af en side, indlæsning eller afsnit 5. Den følger standarden for builderens udseende (afsnit 2 og 3), `PUBLISHERS`, dc.type-listen og de 15 felter i afsnit 4.
 
@@ -304,7 +306,7 @@ Værdierne gengives tegn for tegn, med **almindelig bindestreg**. Afvigende stav
 
 Indlæses en fil med en gammel værdi, rettes den til den gældende: tankestreg bliver til bindestreg, og "Røde Kors Roskilde" bliver til "Røde Kors". Status ved indlæsning nævner rettelsen. Står der et helt ukendt navn, vises det som ekstra valg markeret "ikke på listen", så det ikke går tabt, men kan rettes.
 
-**dc.identifier** foreslås automatisk som `PRÆFIKS-type-titelslug-år`, fx `SFB-side-astersvej-2026` eller `SFB-album-skomagervaerkstedet-paa-algade-2026`. Titelslug laves efter reglen i 5.6. `type` er et kort, fast ord for appen (side, lyd, album, bog, billede, foernu, video, podcast, talende, praesentation, samling, henvisning, serie). Mediekort · Bygger bruger `video` til video og videofil, `podcast` til podcast og `talende` til et talende billede, fx `SFB-talende-bager-hansens-butik-2026`. Forslaget kan overskrives.
+**dc.identifier** foreslås automatisk som `PRÆFIKS-type-titelslug-år`, fx `SFB-side-astersvej-2026` eller `SFB-album-skomagervaerkstedet-paa-algade-2026`. Titelslug laves efter reglen i 5.6. `type` er et kort, fast ord for appen (side, lyd, album, bog, billede, foernu, video, podcast, talende, praesentation, samling, henvisning, serie, vejledning). Mediekort · Bygger bruger `video` til video og videofil, `podcast` til podcast og `talende` til et talende billede, fx `SFB-talende-bager-hansens-butik-2026`. Forslaget kan overskrives.
 
 **dc.subject:** udgiveren står som første emneord. En app med faste serier (fx Sidebyggerens "Gader og veje" og "Steder, institutioner og mennesker") indsætter serien som andet emneord. Derefter kommer de fælles emneord fra `emneord.md`, som alle foreninger staver ens, og til sidst de mere præcise emneord.
 
@@ -562,6 +564,8 @@ Undtagelse: Præsentation · Bygger gemmer billederne i **2560 px** og kvalitet 
 
 Undtagelse: Samling · Bygger gemmer miniaturerne på kortene i **800 px** og kvalitet **0,82**, fordi de kun vises i lille størrelse. Forsidebilledet følger 1600 px / 0,82.
 
+Undtagelse: Vejledningsbygger gemmer skærmbilleder i **1600 px** som **PNG**, når det fylder mindst, og ellers som JPEG i kvalitet **0,90**, så tekst, pile og markeringer står skarpt. Det vælges af sig selv for hvert billede.
+
 Undtagelse: Mediekort · Bygger gemmer billedet til et **talende billede** i op til **2000 px** på den længste led og kvalitet **0,85**, i billedets egen form (ingen beskæring til 16:9), fordi billedet er hovedsagen og skal kunne ses i fuld skærm. Til video og podcast beskæres plakatbilledet til 16:9 og følger 1600 px / 0,82.
 
 Bemærk: canvas-komprimering fanger kun første billede i en animeret GIF.
@@ -743,6 +747,11 @@ Udgiverlisten i prompten skal altid svare til `PUBLISHERS` i 4.1. Kommer der en 
 ---
 
 ## 12. Ændringslog
+
+**Version 2.25 — november 2026.**
+- Ny bygger i repoet: **Vejledningsbygger** (`vejledning-bygger.html`, v2.0, format `vejledning`, builderVersion 1, dc.type Text, identifikatorens typeord `vejledning`). Den kommer fra et tidligere projekt (v1.0) og er bragt i overensstemmelse med standarden: de syv temaer, `PUBLISHERS`, Dublin Core med automatik, sedlen uden billeddata, hjem-knap, «Gem filen», «Om denne fil», mørk tilstand, skriftstørrelse, op-pil og advarsel, før man forlader siden. Hvert trin har en overskrift, et skærmbillede, en video eller kun tekst og en forklaring i Markdown. Skærmbilleder sættes ind med ⌘V / Ctrl+V i det trin, man arbejder i.
+- Afsnit 8: undtagelse for Vejledningsbygger (PNG, når det fylder mindst, ellers JPEG 0,90).
+- Afsnit 1: dc.type for Vejledning er afgjort (Text). Vejledningsbygger må vise videoer fra YouTube, Vimeo og Screenpal, altid med et almindeligt link.
 
 **Version 2.24 — november 2026.**
 - Afsnit 1: Søgeside · Bygger i den frie udgave og de søgesider, den laver, får knappen **Gem det hele som zip-fil**. Foreningernes søgesider er uændrede.
@@ -929,5 +938,5 @@ Udgiverlisten i prompten skal altid svare til `PUBLISHERS` i 4.1. Kommer der en 
 - Temaerne beholder i dag accentfarven i mørk tilstand. Røde, grønne, blå og orange accentfarver er derfor svage som tekst og links på mørk baggrund (fx Vinter 2,7:1, Sommer 3,4:1 og Hindbær 3,8:1, hvor kravet er 4,5:1). Forslag: hvert tema får en egen, lysere accentfarve til mørk tilstand (`dAccent`) og en tekstfarve til knapperne (`dOnAccent`), fx #FB7185 med mørk tekst #18181B til Hindbær. Det kræver en ændring i alle byggere og laves for alle temaer på én gang.
 
 **Afklares, når byggeren tages op:**
-- dc.type for Vejledning og PWA.
+- dc.type for PWA. (Vejledning er afgjort: Text, version 2.25.)
 - Hvilke af byggerne der skal have skriftstørrelse og op-pil (korte outputfiler kan undvære dem). Afgjort: Sidebygger, Album · Bygger og Præsentation · Bygger har begge dele.
