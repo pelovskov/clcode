@@ -73,8 +73,8 @@ VAELGER = [
 ]
 
 UDGIVER_FELT = ('<input type="text" id="dcPublisher" '
-                'placeholder="fx 7.b, Roskilde Lille Skole eller dit eget navn">')
-UDGIVER_HINT = 'dc.publisher — skriv, hvem der står bag, fx en klasse, en skole eller dit navn'
+                'placeholder="fx dit eget navn, din familie eller 7.b, Roskilde Lille Skole">')
+UDGIVER_HINT = 'dc.publisher — skriv, hvem der står bag, fx dit navn, din familie, en forening eller en klasse'
 
 
 def erstat(s, moenster, ny, antal=1, navn='', flags=re.S):
@@ -95,12 +95,12 @@ def lav(fil):
                    "      // Fri udgave: udgiveren skrives som almindelig tekst.\n"
                    "      input = document.createElement('input');\n"
                    "      input.type = 'text';\n"
-                   "      input.placeholder = 'fx 7.b, Roskilde Lille Skole eller dit eget navn';\n"
+                   "      input.placeholder = 'fx dit eget navn, din familie eller 7.b, Roskilde Lille Skole';\n"
                    "    }else{", navn=fil)
         s = erstat(s, r"input\.addEventListener\('change', invalidate\);[^\n]*",
                    "input.addEventListener('input', invalidate);\n      input.addEventListener('change', invalidate);", navn=fil)
         s = erstat(s, r"'vælg område, så filen kan filtreres i søgeindekset'",
-                   "'skriv, hvem der står bag, fx en klasse, en skole eller dit navn'", navn=fil)
+                   "'skriv, hvem der står bag, fx dit navn, din familie, en forening eller en klasse'", navn=fil)
     else:
         s = erstat(s, r'<select id="dcPublisher">.*?</select>', UDGIVER_FELT, navn=fil)
         s = erstat(s, r'dc\.publisher — vælg område, så filen kan filtreres i søgeindekset', UDGIVER_HINT, navn=fil)

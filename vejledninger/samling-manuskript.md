@@ -1,4 +1,4 @@
-# Manuskript: Sådan samler I klassens filer
+# Manuskript: Sådan samler du flere filer
 
 Screencast til **Samling · Bygger og Søgeside · Bygger** i den frie udgave. Længde: ca. 3 minutter.
 
