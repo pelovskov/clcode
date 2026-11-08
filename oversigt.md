@@ -41,7 +41,7 @@ Værktøjerne ligger i mappen `tools/`. De følger ikke Builder-standarden, men 
 | Lydudtrækker | `tools/lydudtraekker.html` | 1.1 | trækker lyden ud af en HTML-fil som mp3, når den oprindelige lydfil er væk |
 | Roskilde TV · arbejdsliste | `tools/rtv-arbejdsliste.html` | – | alle Roskilde TV's udsendelser med knappen «Lav mediekort», der åbner Mediekort med videoen udfyldt. Laves af `tools/lav-rtv-arbejdsliste.py` ud fra `roskilde-tv-videoarkiv.html`. Udgaven med fælles prikker ligger i søgeindekset som `sbtv/rtv.php` |
 | Galleriarkiv | `tools/galleriarkiv.html` | 1.0 | gemmer et helt album fra Piwigo med alle underalbum som en almindelig mappe med albumsider, billeder i ca. 1650 px, miniaturer, `album.json` og `LAES-MIG.txt`, så galleriet kan ses uden PHP og database (standardens 5.8). Skal ligge på galleriets webadresse ligesom Piwigo Albumbygger |
-| Må det komme med? | `tools/maa-det-komme-med.html` | 1.0 | tjek-lys om billeder, lyd og tekst med mennesker i, i tre udgaver (5. klasse, unge og 60+), med øvelser og samtykkesedler til udskrift. Vejledning, ikke juridisk rådgivning |
+| Må det komme med? | `tools/maa-det-komme-med.html` | 1.1 | tjek-lys om billeder, lyd og tekst med mennesker i, i tre udgaver (5. klasse, unge og studerende, og 60+, med tavshedspligt i praktik), med øvelser og samtykkesedler til udskrift. Vejledning, ikke juridisk rådgivning |
 | Billedudtrækker | `tools/billedudtraekker.html` | 1.0 | trækker billederne ud af en HTML-fil, fx et gammelt album, som billedfiler eller samlet i en zip-fil |
 | Musikpakke · Bygger | `tools/musikpakke-bygger.html` | 1 | laver en offline musik-app (PWA) med 3–5 samlinger som zip-fil |
 | Skyggeramme | `tools/skyggeramme.html` | – | sætter en blød skygge om et skærmbillede til wikien |

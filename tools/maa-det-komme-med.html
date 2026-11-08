@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<!-- Må det komme med? · version 1.0 (nov. 2026)
+<!-- Må det komme med? · version 1.1 (nov. 2026)
      Et tjek-lys om billeder, lyd og tekst med mennesker i, i tre udgaver: 5. klasse,
-     unge/uddannelse og 60+. Med små øvelser og samtykkesedler til udskrift.
+     unge og studerende og 60+. Med små øvelser og samtykkesedler til udskrift.
      Reglerne er med vilje strengere end loven, så de er lette at følge.
      Vejledning, ikke juridisk rådgivning. Alt sker i browseren; intet sendes nogen steder hen. -->
 <title>Må det komme med?</title>
 <meta name="DC.title" content="Må det komme med?">
-<meta name="DC.description" content="Interaktivt tjek-lys om billeder, lyd og tekst med mennesker i – i tre udgaver: 5. klasse, unge/uddannelse og 60+.">
+<meta name="DC.description" content="Interaktivt tjek-lys om billeder, lyd og tekst med mennesker i – i tre udgaver: 5. klasse, unge og studerende og 60+.">
 <meta name="DC.subject" content="GDPR; samtykke; formidling; lokalhistorie">
 <meta name="DC.language" content="da">
 <meta name="DC.type" content="InteractiveResource">
@@ -158,7 +158,7 @@
       <p>Vælg den udgave, der passer til dig:</p>
       <div class="doors">
         <button class="door b" data-lvl="b"><span class="icon" aria-hidden="true">🎒</span><strong>5. klasse</strong><span>Kort og enkelt – spørg først, foto bagefter</span></button>
-        <button class="door u" data-lvl="u"><span class="icon" aria-hidden="true">🎓</span><strong>Ung / uddannelse</strong><span>9. klasse, erhvervsskole og SOSU</span></button>
+        <button class="door u" data-lvl="u"><span class="icon" aria-hidden="true">🎓</span><strong>Unge og studerende</strong><span>Udskoling, ungdomsuddannelser og videregående uddannelser</span></button>
         <button class="door s" data-lvl="s"><span class="icon" aria-hidden="true">☕</span><strong>60+</strong><span>Stor skrift og god ro</span></button>
       </div>
     </section>
@@ -273,8 +273,8 @@
     b:{ chip:"5. klasse", intro:"Tre ting du skal huske",
         rules:["Spørg først – foto bagefter.","Børn må ikke selv sige ja. En voksen skal også sige ja.","Er du i tvivl, så spørg din lærer, før du gemmer eller viser noget."],
         note:"Det gælder ikke kun billeder. En stemme på en optagelse og et navn i en tekst tæller også!" },
-    u:{ chip:"Ung / uddannelse", intro:"Tre regler",
-        rules:["Kan man genkende en person – på ansigt, stemme, navn eller kendetegn – skal personen sige ja.","Er personen under 18, skal en forælder også give samtykke – ikke kun den unge selv.","I tvivl? Behold materialet lokalt og spørg holdlederen, før det bruges."],
+    u:{ chip:"Unge og studerende", intro:"Fire regler",
+        rules:["Kan man genkende en person – på ansigt, stemme, navn eller kendetegn – skal personen sige ja.","Er personen under 18, skal en forælder også give samtykke – ikke kun den unge selv.","I praktik har du tavshedspligt. Borgere, patienter, børn og pårørende fra praktikstedet kommer kun med, hvis praktikstedet og din underviser har sagt god for det.","I tvivl? Behold materialet lokalt og spørg din underviser, før det bruges."],
         note:"Det er det færdige værk, der tæller: hvad er med i albummet eller historien – og hvor bliver det vist?" },
     s:{ chip:"60+", intro:"Det er nemt at huske",
         rules:["Spørg altid først: »Må jeg tage et billede af dig?« – også når I kender hinanden godt.","Børn og børnebørn under 18 kan ikke selv sige ja. Spørg en voksen i familien.","Der er ingen dumme spørgsmål – spørg blot holdlederen."],
@@ -363,7 +363,7 @@
     gul_tvivl:{ c:"yellow", s:"?",
       h:{ b:"Spørg din lærer først", u:"Gult lys – afklar først", s:"Spørg holdlederen først" },
       p:{ b:"Det er helt fint at være i tvivl. Gem det, men vis det ikke til nogen, før du har spurgt.",
-          u:"Når du ikke kan svare sikkert, så behold materialet lokalt og tag det med til holdlederen, før det bruges.",
+          u:"Når du ikke kan svare sikkert, så behold materialet lokalt og tag det med til din underviser, før det bruges.",
           s:"Det er helt i orden at være i tvivl. Gem det, og tag det med til holdlederen – der er ingen dumme spørgsmål." },
       th:"Mens du venter", tips:{ all:["Slet det ikke – men del det heller ikke endnu."] } },
     gul_privat:{ c:"yellow", s:"!",
@@ -468,6 +468,12 @@
       ex:{ b:"Børn må ikke selv sige ja. Både barnet og en voksen fra familien skal sige ja.",
            u:"Her gælder: under 18 kræver samtykke fra en forælder – ikke kun den unges eget ja. Den unges eget ønske skal selvfølgelig også respekteres.",
            s:"Under 18 år kan man ikke selv give lov. Spørg barnets forælder – også selvom det er ens eget barnebarn." } },
+    { only:"u",
+      sit:{ u:"Du er i praktik på et plejecenter. En beboer vil gerne fortælle om sin barndom på Hersegade og siger ja til, at du optager det til holdets lydfortælling. Må du bruge optagelsen?" },
+      opts:[ {l:{ u:"Ja, beboeren har jo selv sagt ja" }},
+             {l:{ u:"Kun hvis praktikstedet og din underviser har sagt god for det, og beboeren kan overskue, hvad hun siger ja til" }, ok:true},
+             {l:{ u:"Ja, bare jeg ikke nævner plejecentrets navn" }} ],
+      ex:{ u:"I praktik har du tavshedspligt. Det, du ser og hører om borgere og patienter, må ikke komme ud uden en aftale. Beboerens eget ja er vigtigt, men praktikstedet skal være med, og beboeren skal kunne forstå, hvad optagelsen skal bruges til. Tal med praktikvejlederen og din underviser først." } },
 
     { sit:{ b:"Du tager et billede af torvet. Der går mange mennesker, men alle er langt væk eller vender ryggen til. Må det komme med?",
             u:"Et billede af Stændertorvet med en folkemængde på lang afstand – ingen ansigter kan skelnes. Kræver det samtykke?",
@@ -482,10 +488,10 @@
             u:"I et interview fortæller en ældre beboer, at en navngiven nabo var alkoholiker. Beboeren selv har givet samtykke. Kan klippet bruges?",
             s:"Under en optaget snak om gaden fortæller din gamle nabo, at en bestemt familie havde store pengeproblemer. Kan det komme med?" },
       opts:[ {l:{ all:"Ja, den der fortæller har jo sagt ja" }},
-             {l:{ b:"Spørg en voksen – og tag måske den del ud", u:"Nej – klip det ud eller fjern navnet, og spørg holdlederen", s:"Tag den del ud eller fjern navnet – og spørg holdlederen" }, ok:true},
+             {l:{ b:"Spørg en voksen – og tag måske den del ud", u:"Nej – klip det ud eller fjern navnet, og spørg din underviser", s:"Tag den del ud eller fjern navnet – og spørg holdlederen" }, ok:true},
              {l:{ all:"Det er lige meget, når det er så længe siden" }} ],
       ex:{ b:"Den, der fortæller, har sagt ja – men den syge nabo har ikke. Private ting om andre skal en voksen kigge på.",
-           u:"Samtykket dækker fortælleren, ikke den nabo der omtales. Helbred er særligt følsomme oplysninger. Fjern navnet eller den del – og tal med holdlederen.",
+           u:"Samtykket dækker fortælleren, ikke den nabo der omtales. Helbred er særligt følsomme oplysninger. Fjern navnet eller den del – og tal med din underviser.",
            s:"Fortælleren har sagt ja, men familien har ikke. Private ting om andre kan gøre ondt, også længe efter. Tag det ud eller lad holdlederen se på det." } },
 
     { sit:{ b:"Din ven sagde ja til et billede til klassens album. Nu vil I også sætte det på hjemmesiden. Hvad gør du?",
@@ -525,12 +531,13 @@
            s:"Man må altid fortryde. Så tager vi billedet ud igen – uden at gøre noget stort ud af det." } }
   ];
 
-  var qi = 0, score = 0;
-  function quizStart(){ qi = 0; score = 0; $("qz-end").classList.add("hidden"); $("qz-card").classList.remove("hidden"); $("qz-again").classList.add("hidden"); quizShow(); show("v-quiz"); }
+  var qi = 0, score = 0, SCL = SC;
+  // Nogle situationer passer kun til ét niveau (only), fx praktik for unge og studerende.
+  function quizStart(){ SCL = SC.filter(function(x){ return !x.only || x.only === lvl; }); qi = 0; score = 0; $("qz-end").classList.add("hidden"); $("qz-card").classList.remove("hidden"); $("qz-again").classList.add("hidden"); quizShow(); show("v-quiz"); }
   function quizShow(){
-    var s = SC[qi];
-    $("qz-count").textContent = "Situation " + (qi+1) + " af " + SC.length;
-    $("qz-bar").style.width = Math.round(qi/SC.length*100) + "%";
+    var s = SCL[qi];
+    $("qz-count").textContent = "Situation " + (qi+1) + " af " + SCL.length;
+    $("qz-bar").style.width = Math.round(qi/SCL.length*100) + "%";
     $("qz-sit").textContent = t(s.sit);
     $("qz-fb").className = "fb hidden"; $("qz-next").classList.add("hidden");
     var box = $("qz-ans"); box.innerHTML = "";
@@ -545,7 +552,7 @@
         fb.innerHTML = "<strong></strong><span></span>";
         fb.firstChild.textContent = o.ok ? ({ b:"Rigtigt!", u:"Korrekt.", s:"Helt rigtigt." })[lvl] : ({ b:"Ikke helt …", u:"Ikke helt.", s:"Ikke helt – men godt, du øver dig." })[lvl];
         fb.lastChild.textContent = t(s.ex);
-        var nx = $("qz-next"); nx.textContent = qi < SC.length-1 ? "Næste situation →" : "Se resultat →";
+        var nx = $("qz-next"); nx.textContent = qi < SCL.length-1 ? "Næste situation →" : "Se resultat →";
         nx.classList.remove("hidden"); nx.focus({preventScroll:true});
       });
       box.appendChild(b);
@@ -554,14 +561,14 @@
   }
   function quizNext(){
     qi++;
-    if(qi < SC.length){ quizShow(); return; }
+    if(qi < SCL.length){ quizShow(); return; }
     $("qz-bar").style.width = "100%";
     $("qz-card").classList.add("hidden"); $("qz-next").classList.add("hidden");
     $("qz-end").classList.remove("hidden"); $("qz-again").classList.remove("hidden");
-    $("qz-end-h").textContent = score + " af " + SC.length + " rigtige";
+    $("qz-end-h").textContent = score + " af " + SCL.length + " rigtige";
     $("qz-end-p").textContent = ({
       b:"Godt gået! Det vigtigste er at huske: spørg først – og spørg en voksen, hvis du er i tvivl.",
-      u:"Tommelfingerregel: ingen genkendelige personer uden samtykke – og aldrig børns eget samtykke alene.",
+      u:"Tommelfingerregel: ingen genkendelige personer uden samtykke, aldrig børns eget samtykke alene, og i praktik gælder tavshedspligten altid.",
       s:"Godt gået. Husk blot: et venligt spørgsmål først gør det trygt for alle."
     })[lvl];
   }
@@ -578,7 +585,7 @@
       'Materialet bruges kun til lokalhistorisk formidling hos den ansvarlige, der står nedenfor. ' +
       'Du kan til enhver tid trække dit ja tilbage – så fjerner vi materialet fra de steder, vi selv har lagt det. ' +
       'Det koster ingenting og kræver ingen forklaring.</div>' +
-      F("Ansvarlig:", "Forening / skole / hold") + F("Kontakt:", "Navn og telefon eller mail");
+      F("Ansvarlig:", "Forening / skole / uddannelse / hold") + F("Kontakt:", "Navn og telefon eller mail");
   var SHEETS = {
     barn:'<h2>Samtykke – billeder og lyd af mit barn</h2>' +
       '<p class="lead">Til forælder eller anden med forældremyndighed</p>' +
