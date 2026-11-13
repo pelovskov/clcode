@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Pengeskab</title>
+<style>
+:root{--accent:#7a1f2b;--accent-l:#f5e9eb;--bg:#f6f3ef;--card:#fff;--text:#1d1d1d;--muted:#555;--ok:#2e6b3a;--warn:#8a4b00;--focus:#2a62c9}
+*{box-sizing:border-box}
+body{font:19px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);margin:0}
+.wrap{max-width:920px;margin:0 auto;padding:24px 18px 80px}
+.box{background:var(--card);border-radius:14px;padding:30px;box-shadow:0 1px 5px rgba(0,0,0,.14);max-width:480px;margin:7vh auto}
+h1{font-size:1.7em;margin:0 0 6px;color:var(--accent)}
+h2{font-size:1.25em;margin:0 0 8px}
+p{margin:8px 0}
+.muted{color:var(--muted)}
+label{display:block;font-weight:600;margin:16px 0 4px}
+input,textarea{width:100%;font:inherit;padding:10px 12px;border:2px solid #aaa;border-radius:8px;background:#fff;color:var(--text)}
+textarea{min-height:140px;resize:vertical}
+input:focus,textarea:focus,button:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+button{font:inherit;font-weight:600;padding:10px 18px;border-radius:8px;border:2px solid var(--accent);background:#fff;color:var(--accent);cursor:pointer}
+button:hover{background:var(--accent-l)}
+button.primary{background:var(--accent);color:#fff}
+button.primary:hover{background:#5e1520}
+button.small{padding:5px 12px;font-size:.85em}
+button.danger{border-color:#a00;color:#a00}
+button:disabled{opacity:.5;cursor:wait}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.spread{justify-content:space-between}
+.mt{margin-top:22px}
+.err{color:#a00;font-weight:600;min-height:1.5em}
+.warnbox{background:#fff6e5;border-left:5px solid var(--warn);padding:12px 14px;border-radius:6px;margin:16px 0}
+.status{padding:10px 14px;border-radius:8px;margin:14px 0;font-weight:600}
+.status.dirty{background:#fff6e5;color:var(--warn);border:2px solid var(--warn)}
+.status.clean{background:#eaf4ec;color:var(--ok);border:2px solid var(--ok)}
+.card{background:var(--card);border-radius:12px;padding:18px 20px;margin:14px 0;box-shadow:0 1px 4px rgba(0,0,0,.12)}
+.card h3{margin:0 0 8px;font-size:1.15em}
+.field{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:6px 0}
+.field .lbl{color:var(--muted);min-width:120px}
+.mono{font-family:ui-monospace,Menlo,Consolas,monospace;word-break:break-all}
+.note{white-space:pre-wrap;margin-top:10px;padding-top:10px;border-top:1px solid #e3e3e3}
+.empty{text-align:center;color:var(--muted);padding:40px 0}
+dialog{border:none;border-radius:14px;padding:26px;max-width:600px;width:94vw;box-shadow:0 8px 30px rgba(0,0,0,.3)}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#222;color:#fff;padding:12px 20px;border-radius:10px;opacity:0;transition:opacity .25s;pointer-events:none;font-weight:600}
+#toast.show{opacity:1}
+.search{margin:6px 0 4px}
+a.openlink{display:inline-block;font-weight:600;font-size:.85em;padding:5px 12px;border-radius:8px;border:2px solid var(--accent);color:var(--accent);text-decoration:none}
+a.openlink:hover{background:var(--accent-l)}
+a.openlink:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+small{font-size:.85em}
+</style>
+</head>
+<body>
+<main id="app" class="wrap"></main>
+<div id="toast" role="status" aria-live="polite"></div>
+<script type="application/json" id="pengeskab-data">null</script>
+<script>
+"use strict";
+/* Pengeskab v1.1 - krypteret notefil i én HTML-fil.
+   Kryptering: AES-256-GCM. Nøgle udledt af brugernavn + adgangskode med PBKDF2-SHA256.
+   Alt foregår lokalt i browseren. Intet sendes nogen steder hen. */
+
+const ITER = 600000;          // PBKDF2-gentagelser
+const LOCK_MIN = 10;          // automatisk låsning efter så mange minutters inaktivitet
+const TEMPLATE = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
+const DATA_RE = /(<script type="application\/json" id="pengeskab-data">)[\s\S]*?(<\/script>)/;
+const enc = new TextEncoder(), dec = new TextDecoder();
+const app = document.getElementById("app");
+
+let embedded = null;
+try { embedded = JSON.parse(document.getElementById("pengeskab-data").textContent); } catch (e) {}
+
+const S = { key: null, salt: null, entries: null, dirty: false, blob: embedded, q: "" };
+
+/* ---------- hjælpere ---------- */
+function h(tag, attrs, ...kids) {
+  const el = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (v == null || v === false) continue;
+    if (k === "text") el.textContent = v;
+    else if (k.startsWith("on")) el.addEventListener(k.slice(2), v);
+    else if (k === "value") el.value = v;
+    else el.setAttribute(k, v === true ? "" : v);
+  }
+  for (const c of kids.flat()) if (c != null) el.append(c.nodeType ? c : document.createTextNode(c));
+  return el;
+}
+const b64e = buf => { const b = new Uint8Array(buf); let s = ""; for (let i = 0; i < b.length; i += 0x8000) s += String.fromCharCode.apply(null, b.subarray(i, i + 0x8000)); return btoa(s); };
+const b64d = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+const rnd = n => crypto.getRandomValues(new Uint8Array(n));
+const uid = () => b64e(rnd(9)).replace(/[^a-zA-Z0-9]/g, "");
+function toast(msg) { const t = document.getElementById("toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove("show"), 2500); }
+function fmtDate(iso) { try { return new Date(iso).toLocaleString("da-DK", { dateStyle: "long", timeStyle: "short" }); } catch (e) { return iso; } }
+
+/* ---------- kryptering ---------- */
+async function deriveKey(user, pass, salt, iter) {
+  const base = await crypto.subtle.importKey("raw", enc.encode(user.trim().toLowerCase() + "\u0000" + pass), "PBKDF2", false, ["deriveKey"]);
+  return crypto.subtle.deriveKey({ name: "PBKDF2", salt, iterations: iter, hash: "SHA-256" }, base, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]);
+}
+async function encryptState() {
+  const iv = rnd(12);
+  const pt = enc.encode(JSON.stringify({ entries: S.entries }));
+  const ct = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, S.key, pt);
+  return { format: "pengeskab", v: 1, kdf: "PBKDF2-SHA256", iter: ITER, salt: b64e(S.salt), iv: b64e(iv), ct: b64e(ct), saved: new Date().toISOString() };
+}
+async function decryptBlob(blob, user, pass) {
+  const salt = b64d(blob.salt);
+  const key = await deriveKey(user, pass, salt, blob.iter || ITER);
+  const pt = await crypto.subtle.decrypt({ name: "AES-GCM", iv: b64d(blob.iv) }, key, b64d(blob.ct));
+  return { key, salt, data: JSON.parse(dec.decode(pt)) };
+}
+
+/* ---------- skærmbilleder ---------- */
+function renderNoCrypto() {
+  app.replaceChildren(h("div", { class: "box" },
+    h("h1", { text: "Pengeskab" }),
+    h("p", { text: "Denne browser kan ikke køre krypteringen. Prøv at åbne filen i Firefox, Chrome, Edge eller Safari i en nyere udgave." })));
+}
+
+function renderCreate() {
+  const u = h("input", { id: "u", autocomplete: "off", spellcheck: "false" });
+  const p1 = h("input", { id: "p1", type: "password", autocomplete: "new-password" });
+  const p2 = h("input", { id: "p2", type: "password", autocomplete: "new-password" });
+  const err = h("p", { class: "err", role: "alert" });
+  const btn = h("button", { class: "primary", type: "submit", text: "Opret pengeskab" });
+  const form = h("form", { onsubmit: async e => {
+      e.preventDefault(); err.textContent = "";
+      if (!u.value.trim()) return err.textContent = "Skriv et brugernavn.";
+      if (p1.value.length < 10) return err.textContent = "Adgangskoden skal være mindst 10 tegn. Brug gerne en hel sætning.";
+      if (p1.value !== p2.value) return err.textContent = "De to adgangskoder er ikke ens.";
+      btn.disabled = true; btn.textContent = "Arbejder …";
+      S.salt = rnd(16); S.key = await deriveKey(u.value, p1.value, S.salt, ITER);
+      S.entries = []; S.dirty = true; renderVault();
+      toast("Pengeskabet er oprettet. Husk at gemme.");
+    } },
+    h("label", { for: "u", text: "Vælg brugernavn" }), u,
+    h("label", { for: "p1", text: "Vælg adgangskode" }), p1,
+    h("label", { for: "p2", text: "Gentag adgangskode" }), p2,
+    err, btn);
+  app.replaceChildren(h("div", { class: "box" },
+    h("h1", { text: "Opret nyt pengeskab" }),
+    h("p", { class: "muted", text: "Brugernavn og adgangskode bruges sammen til at låse indholdet. Der skelnes ikke mellem store og små bogstaver i brugernavnet, men det gør der i adgangskoden." }),
+    h("div", { class: "warnbox" }, h("strong", { text: "Vigtigt: " }), "Glemmer du brugernavn eller adgangskode, kan indholdet ikke gendannes af nogen. Skriv dem ned og opbevar dem et sikkert sted."),
+    form));
+  u.focus();
+}
+
+function renderUnlock() {
+  if (!S.blob) return renderCreate();
+  const u = h("input", { id: "u", autocomplete: "off", spellcheck: "false" });
+  const p = h("input", { id: "p", type: "password", autocomplete: "off" });
+  const err = h("p", { class: "err", role: "alert" });
+  const btn = h("button", { class: "primary", type: "submit", text: "Lås op" });
+  const form = h("form", { onsubmit: async e => {
+      e.preventDefault(); err.textContent = ""; btn.disabled = true; btn.textContent = "Arbejder …";
+      try {
+        const r = await decryptBlob(S.blob, u.value, p.value);
+        S.key = r.key; S.salt = r.salt; S.entries = r.data.entries || [];
+        renderVault();
+      } catch (ex) {
+        err.textContent = "Forkert brugernavn eller adgangskode.";
+        btn.disabled = false; btn.textContent = "Lås op"; p.value = ""; p.focus();
+      }
+    } },
+    h("label", { for: "u", text: "Brugernavn" }), u,
+    h("label", { for: "p", text: "Adgangskode" }), p,
+    err, btn);
+  app.replaceChildren(h("div", { class: "box" },
+    h("h1", { text: "Pengeskab" }),
+    h("p", { class: "muted", text: S.dirty ? "Låst med ugemte ændringer. Lås op for at fortsætte og gemme." : (S.blob.saved ? "Sidst gemt: " + fmtDate(S.blob.saved) : "") }),
+    form));
+  u.focus();
+}
+
+function renderVault() {
+  const search = h("input", { class: "search", type: "search", placeholder: "Søg i titel, brugernavn, webadresse og noter …", "aria-label": "Søg", value: S.q,
+    oninput: e => { S.q = e.target.value; renderList(); } });
+  app.replaceChildren(
+    h("div", { class: "row spread" },
+      h("h1", { text: "Pengeskab" }),
+      h("div", { class: "row" },
+        h("button", { class: "primary", onclick: () => editEntry(null), text: "+ Ny note" }),
+        h("button", { id: "saveBtn", onclick: saveFile, text: "Gem ny udgave" }),
+        h("button", { onclick: lock, text: "Lås" }))),
+    h("div", { id: "status" }),
+    search,
+    h("div", { id: "list" }),
+    h("div", { class: "row mt" },
+      h("button", { class: "small", onclick: changePassword, text: "Skift brugernavn/adgangskode" })),
+    h("p", { class: "muted mt" }, h("small", { text: `Låser automatisk efter ${LOCK_MIN} minutter uden aktivitet. Gem en ny udgave efter hver ændring, og slet derefter de gamle udgaver.` })));
+  renderStatus(); renderList(); search.focus();
+}
+
+function renderStatus() {
+  const st = document.getElementById("status"); if (!st) return;
+  const sb = document.getElementById("saveBtn");
+  if (S.dirty) {
+    st.replaceChildren(h("div", { class: "status dirty", text: "Der er ændringer, som ikke er gemt. Tryk på »Gem ny udgave«." }));
+    sb.className = "primary";
+  } else {
+    st.replaceChildren(h("div", { class: "status clean", text: "Alt er gemt." + (S.blob && S.blob.saved ? " Sidst gemt: " + fmtDate(S.blob.saved) : "") }));
+    sb.className = "";
+  }
+}
+
+function renderList() {
+  const list = document.getElementById("list"); if (!list) return;
+  const q = S.q.trim().toLowerCase();
+  const items = S.entries
+    .filter(e => !q || [e.titel, e.brugernavn, e.url, e.andet].join(" ").toLowerCase().includes(q))
+    .sort((a, b) => (a.titel || "").localeCompare(b.titel || "", "da"));
+  if (!items.length) {
+    list.replaceChildren(h("p", { class: "empty", text: S.entries.length ? "Ingen noter matcher søgningen." : "Pengeskabet er tomt. Tryk på »+ Ny note« for at tilføje den første." }));
+    return;
+  }
+  list.replaceChildren(...items.map(card));
+}
+
+function card(e) {
+  const pwSpan = h("span", { class: "mono", text: e.adgangskode ? "••••••••••" : "" });
+  let shown = false;
+  const showBtn = h("button", { class: "small", text: "Vis", onclick: () => {
+      shown = !shown; pwSpan.textContent = shown ? e.adgangskode : "••••••••••"; showBtn.textContent = shown ? "Skjul" : "Vis"; } });
+  return h("article", { class: "card" },
+    h("h3", { text: e.titel || "(uden titel)" }),
+    e.brugernavn ? h("div", { class: "field" }, h("span", { class: "lbl", text: "Brugernavn" }), h("span", { class: "mono", text: e.brugernavn }),
+      h("button", { class: "small", text: "Kopiér", onclick: () => copy(e.brugernavn) })) : null,
+    e.adgangskode ? h("div", { class: "field" }, h("span", { class: "lbl", text: "Adgangskode" }), pwSpan, showBtn,
+      h("button", { class: "small", text: "Kopiér", onclick: () => copy(e.adgangskode) })) : null,
+    e.url ? h("div", { class: "field" }, h("span", { class: "lbl", text: "Webadresse" }), h("span", { class: "mono", text: e.url }),
+      h("button", { class: "small", text: "Kopiér", onclick: () => copy(e.url) }),
+      safeHref(e.url) ? h("a", { href: safeHref(e.url), target: "_blank", rel: "noopener noreferrer", class: "openlink", text: "Åbn" }) : null) : null,
+    e.andet ? h("div", { class: "note", text: e.andet }) : null,
+    h("div", { class: "row mt" },
+      h("button", { class: "small", text: "Ret", onclick: () => editEntry(e) }),
+      h("button", { class: "small danger", text: "Slet", onclick: () => {
+          if (confirm(`Slet »${e.titel || "(uden titel)"}«?`)) { S.entries = S.entries.filter(x => x.id !== e.id); markDirty(); renderList(); toast("Noten er slettet."); } } }),
+      e.rettet ? h("small", { class: "muted", text: "Rettet " + fmtDate(e.rettet) }) : null));
+}
+
+function safeHref(u) {
+  let s = (u || "").trim(); if (!s) return null;
+  if (!/^[a-z][a-z0-9+.-]*:/i.test(s)) s = "https://" + s;
+  try { const x = new URL(s); return (x.protocol === "https:" || x.protocol === "http:") ? x.href : null; } catch (e) { return null; }
+}
+
+async function copy(txt) {
+  try { await navigator.clipboard.writeText(txt); toast("Kopieret"); }
+  catch (e) { const t = h("textarea", { value: txt }); document.body.append(t); t.select(); document.execCommand("copy"); t.remove(); toast("Kopieret"); }
+}
+
+function genPassword(len = 18) {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789-_!?#%+";
+  const out = []; const lim = 256 - (256 % chars.length);
+  while (out.length < len) for (const b of rnd(len * 2)) { if (b < lim && out.length < len) out.push(chars[b % chars.length]); }
+  return out.join("");
+}
+
+function editEntry(e) {
+  const isNew = !e;
+  const t = h("input", { id: "f-t", value: e ? e.titel : "", autocomplete: "off" });
+  const u = h("input", { id: "f-u", value: e ? e.brugernavn : "", autocomplete: "off", spellcheck: "false" });
+  const p = h("input", { id: "f-p", class: "mono", value: e ? e.adgangskode : "", autocomplete: "off", spellcheck: "false" });
+  const w = h("input", { id: "f-w", class: "mono", type: "text", inputmode: "url", value: e ? (e.url || "") : "", autocomplete: "off", spellcheck: "false", placeholder: "fx www.netbank.dk" });
+  const a = h("textarea", { id: "f-a", value: e ? e.andet : "" });
+  const err = h("p", { class: "err", role: "alert" });
+  const dlg = h("dialog", { "aria-labelledby": "dlg-h", onclose: () => dlg.remove() },
+    h("form", { method: "dialog", onsubmit: ev => {
+        ev.preventDefault();
+        if (!t.value.trim()) { err.textContent = "Giv noten en titel."; t.focus(); return; }
+        const rec = { id: e ? e.id : uid(), titel: t.value.trim(), brugernavn: u.value, adgangskode: p.value, url: w.value.trim(), andet: a.value, rettet: new Date().toISOString() };
+        S.entries = isNew ? [...S.entries, rec] : S.entries.map(x => x.id === rec.id ? rec : x);
+        markDirty(); dlg.close(); renderList(); toast(isNew ? "Noten er tilføjet." : "Noten er rettet.");
+      } },
+      h("h2", { id: "dlg-h", text: isNew ? "Ny note" : "Ret note" }),
+      h("label", { for: "f-t", text: "Titel (fx Netbank, MitID, Webhotel)" }), t,
+      h("label", { for: "f-u", text: "Brugernavn" }), u,
+      h("label", { for: "f-p", text: "Adgangskode" }), p,
+      h("div", { class: "row", style: "margin-top:8px" },
+        h("button", { type: "button", class: "small", text: "Lav en stærk adgangskode", onclick: () => { p.value = genPassword(); p.focus(); } })),
+      h("label", { for: "f-w", text: "Webadresse" }), w,
+      h("label", { for: "f-a", text: "Andet (kontonumre, svar på kontrolspørgsmål, noter …)" }), a,
+      err,
+      h("div", { class: "row mt" },
+        h("button", { class: "primary", type: "submit", text: "Gem note" }),
+        h("button", { type: "button", text: "Fortryd", onclick: () => dlg.close() }))));
+  document.body.append(dlg); dlg.showModal(); t.focus();
+}
+
+function changePassword() {
+  const u = h("input", { id: "c-u", autocomplete: "off", spellcheck: "false" });
+  const p1 = h("input", { id: "c-p1", type: "password", autocomplete: "new-password" });
+  const p2 = h("input", { id: "c-p2", type: "password", autocomplete: "new-password" });
+  const err = h("p", { class: "err", role: "alert" });
+  const btn = h("button", { class: "primary", type: "submit", text: "Skift" });
+  const dlg = h("dialog", { "aria-labelledby": "c-h", onclose: () => dlg.remove() },
+    h("form", { onsubmit: async ev => {
+        ev.preventDefault(); err.textContent = "";
+        if (!u.value.trim()) return err.textContent = "Skriv et brugernavn.";
+        if (p1.value.length < 10) return err.textContent = "Adgangskoden skal være mindst 10 tegn.";
+        if (p1.value !== p2.value) return err.textContent = "De to adgangskoder er ikke ens.";
+        btn.disabled = true; btn.textContent = "Arbejder …";
+        S.salt = rnd(16); S.key = await deriveKey(u.value, p1.value, S.salt, ITER);
+        markDirty(); dlg.close(); toast("Skiftet. Gem en ny udgave, og slet de gamle.");
+      } },
+      h("h2", { id: "c-h", text: "Skift brugernavn og adgangskode" }),
+      h("p", { class: "muted", text: "Gælder fra næste gang du gemmer. Gamle udgaver af filen kan stadig åbnes med det gamle login, så slet dem bagefter." }),
+      h("label", { for: "c-u", text: "Nyt brugernavn" }), u,
+      h("label", { for: "c-p1", text: "Ny adgangskode" }), p1,
+      h("label", { for: "c-p2", text: "Gentag ny adgangskode" }), p2,
+      err,
+      h("div", { class: "row mt" }, btn, h("button", { type: "button", text: "Fortryd", onclick: () => dlg.close() }))));
+  document.body.append(dlg); dlg.showModal(); u.focus();
+}
+
+function markDirty() { S.dirty = true; renderStatus(); }
+
+async function saveFile() {
+  const blob = await encryptState();
+  const html = TEMPLATE.replace(DATA_RE, (m, a, b) => a + JSON.stringify(blob) + b);
+  const d = new Date(); const pad = n => String(n).padStart(2, "0");
+  const name = `pengeskab-${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}.html`;
+  const url = URL.createObjectURL(new Blob([html], { type: "text/html" }));
+  const link = h("a", { href: url, download: name }); document.body.append(link); link.click(); link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
+  S.blob = blob; S.dirty = false; renderStatus();
+  toast("Ny udgave hentet: " + name);
+}
+
+async function lock() {
+  if (!S.key) return;
+  if (S.dirty) S.blob = await encryptState();   // ugemte ændringer holdes krypteret i hukommelsen
+  S.key = null; S.entries = null; S.q = "";
+  document.querySelectorAll("dialog").forEach(d => d.remove());
+  renderUnlock();
+}
+
+/* ---------- automatisk låsning ---------- */
+let idle;
+function resetIdle() { clearTimeout(idle); idle = setTimeout(() => { if (S.key) { lock(); } }, LOCK_MIN * 60000); }
+["mousemove", "keydown", "click", "touchstart", "scroll"].forEach(ev => document.addEventListener(ev, resetIdle, { passive: true }));
+resetIdle();
+
+window.addEventListener("beforeunload", e => { if (S.dirty) { e.preventDefault(); e.returnValue = ""; } });
+
+/* ---------- start ---------- */
+if (!window.crypto || !crypto.subtle) renderNoCrypto();
+else if (S.blob) renderUnlock();
+else renderCreate();
+</script>
+</body>
+</html>
