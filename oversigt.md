@@ -10,7 +10,7 @@ Byggerne laver en færdig fil, som kan gemmes, deles og åbnes uden internet. De
 
 | Navn | Fil | Version | Filformat | Laver | dc.type |
 |---|---|---|---|---|---|
-| Sidebygger | `side-bygger.html` | 1.7 | 1 | artikelside om gader, steder og mennesker | Text |
+| Sidebygger | `side-bygger.html` | 1.8 | 1 | artikelside om gader, steder og mennesker | Text |
 | Album · Bygger | `album-bygger.html` | 3.2 | 3 | billedalbum med grid og lightbox | Image |
 | Enkeltbillede · Bygger | `enkeltbillede-bygger.html` | 3.2 | 3 | ét billede i høj kvalitet med tekst og Exif | Image |
 | Før og Nu · Bygger | `foer-og-nu-bygger.html` | 2.1 | 2 | to billeder fra samme sted, rettet ind oven på hinanden, med skyder eller overtoning | Image |
