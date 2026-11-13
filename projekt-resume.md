@@ -62,7 +62,7 @@ Projektet startede som "Lokalhistorie på tværs af generationer" i Syd for Bane
 
 **Værktøjer:** Feltoptager (optag lyd i marken), Lydlab og Fotolab (gør lyd og billeder klar), Metadata-hjælper (lader en AI foreslå metadata og kontrollerer svaret), Musikpakke, Skyggeramme, Billedarkiv (ordner billeder i albums), Galleriarkiv (gemmer et helt Piwigo-album som en mappe), «Må det komme med?» (tjek af samtykke til billeder, lyd og tekst med mennesker i, til skoleklasser, unge og studerende og 60+) og et værktøj til sikre adgangskoder. Pengeskab (en krypteret notefil til private med logins og kontonumre, med sit eget ark til udskrift) har intet med lokalhistorie at gøre og ligger i sin egen mappe `pengeskab/`.
 
-**Fælles regler:** Builder-standarden (version 2.25) sørger for, at alle byggere ser ens ud, har de samme syv farvetemaer og de samme udgivere og håndterer metadata ens.
+**Fælles regler:** Builder-standarden (version 2.26) sørger for, at alle byggere ser ens ud, har de samme syv farvetemaer og de samme udgivere og håndterer metadata ens.
 
 ## Fri udgave til alle andre
 

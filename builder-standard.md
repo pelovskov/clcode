@@ -1,7 +1,7 @@
 # Builder-standard
 
 **Fælles specifikation for værktøjskassen**
-Version 2.25 · november 2026
+Version 2.26 · november 2026
 
 Referenceimplementering: **Sidebygger** (`side-bygger.html`, version 1.5).
 Når noget er i tvivl, er det referencefilen der gælder.
@@ -542,6 +542,7 @@ Tekst escapes før oversættelsen. Derfor skal reglerne matche den escapede teks
 ## 7. Indlæsning af eksisterende fil
 
 - Feltet står øverst og hedder **Indlæs eksisterende … (valgfri)**.
+- **Træk og slip.** Feltets ramme (`.filebox.indlaes`) har teksten «Træk filen hertil, eller vælg en fil:» og tager imod en fil, der trækkes ind fra fx Finder. Rammen lyser op (`dragover`), mens filen trækkes over den. Den sluppede fil sættes i filfeltet, og den almindelige indlæsning klarer resten, så tjek og beskeder er de samme. Andet end en `.html`-fil afvises med: "Det er ikke en .html-fil. Træk en fil, der er lavet med denne bygger." Slippes en fil et andet sted på siden, stoppes den, så browseren ikke åbner filen og arbejdet ikke forsvinder. Filfelter og egne slippefelter til billeder og lyd tager stadig selv imod filer. Indlæsningen tæller ikke som en ændring i advarslen før man lukker siden. Koden er den samme i alle byggere, se Sidebygger.
 - Filen parses med DOMParser, og `builder-source-data` læses. Mangler blokken, afvises filen med: "Filen kan ikke indlæses — den er ikke lavet med denne udgave af værktøjet."
 - Har filen et andet `format`, afvises den med: "Filen er lavet med et andet værktøj i serien og kan ikke indlæses her."
 - Er `builderVersion` lavere end byggerens egen, afvises filen med samme besked som ved manglende blok. Byggeren indeholder ikke kode til at omsætte gamle formater; filen laves om.
@@ -747,6 +748,9 @@ Udgiverlisten i prompten skal altid svare til `PUBLISHERS` i 4.1. Kommer der en 
 ---
 
 ## 12. Ændringslog
+
+**Version 2.26 — november 2026.**
+- Afsnit 7: feltet **Indlæs eksisterende … (valgfri)** tager imod en fil med træk og slip, og en fil, der slippes et andet sted på siden, åbnes ikke af browseren. Gælder alle 13 byggere med feltet: Sidebygger 1.8, Album 3.3, Bog 4.3, Enkeltbillede 3.3, Før og nu 2.2, Henvisning 2.2, Lydfortælling 4.2, Mediekort 2.2, Piwigo Album 2.2, Podcastserie 1.1, Præsentation 1.2, Samling 2.2 og Vejledning 2.1. Filformatet er uændret.
 
 **Version 2.25 — november 2026.**
 - Ny bygger i repoet: **Vejledningsbygger** (`vejledning-bygger.html`, v2.0, format `vejledning`, builderVersion 1, dc.type Text, identifikatorens typeord `vejledning`). Den kommer fra et tidligere projekt (v1.0) og er bragt i overensstemmelse med standarden: de syv temaer, `PUBLISHERS`, Dublin Core med automatik, sedlen uden billeddata, hjem-knap, «Gem filen», «Om denne fil», mørk tilstand, skriftstørrelse, op-pil og advarsel, før man forlader siden. Hvert trin har en overskrift, et skærmbillede, en video eller kun tekst og en forklaring i Markdown. Skærmbilleder sættes ind med ⌘V / Ctrl+V i det trin, man arbejder i.

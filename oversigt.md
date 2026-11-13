@@ -1,6 +1,6 @@
 # Oversigt over byggere og værktøjer
 
-Status: 18. oktober 2026 · Builder-standard version 2.25 (`builder-standard.md`)
+Status: 18. oktober 2026 · Builder-standard version 2.26 (`builder-standard.md`)
 
 Versionsnummeret står i byggerens eller værktøjets topbar (eller, hvor der ikke er en topbar, i en kommentar øverst i filen). **Filformat** er det tal, en bygger skriver i sine færdige filer som `builderVersion`. Det tælles op, når formatet ændres, og en bygger afviser filer med et lavere tal end sit eget.
 
@@ -11,18 +11,18 @@ Byggerne laver en færdig fil, som kan gemmes, deles og åbnes uden internet. De
 | Navn | Fil | Version | Filformat | Laver | dc.type |
 |---|---|---|---|---|---|
 | Sidebygger | `side-bygger.html` | 1.8 | 1 | artikelside om gader, steder og mennesker | Text |
-| Album · Bygger | `album-bygger.html` | 3.2 | 3 | billedalbum med grid og lightbox | Image |
-| Enkeltbillede · Bygger | `enkeltbillede-bygger.html` | 3.2 | 3 | ét billede i høj kvalitet med tekst og Exif | Image |
-| Før og Nu · Bygger | `foer-og-nu-bygger.html` | 2.1 | 2 | to billeder fra samme sted, rettet ind oven på hinanden, med skyder eller overtoning | Image |
-| Bogbygger | `bog-bygger.html` | 4.2 | 4 | e-bog med forside og kapitler | Text |
-| Lydfortælling · Bygger | `lydfortaelling-bygger.html` | 4.1 | 4 | lydafspiller med billede og tekst | Sound |
-| Mediekort · Bygger | `mediekort-bygger.html` | 2.1 | 1 | kort til en video, en podcast eller et talende billede. En videofil kan ligge i mappen ved siden af kortet (mappeformatet, standardens 5.7) med en reserve på nettet og et kontroltal (SHA-256), og hele mappen kan gemmes som én zip-fil | MovingImage eller Sound |
-| Præsentation · Bygger | `praesentation-bygger.html` | 1.1 | 1 | billedshow til foredrag og oplæg, med pile, fuld skærm og automatisk visning | Image |
-| Henvisning · Bygger | `henvisning-bygger.html` | 2.1 | 2 | "skilt" der sender videre til en side på nettet | Text (kan ændres) |
-| Samling · Bygger | `samling-bygger.html` | 2.1 | 2 | forside der binder 2–6 færdige filer sammen | Collection |
-| Podcastserie · Bygger | `podcastserie-bygger.html` | 1.0 | 1 | én side med afspilningsliste til en serie på 2–6 lydafsnit, med lydfilerne i mappen ved siden af (mappeformatet), reserve på nettet og kontroltal. Afsnit kan hentes fra færdige mediekort | Sound |
-| Piwigo Albumbygger | `piwigo-album-bygger.html` | 2.1 | 1 | billedalbum hentet fra et album i et Piwigo-galleri | Image |
-| Vejledningsbygger | `vejledning-bygger.html` | 2.0 | 1 | trin-for-trin vejledning, hvor hvert trin har et skærmbillede (sat ind med ⌘V), en video eller kun tekst og en forklaring | Text |
+| Album · Bygger | `album-bygger.html` | 3.3 | 3 | billedalbum med grid og lightbox | Image |
+| Enkeltbillede · Bygger | `enkeltbillede-bygger.html` | 3.3 | 3 | ét billede i høj kvalitet med tekst og Exif | Image |
+| Før og Nu · Bygger | `foer-og-nu-bygger.html` | 2.2 | 2 | to billeder fra samme sted, rettet ind oven på hinanden, med skyder eller overtoning | Image |
+| Bogbygger | `bog-bygger.html` | 4.3 | 4 | e-bog med forside og kapitler | Text |
+| Lydfortælling · Bygger | `lydfortaelling-bygger.html` | 4.2 | 4 | lydafspiller med billede og tekst | Sound |
+| Mediekort · Bygger | `mediekort-bygger.html` | 2.2 | 1 | kort til en video, en podcast eller et talende billede. En videofil kan ligge i mappen ved siden af kortet (mappeformatet, standardens 5.7) med en reserve på nettet og et kontroltal (SHA-256), og hele mappen kan gemmes som én zip-fil | MovingImage eller Sound |
+| Præsentation · Bygger | `praesentation-bygger.html` | 1.2 | 1 | billedshow til foredrag og oplæg, med pile, fuld skærm og automatisk visning | Image |
+| Henvisning · Bygger | `henvisning-bygger.html` | 2.2 | 2 | "skilt" der sender videre til en side på nettet | Text (kan ændres) |
+| Samling · Bygger | `samling-bygger.html` | 2.2 | 2 | forside der binder 2–6 færdige filer sammen | Collection |
+| Podcastserie · Bygger | `podcastserie-bygger.html` | 1.1 | 1 | én side med afspilningsliste til en serie på 2–6 lydafsnit, med lydfilerne i mappen ved siden af (mappeformatet), reserve på nettet og kontroltal. Afsnit kan hentes fra færdige mediekort | Sound |
+| Piwigo Albumbygger | `piwigo-album-bygger.html` | 2.2 | 1 | billedalbum hentet fra et album i et Piwigo-galleri | Image |
+| Vejledningsbygger | `vejledning-bygger.html` | 2.1 | 1 | trin-for-trin vejledning, hvor hvert trin har et skærmbillede (sat ind med ⌘V), en video eller kun tekst og en forklaring | Text |
 
 **Piwigo Albumbygger** skal ligge på galleriets egen webadresse for at kunne hente fra Piwigo. De andre kører lokalt.
 
@@ -76,7 +76,7 @@ I mappen `fri/` ligger **Lokalhistorier · fri udgave** til enkeltpersoner, skol
 | SFB-afspiller | `afspiller/` | afspiller historier direkte fra zip-filer (mappeformatet), uden udpakning. Kan lægges på hjemmeskærmen som en app (PWA) og virker uden internet. Historiehylden på webhotellet henter historier ind i appen med ét tryk. Version 0.13, prøveudgave. Adminsiden i `afspiller/admin/` (login, upload i stykker, flyt og slet) passer hylden uden FTP. Kan også vise et galleriarkiv. Mappen er selvstændig og kan blive sit eget projekt. Se `afspiller/LAES-MIG.md` |
 | Pengeskab | `pengeskab/` | krypteret notefil til private: logins, adgangskoder, webadresser, kontonumre og noter, låst med brugernavn og adgangskode (AES-256). `pengeskab.html` er værktøjet (version 1.2), og `index.html` er arket til private med QR-kode og knappen «Hent Pengeskab». Gem ny udgave henter en ny, krypteret kopi af filen. Har intet med lokalhistorie at gøre og ligger derfor i sin egen mappe. Følger ikke Builder-standarden og har bevidst ingen metadata |
 | Formidling | `formidling/` | præsentationsmateriale, der kan ses på skærmen og printes som ét A4-ark. `fri-til-alle.html` er et ark til enkeltpersoner, familier og små foreninger om den frie udgave («Har du en historie i skuffen?»), `fri-til-skoler.html` er et ark til skoler, `fri-udgave.html` er den grundige side til alle med trin, idéer, afsnittet «I skolen» og spørgsmål og svar, `forening.html` og `forening-ark.html` er den grundige side og arket til foreninger, med pladser til tre videoer og `overblik.html` fortæller om hele projektet og idéen bag (afløser de ældre sider start.html og index.html fra Syd for Banen) |
-| Builder-standarden | `builder-standard.md` | fælles regler for byggerne, version 2.25 |
+| Builder-standarden | `builder-standard.md` | fælles regler for byggerne, version 2.26 |
 | Projektresumé | `projekt-resume.md` | kort fortælling om hele projektet til idéudvikling og sparring med mennesker og Claude |
 | Fælles emneord | `emneord.md` | emneord, som alle foreninger staver ens, fx Musik og Arkitektur, så man kan finde et emne på tværs af foreningerne |
 | Husregler | `CLAUDE.md` | regler for samarbejdet med Claude |

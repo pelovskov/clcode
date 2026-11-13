@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Vejledningsbygger · fri udgave</title>
 <!--
-  Vejledningsbygger · version 2.0 (nov. 2026) · følger Builder-standard 2.25
+  Vejledningsbygger · version 2.1 (nov. 2026) · følger Builder-standard 2.26
   Laver en trin-for-trin vejledning som én selvstændig HTML-fil: hvert trin har
   en overskrift, et skærmbillede (eller en video eller kun tekst) og en kort
   forklaring. Skærmbilleder med pile og tekst fra fx Screenpal sættes ind med
@@ -177,13 +177,16 @@
   .addstep:hover{border-color:var(--rust); background:#f4e4dc}
   .addstep:focus-visible{outline:2px solid var(--rust); outline-offset:2px}
   kbd{background:#e5dfcd; border:1px solid var(--line); border-radius:3px; padding:0 5px; font-size:13px}
+  .filebox.indlaes{ border:2px dashed var(--line); }
+  .filebox.indlaes.dragover{ border-color:var(--rust); background:#f2e4dc; }
+  .filebox .slip{ margin:0 0 8px; font-weight:600; color:var(--hint); }
 </style>
 </head>
 <body>
 
 <div class="topbar">
   <h1>Vejledningsbygger</h1>
-  <span>Lav en trin-for-trin vejledning med skærmbilleder som én fil · kører lokalt, ingen server · version 2.0 · fri udgave</span>
+  <span>Lav en trin-for-trin vejledning med skærmbilleder som én fil · kører lokalt, ingen server · version 2.1 · fri udgave</span>
 </div>
 
 <div class="layout">
@@ -191,7 +194,8 @@
 
     <div class="field">
       <label for="loadPage">Indlæs eksisterende vejledning (valgfri)</label>
-      <div class="filebox">
+      <div class="filebox indlaes">
+        <p class="slip">Træk filen hertil, eller vælg en fil:</p>
         <input type="file" id="loadPage" accept=".html,text/html">
         <div class="status" id="loadStatus">Ingen fil valgt</div>
       </div>
@@ -1264,12 +1268,54 @@ renderPreview();
    Har man skrevet eller lagt noget ind siden sidst, filen blev gemt, spørger
    browseren, om man vil forlade siden. Når filen gemmes (.html), forsvinder
    advarslen igen. At indlæse en fil tæller ikke som en ændring. */
+/* Træk og slip (standard 7): en fil kan slippes på feltet «Indlæs eksisterende …».
+   Filen sættes i feltet, og den almindelige indlæsning klarer resten. Slippes en fil
+   et andet sted på siden, åbner browseren den ikke, så det, man har skrevet, ikke forsvinder.
+   Felter til billeder og lyd tager stadig selv imod filer. */
+(function(){
+  var zone = document.querySelector('.filebox.indlaes');
+  if (!zone) return;
+  var input = zone.querySelector('input[type=file]');
+  var status = zone.querySelector('.status');
+  var dybde = 0;
+  function harFil(e){
+    var t = e.dataTransfer && e.dataTransfer.types;
+    return !!t && Array.prototype.indexOf.call(t, 'Files') !== -1;
+  }
+  function slut(){ dybde = 0; zone.classList.remove('dragover'); }
+  zone.addEventListener('dragenter', function(e){ if (!harFil(e)) return; e.preventDefault(); dybde++; zone.classList.add('dragover'); });
+  zone.addEventListener('dragover', function(e){ if (!harFil(e)) return; e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; });
+  zone.addEventListener('dragleave', function(){ if (--dybde <= 0) slut(); });
+  zone.addEventListener('drop', function(e){
+    if (!harFil(e)) return;
+    e.preventDefault(); slut();
+    var fil = e.dataTransfer.files && e.dataTransfer.files[0];
+    if (!fil) return;
+    if (!/\.html?$/i.test(fil.name)){
+      if (status){ status.textContent = 'Det er ikke en .html-fil. Træk en fil, der er lavet med denne bygger.'; status.className = 'status pending'; }
+      return;
+    }
+    try { var dt = new DataTransfer(); dt.items.add(fil); input.files = dt.files; }
+    catch (err) { try { input.files = e.dataTransfer.files; } catch (err2) { return; } }
+    input.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+  function vaern(e){
+    if (e.defaultPrevented || !harFil(e)) return;
+    if (e.target && e.target.closest && e.target.closest('input[type=file]')) return;
+    e.preventDefault();
+    if (e.type === 'dragover') e.dataTransfer.dropEffect = 'none';
+  }
+  document.addEventListener('dragover', vaern);
+  document.addEventListener('drop', vaern);
+})();
+
 (function(){
   var INDLAES = { loadPage:1, loadInput:1, loadPlayer:1 };
   var aendret = false;
   function marker(e){
     var el = e.target;
     if (el && el.id && INDLAES[el.id]) return;
+    if (e.type === 'drop' && el && el.closest && el.closest('.filebox.indlaes')) return;
     aendret = true;
   }
   document.addEventListener('input', marker, true);
