@@ -61,7 +61,7 @@ Efter en ændring skal du beskrive, hvordan jeg selv kan afprøve den i browsere
 ## Filnavne og struktur
 
 - Filnavne med små bogstaver og bindestreger, uden æ, ø og å (fx `album-bygger.html`).
-- Byggere hedder `navn-bygger.html` og ligger øverst i repoet. Værktøjer ligger i `tools/`. SFB-afspilleren ligger i sin egen, selvstændige mappe `afspiller/`, fordi en app på hjemmeskærmen skal have flere filer, og fordi den kan blive sit eget projekt. Den må ikke bruge filer fra resten af repoet. Der står ikke versionsnummer i filnavnene, så adressen er den samme fra version til version.
+- Byggere hedder `navn-bygger.html` og ligger øverst i repoet. Værktøjer ligger i `tools/`. SFB-afspilleren ligger i sin egen, selvstændige mappe `afspiller/`, fordi en app på hjemmeskærmen skal have flere filer, og fordi den kan blive sit eget projekt. Den må ikke bruge filer fra resten af repoet. Pengeskab ligger også i sin egen mappe `pengeskab/` (værktøjet og arket), fordi det ikke handler om lokalhistorie. Der står ikke versionsnummer i filnavnene, så adressen er den samme fra version til version.
 - `oversigt.md` er overblikket over alle byggere og værktøjer med versioner og filformater.
 - Dokumentation skrives i Markdown.
 - Min Mac skelner ikke mellem store og små bogstaver i filnavne. En omdøbning, der kun ændrer store og små bogstaver (fx `claude.md` til `CLAUDE.md`), kan derfor ikke ses i GitHub Desktop og skal laves af Claude.

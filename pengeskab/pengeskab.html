@@ -58,12 +58,13 @@ small{font-size:.85em}
 <script type="application/json" id="pengeskab-data">null</script>
 <script>
 "use strict";
-/* Pengeskab v1.1 - krypteret notefil i én HTML-fil.
+/* Pengeskab v1.2 - krypteret notefil i én HTML-fil.
    Kryptering: AES-256-GCM. Nøgle udledt af brugernavn + adgangskode med PBKDF2-SHA256.
    Alt foregår lokalt i browseren. Intet sendes nogen steder hen. */
 
 const ITER = 600000;          // PBKDF2-gentagelser
 const LOCK_MIN = 10;          // automatisk låsning efter så mange minutters inaktivitet
+const RYD_SEK = 30;           // en kopieret adgangskode fjernes fra udklipsholderen efter så mange sekunder
 const TEMPLATE = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
 const DATA_RE = /(<script type="application\/json" id="pengeskab-data">)[\s\S]*?(<\/script>)/;
 const enc = new TextEncoder(), dec = new TextDecoder();
@@ -221,21 +222,23 @@ function renderList() {
 function card(e) {
   const pwSpan = h("span", { class: "mono", text: e.adgangskode ? "••••••••••" : "" });
   let shown = false;
-  const showBtn = h("button", { class: "small", text: "Vis", onclick: () => {
-      shown = !shown; pwSpan.textContent = shown ? e.adgangskode : "••••••••••"; showBtn.textContent = shown ? "Skjul" : "Vis"; } });
+  const navn = e.titel || "(uden titel)";
+  const showBtn = h("button", { class: "small", text: "Vis", "aria-label": "Vis adgangskode til " + navn, "aria-pressed": "false", onclick: () => {
+      shown = !shown; pwSpan.textContent = shown ? e.adgangskode : "••••••••••"; showBtn.textContent = shown ? "Skjul" : "Vis";
+      showBtn.setAttribute("aria-pressed", shown ? "true" : "false"); } });
   return h("article", { class: "card" },
     h("h3", { text: e.titel || "(uden titel)" }),
     e.brugernavn ? h("div", { class: "field" }, h("span", { class: "lbl", text: "Brugernavn" }), h("span", { class: "mono", text: e.brugernavn }),
-      h("button", { class: "small", text: "Kopiér", onclick: () => copy(e.brugernavn) })) : null,
+      h("button", { class: "small", text: "Kopiér", "aria-label": "Kopiér brugernavn til " + navn, onclick: () => copy(e.brugernavn) })) : null,
     e.adgangskode ? h("div", { class: "field" }, h("span", { class: "lbl", text: "Adgangskode" }), pwSpan, showBtn,
-      h("button", { class: "small", text: "Kopiér", onclick: () => copy(e.adgangskode) })) : null,
+      h("button", { class: "small", text: "Kopiér", "aria-label": "Kopiér adgangskode til " + navn, onclick: () => copy(e.adgangskode, true) })) : null,
     e.url ? h("div", { class: "field" }, h("span", { class: "lbl", text: "Webadresse" }), h("span", { class: "mono", text: e.url }),
-      h("button", { class: "small", text: "Kopiér", onclick: () => copy(e.url) }),
-      safeHref(e.url) ? h("a", { href: safeHref(e.url), target: "_blank", rel: "noopener noreferrer", class: "openlink", text: "Åbn" }) : null) : null,
+      h("button", { class: "small", text: "Kopiér", "aria-label": "Kopiér webadresse til " + navn, onclick: () => copy(e.url) }),
+      safeHref(e.url) ? h("a", { href: safeHref(e.url), target: "_blank", rel: "noopener noreferrer", class: "openlink", text: "Åbn", "aria-label": "Åbn webadressen til " + navn + " (nyt vindue)" }) : null) : null,
     e.andet ? h("div", { class: "note", text: e.andet }) : null,
     h("div", { class: "row mt" },
-      h("button", { class: "small", text: "Ret", onclick: () => editEntry(e) }),
-      h("button", { class: "small danger", text: "Slet", onclick: () => {
+      h("button", { class: "small", text: "Ret", "aria-label": "Ret " + navn, onclick: () => editEntry(e) }),
+      h("button", { class: "small danger", text: "Slet", "aria-label": "Slet " + navn, onclick: () => {
           if (confirm(`Slet »${e.titel || "(uden titel)"}«?`)) { S.entries = S.entries.filter(x => x.id !== e.id); markDirty(); renderList(); toast("Noten er slettet."); } } }),
       e.rettet ? h("small", { class: "muted", text: "Rettet " + fmtDate(e.rettet) }) : null));
 }
@@ -246,9 +249,17 @@ function safeHref(u) {
   try { const x = new URL(s); return (x.protocol === "https:" || x.protocol === "http:") ? x.href : null; } catch (e) { return null; }
 }
 
-async function copy(txt) {
-  try { await navigator.clipboard.writeText(txt); toast("Kopieret"); }
-  catch (e) { const t = h("textarea", { value: txt }); document.body.append(t); t.select(); document.execCommand("copy"); t.remove(); toast("Kopieret"); }
+async function skriv(txt) {
+  try { await navigator.clipboard.writeText(txt); }
+  catch (e) { try { const t = h("textarea", { value: txt }); document.body.append(t); t.select(); document.execCommand("copy"); t.remove(); } catch (e2) {} }
+}
+async function copy(txt, hemmelig) {
+  await skriv(txt);
+  clearTimeout(copy.t);
+  if (!hemmelig) { toast("Kopieret"); return; }
+  toast(`Kopieret. Fjernes fra udklipsholderen om ${RYD_SEK} sekunder.`);
+  // Adgangskoden skal ikke blive liggende, hvor den kan sættes ind ved et uheld.
+  copy.t = setTimeout(() => skriv(" "), RYD_SEK * 1000);
 }
 
 function genPassword(len = 18) {
@@ -262,7 +273,10 @@ function editEntry(e) {
   const isNew = !e;
   const t = h("input", { id: "f-t", value: e ? e.titel : "", autocomplete: "off" });
   const u = h("input", { id: "f-u", value: e ? e.brugernavn : "", autocomplete: "off", spellcheck: "false" });
-  const p = h("input", { id: "f-p", class: "mono", value: e ? e.adgangskode : "", autocomplete: "off", spellcheck: "false" });
+  const p = h("input", { id: "f-p", class: "mono", type: "password", value: e ? e.adgangskode : "", autocomplete: "off", spellcheck: "false" });
+  const visP = h("button", { type: "button", class: "small", text: "Vis", "aria-pressed": "false", "aria-controls": "f-p", onclick: () => {
+      const vis = p.type === "password"; p.type = vis ? "text" : "password";
+      visP.textContent = vis ? "Skjul" : "Vis"; visP.setAttribute("aria-pressed", vis ? "true" : "false"); p.focus(); } });
   const w = h("input", { id: "f-w", class: "mono", type: "text", inputmode: "url", value: e ? (e.url || "") : "", autocomplete: "off", spellcheck: "false", placeholder: "fx www.netbank.dk" });
   const a = h("textarea", { id: "f-a", value: e ? e.andet : "" });
   const err = h("p", { class: "err", role: "alert" });
@@ -279,7 +293,9 @@ function editEntry(e) {
       h("label", { for: "f-u", text: "Brugernavn" }), u,
       h("label", { for: "f-p", text: "Adgangskode" }), p,
       h("div", { class: "row", style: "margin-top:8px" },
-        h("button", { type: "button", class: "small", text: "Lav en stærk adgangskode", onclick: () => { p.value = genPassword(); p.focus(); } })),
+        visP,
+        h("button", { type: "button", class: "small", text: "Lav en stærk adgangskode", onclick: () => {
+            p.value = genPassword(); p.type = "text"; visP.textContent = "Skjul"; visP.setAttribute("aria-pressed", "true"); p.focus(); } })),
       h("label", { for: "f-w", text: "Webadresse" }), w,
       h("label", { for: "f-a", text: "Andet (kontonumre, svar på kontrolspørgsmål, noter …)" }), a,
       err,

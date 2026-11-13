@@ -3,12 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<!-- Pengeskab · ark til private · version 1.0
+<!-- Pengeskab · ark til private · version 1.1
      Søster til arkene i formidling/ (fri-til-alle.html, forening-ark.html) og bygget over samme skabelon.
+     Ligger i sin egen mappe pengeskab/ sammen med værktøjet, fordi Pengeskab ikke er en del af lokalhistorien.
      Siden er lavet til både skærm og print: Trykker man Print, bliver den til ét A4-ark.
      Skærmbilledet viser opdigtede eksempler, ikke rigtige oplysninger.
-     QR-koden fører til https://pelovskov.github.io/clcode/formidling/pengeskab-ark.html og er lavet med Python-pakken segno.
-     Knappen «Hent Pengeskab» henter ../tools/pengeskab.html. -->
+     QR-koden fører til https://pelovskov.github.io/clcode/pengeskab/ og er lavet med Python-pakken segno.
+     Knappen «Hent Pengeskab» henter pengeskab.html i samme mappe. -->
 <title>Pengeskab · dit eget sted til koder og kontonumre</title>
 <style>
   /* Pengeskabets egen bordeaux-farve. */
@@ -134,7 +135,7 @@
 <div class="vaerktoej">
   <p>Hent dit eget pengeskab her. Siden kan også printes som ét A4-ark eller gemmes som PDF fra print-vinduet.</p>
   <div class="knapper">
-    <a class="hent" href="../tools/pengeskab.html" download="pengeskab.html">Hent Pengeskab</a>
+    <a class="hent" href="pengeskab.html" download="pengeskab.html">Hent Pengeskab</a>
     <button type="button" id="print">Print arket</button>
   </div>
 </div>
@@ -175,7 +176,7 @@
         <li><strong>Let at bruge.</strong> Store knapper og klar tekst. Tryk <strong>Kopiér</strong>, og sæt koden ind, hvor du logger på.</li>
         <li><strong>Låser af sig selv.</strong> Efter 10 minutter uden brug låser pengeskabet igen.</li>
       </ul>
-      <p class="fag">Gratis og uden reklamer. Brug det i en almindelig browser som Safari, Chrome, Firefox eller Edge på en computer.</p>
+      <p class="fag">Gratis og uden reklamer. Brug det i en almindelig browser som Safari, Chrome, Firefox eller Edge på en computer. Det virker ikke på telefon og tablet.</p>
     </section>
 
     <div class="to">
@@ -200,10 +201,10 @@
     </div>
 
     <footer class="fod">
-      <svg role="img" aria-label="QR-kode til pelovskov.github.io/clcode/formidling/pengeskab-ark.html" shape-rendering="crispEdges" viewBox="0 0 41 41" class="segno"><path fill="#fff" d="M0 0h41v41h-41z"/><path class="qrline" stroke="#14202b" d="M2 2.5h7m2 0h3m4 0h1m1 0h1m1 0h1m1 0h1m1 0h2m2 0h1m1 0h7m-37 1h1m5 0h1m5 0h1m3 0h1m2 0h1m2 0h1m2 0h3m2 0h1m5 0h1m-37 1h1m1 0h3m1 0h1m1 0h1m1 0h1m1 0h1m2 0h2m2 0h3m2 0h1m1 0h1m3 0h1m1 0h3m1 0h1m-37 1h1m1 0h3m1 0h1m1 0h4m1 0h1m3 0h3m2 0h1m1 0h4m2 0h1m1 0h3m1 0h1m-37 1h1m1 0h3m1 0h1m1 0h1m1 0h5m3 0h3m2 0h4m1 0h1m1 0h1m1 0h3m1 0h1m-37 1h1m5 0h1m1 0h3m1 0h1m3 0h1m1 0h1m3 0h1m1 0h2m1 0h2m1 0h1m5 0h1m-37 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-29 1h4m1 0h2m5 0h1m2 0h2m1 0h1m-27 1h1m1 0h5m3 0h1m2 0h2m3 0h1m1 0h3m1 0h2m2 0h1m1 0h5m-35 1h1m4 0h1m2 0h5m1 0h4m10 0h2m1 0h1m3 0h1m-36 1h5m1 0h4m1 0h1m5 0h1m2 0h2m1 0h6m1 0h2m2 0h3m-35 1h1m6 0h1m3 0h1m2 0h1m4 0h3m3 0h1m2 0h2m1 0h1m2 0h1m-35 1h1m1 0h1m1 0h3m1 0h2m2 0h1m2 0h1m4 0h4m1 0h1m1 0h8m-36 1h2m2 0h1m1 0h3m3 0h1m2 0h6m1 0h1m1 0h1m2 0h1m2 0h1m-31 1h2m1 0h1m1 0h3m2 0h1m1 0h1m1 0h1m1 0h1m2 0h2m3 0h4m1 0h4m1 0h2m-37 1h1m1 0h1m5 0h1m2 0h2m1 0h9m6 0h1m1 0h2m-33 1h3m1 0h1m1 0h1m2 0h8m2 0h1m1 0h1m2 0h4m1 0h2m1 0h1m1 0h2m-36 1h2m2 0h1m2 0h1m2 0h2m2 0h2m2 0h1m1 0h1m1 0h1m1 0h2m2 0h1m2 0h1m2 0h2m-36 1h1m2 0h2m1 0h4m1 0h1m3 0h3m1 0h1m2 0h1m1 0h9m1 0h3m-37 1h3m4 0h1m1 0h1m1 0h1m3 0h1m2 0h5m1 0h1m2 0h5m4 0h1m-36 1h7m4 0h1m2 0h1m1 0h1m1 0h1m5 0h2m1 0h3m1 0h1m1 0h1m-35 1h5m2 0h1m1 0h3m1 0h1m2 0h1m1 0h3m2 0h1m1 0h1m2 0h1m4 0h1m-34 1h4m2 0h1m3 0h2m1 0h4m1 0h1m1 0h1m1 0h1m1 0h1m2 0h1m3 0h3m1 0h2m-36 1h1m1 0h2m3 0h2m1 0h1m2 0h2m3 0h1m4 0h1m3 0h2m1 0h2m2 0h2m-36 1h1m1 0h1m2 0h2m1 0h2m1 0h2m4 0h1m1 0h8m1 0h2m1 0h1m1 0h1m-35 1h1m1 0h3m2 0h2m1 0h1m3 0h4m6 0h1m1 0h1m4 0h1m1 0h1m-34 1h1m4 0h2m3 0h2m2 0h1m2 0h1m2 0h1m1 0h1m1 0h4m1 0h1m2 0h2m1 0h2m-37 1h1m1 0h4m2 0h2m2 0h3m1 0h1m4 0h2m3 0h1m3 0h3m3 0h1m-37 1h1m4 0h6m6 0h1m4 0h13m1 0h1m-29 1h1m1 0h4m2 0h2m1 0h3m1 0h1m4 0h1m3 0h2m-34 1h7m4 0h7m3 0h1m2 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h3m-37 1h1m5 0h1m1 0h1m1 0h2m3 0h4m1 0h3m5 0h1m3 0h2m2 0h1m-37 1h1m1 0h3m1 0h1m1 0h1m1 0h1m1 0h3m1 0h1m2 0h1m1 0h1m2 0h9m1 0h2m-36 1h1m1 0h3m1 0h1m1 0h1m1 0h3m1 0h2m2 0h1m1 0h4m1 0h1m2 0h3m1 0h1m3 0h1m-37 1h1m1 0h3m1 0h1m1 0h2m3 0h7m8 0h1m6 0h2m-37 1h1m5 0h1m2 0h2m4 0h1m2 0h5m3 0h3m1 0h1m1 0h1m3 0h1m-37 1h7m1 0h1m1 0h1m1 0h1m2 0h1m1 0h1m1 0h1m2 0h2m1 0h2m2 0h2m1 0h5"/></svg>
+      <svg role="img" aria-label="QR-kode til pelovskov.github.io/clcode/pengeskab" shape-rendering="crispEdges" viewBox="0 0 37 37" class="segno"><path fill="#fff" d="M0 0h37v37h-37z"/><path class="qrline" stroke="#14202b" d="M2 2.5h7m3 0h2m1 0h1m1 0h1m2 0h1m2 0h1m4 0h7m-33 1h1m5 0h1m1 0h2m1 0h3m1 0h3m1 0h2m1 0h1m1 0h1m1 0h1m5 0h1m-33 1h1m1 0h3m1 0h1m2 0h1m4 0h1m1 0h1m2 0h3m1 0h1m2 0h1m1 0h3m1 0h1m-33 1h1m1 0h3m1 0h1m1 0h5m3 0h1m1 0h1m1 0h2m2 0h1m1 0h1m1 0h3m1 0h1m-33 1h1m1 0h3m1 0h1m1 0h1m1 0h2m2 0h1m3 0h4m4 0h1m1 0h3m1 0h1m-33 1h1m5 0h1m8 0h4m2 0h4m1 0h1m5 0h1m-33 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-25 1h2m1 0h1m1 0h1m1 0h1m2 0h1m1 0h1m1 0h1m1 0h1m-24 1h1m1 0h4m1 0h6m1 0h1m1 0h1m1 0h2m4 0h2m1 0h2m1 0h1m-31 1h2m1 0h2m3 0h2m1 0h3m1 0h1m2 0h1m1 0h3m4 0h3m-28 1h2m1 0h2m1 0h1m3 0h1m3 0h2m3 0h2m2 0h1m1 0h5m-31 1h1m1 0h1m2 0h2m2 0h1m1 0h2m1 0h3m3 0h1m2 0h3m2 0h1m1 0h1m-31 1h2m1 0h2m3 0h1m2 0h1m2 0h3m1 0h1m5 0h2m-27 1h1m2 0h1m4 0h3m2 0h5m2 0h1m1 0h1m1 0h1m1 0h1m-28 1h1m2 0h2m1 0h1m1 0h2m3 0h2m1 0h1m2 0h2m1 0h1m3 0h5m-30 1h1m3 0h1m1 0h1m3 0h1m1 0h1m1 0h3m2 0h1m2 0h1m1 0h1m1 0h1m1 0h2m1 0h1m-33 1h1m2 0h1m2 0h1m1 0h2m3 0h5m2 0h1m1 0h1m1 0h6m-28 1h2m1 0h1m3 0h1m2 0h1m4 0h4m1 0h1m2 0h2m1 0h1m1 0h1m1 0h1m-33 1h2m1 0h5m3 0h3m3 0h3m3 0h2m2 0h1m1 0h4m-33 1h1m1 0h1m4 0h3m2 0h1m1 0h1m1 0h3m3 0h1m5 0h4m-26 1h1m1 0h1m1 0h5m1 0h4m3 0h2m2 0h1m1 0h1m1 0h1m-32 1h1m2 0h3m4 0h5m4 0h1m1 0h4m2 0h3m-30 1h1m2 0h1m1 0h3m1 0h1m3 0h1m2 0h1m5 0h2m2 0h1m1 0h1m2 0h2m-33 1h1m1 0h1m1 0h2m2 0h2m1 0h2m1 0h2m3 0h1m3 0h1m4 0h4m-32 1h2m2 0h6m6 0h1m1 0h1m1 0h1m2 0h7m-22 1h2m1 0h2m1 0h1m2 0h1m4 0h1m1 0h1m3 0h1m1 0h2m-32 1h7m2 0h2m1 0h1m1 0h1m2 0h1m1 0h1m1 0h1m1 0h2m1 0h1m1 0h1m1 0h1m-31 1h1m5 0h1m1 0h3m4 0h3m1 0h1m3 0h2m3 0h5m-33 1h1m1 0h3m1 0h1m1 0h1m1 0h1m2 0h3m2 0h3m1 0h7m2 0h2m-33 1h1m1 0h3m1 0h1m1 0h1m2 0h1m2 0h1m1 0h1m2 0h2m3 0h2m1 0h1m4 0h1m-33 1h1m1 0h3m1 0h1m2 0h3m3 0h1m2 0h2m4 0h2m1 0h2m2 0h2m-33 1h1m5 0h1m1 0h1m1 0h1m2 0h1m1 0h2m1 0h1m1 0h1m5 0h7m-33 1h7m4 0h4m2 0h3m2 0h4m1 0h2"/></svg>
       <div>
-        <p class="adresse"><a href="https://pelovskov.github.io/clcode/formidling/pengeskab-ark.html">pelovskov.github.io/clcode/formidling/pengeskab-ark.html</a></p>
-        <p>Scan QR-koden, eller skriv adressen. Tryk <strong>Hent Pengeskab</strong>, så får du filen <strong>pengeskab.html</strong>. Der skal ikke installeres noget.</p>
+        <p class="adresse"><a href="https://pelovskov.github.io/clcode/pengeskab/">pelovskov.github.io/clcode/pengeskab</a></p>
+        <p>Scan QR-koden, eller skriv adressen. Tryk <strong>Hent Pengeskab</strong>, så får du filen <strong>pengeskab.html</strong>. <strong>Hent den kun herfra</strong>, og åbn aldrig en pengeskabsfil, du har fået tilsendt. Den kan være lavet om.</p>
         <p class="kontakt">Spørgsmål? Skriv til <strong>Poul Erik Løvskov</strong>, <a href="mailto:pel@lovskov.com">pel@lovskov.com</a></p>
         <p class="lille">Pengeskab er lavet som et lille frit værktøj i samme familie som Lokalhistoriers byggere. Skærmbilledet viser opdigtede eksempler.</p>
       </div>
