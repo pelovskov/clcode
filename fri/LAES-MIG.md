@@ -28,6 +28,7 @@ Filformatet er det samme. En fil fra den frie udgave kan derfor åbnes i forenin
 | Huskesedler til Side, Album, Lydfortælling, Præsentation, Bog, Mediekort og Samling med Søgeside | `vejledning-….html` |
 | Forslag til emneord, med en kopiér-knap ved hvert ord | `emneord.html` |
 | Må det komme med? Tjek af samtykke til billeder, lyd og tekst, med øvelser og samtykkesedler | `maa-det-komme-med.html` |
+| QR-kode til skilte og ark, med titel og tekst, laves på din egen computer | `qr-kode.html` |
 
 Hele mappen kan kopieres til et USB-stik eller lægges på en hjemmeside. Alt virker uden internet.
 
