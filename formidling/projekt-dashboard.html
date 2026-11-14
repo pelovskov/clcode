@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lokalhistorier · Projektet</title>
+<!-- Projekt-dashboard · version 1.0 (nov. 2026)
+     En flot oversigt over hele projektet til Poul Erik selv og til møder: idéen, hvordan
+     det hænger sammen, værktøjskassen, hvem der bruger det, tidslinjen og planerne.
+     Ikke et produktionsværktøj. Tallene er skrevet ind i hånden (pr. 14. november 2026)
+     og rettes, når der sker noget større.
+     Præsentation: tryk «Præsentér» (eller P). Piletasterne, mellemrum og Page Up/Down skifter
+     afsnit, Esc afslutter. Ingen webfonte og ingen scripts udefra: virker uden internet. -->
+<meta name="description" content="Lokalhistorier fortalt med grafik: idéen, sammenhængen, værktøjskassen, tidslinjen og planerne for fremtiden.">
+<meta name="robots" content="noindex">
+<style>
+  :root{
+    --ink:#1C1A2E; --body:#33304A; --muted:#5E5A78; --bg:#FFF8EE; --card:#FFFFFF; --line:#EDE3D2;
+    --koral:#E2553F; --koral-d:#B83A26; --gul:#F4B638; --groen:#2F8A5B; --groen-d:#226B45;
+    --blaa:#2D6CDF; --blaa-d:#1F4FA8; --lilla:#7A4FD0; --lilla-d:#5B35A8; --pink:#D6457E; --turkis:#1A9AA0;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    --serif:Georgia,"Iowan Old Style","Palatino Linotype",Palatino,serif;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--body);font-family:var(--sans);font-size:18px;line-height:1.55}
+  a{color:var(--blaa-d)}
+  :focus-visible{outline:3px solid var(--blaa);outline-offset:3px}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 22px}
+  h1,h2,h3{color:var(--ink);line-height:1.15}
+  h2{font-size:clamp(1.7rem,3.4vw,2.5rem);margin:0 0 .4rem;letter-spacing:-.01em}
+  .kicker{display:inline-block;font-size:.8rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;padding:.3rem .8rem;border-radius:999px;margin-bottom:.8rem}
+  .lead{font-size:1.15rem;color:var(--muted);max-width:52rem;margin:0 0 1.8rem}
+  section.afsnit{padding:64px 0;border-bottom:1px solid var(--line);scroll-margin-top:60px}
+
+  /* Topbjælke */
+  .top{position:sticky;top:0;z-index:20;background:rgba(255,248,238,.94);backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
+  .top .wrap{display:flex;align-items:center;gap:14px;padding-top:10px;padding-bottom:10px;flex-wrap:wrap}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:800;color:var(--ink);text-decoration:none;font-size:1.05rem}
+  .prikker{display:inline-flex;gap:4px}
+  .prikker i{width:11px;height:11px;border-radius:50%;display:block}
+  nav.menu{display:flex;gap:4px;flex-wrap:wrap;margin-left:auto}
+  nav.menu a{font-size:.88rem;font-weight:600;text-decoration:none;color:var(--muted);padding:.35rem .7rem;border-radius:999px}
+  nav.menu a:hover{background:#F3E8D6;color:var(--ink)}
+  .praes-knap{font:inherit;font-weight:800;font-size:.92rem;border:0;border-radius:999px;padding:.55rem 1.1rem;background:var(--ink);color:#fff;cursor:pointer}
+  .praes-knap:hover{background:var(--lilla-d)}
+
+  /* Forside */
+  .hero{position:relative;overflow:hidden;background:linear-gradient(125deg,#2A1E5C 0%,#5B35A8 38%,#D6457E 72%,#F4B638 100%);color:#fff;padding:88px 0 76px;border-bottom:0}
+  .hero h1{color:#fff;font-family:var(--serif);font-size:clamp(2.4rem,6vw,4.4rem);margin:.2rem 0 .6rem;letter-spacing:-.01em}
+  .hero .lead{color:#FFEFF6;font-size:clamp(1.1rem,2.2vw,1.4rem);max-width:44rem}
+  .hero .kicker{background:rgba(255,255,255,.18);color:#fff}
+  .bobler{position:absolute;inset:0;pointer-events:none}
+  .tal{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-top:34px}
+  .tal div{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.28);border-radius:18px;padding:16px 18px}
+  .tal b{display:block;font-size:2.4rem;line-height:1;color:#fff;font-weight:900}
+  .tal span{font-size:.95rem;color:#FFEFF6}
+
+  /* Idéen */
+  .tre{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:18px}
+  .kort{background:var(--card);border-radius:20px;padding:24px;box-shadow:0 6px 22px rgba(60,40,20,.08);border-top:6px solid var(--c,var(--koral))}
+  .kort h3{margin:.6rem 0 .3rem;font-size:1.25rem}
+  .kort p{margin:0;color:var(--body)}
+  .ikon{width:58px;height:58px;border-radius:16px;display:grid;place-items:center;font-size:1.9rem;background:var(--cl,#FDE7E2)}
+
+  /* Diagram */
+  .diagram{background:var(--card);border-radius:24px;padding:20px;box-shadow:0 6px 22px rgba(60,40,20,.08)}
+  .diagram svg{display:block;width:100%;height:auto}
+  .diagram text{font-family:var(--sans)}
+
+  /* Værktøjskassen */
+  .byggere{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+  .bygger{background:var(--card);border-radius:16px;padding:14px 16px;display:flex;gap:12px;align-items:flex-start;box-shadow:0 3px 12px rgba(60,40,20,.07);border-left:6px solid var(--c)}
+  .bygger .e{font-size:1.6rem;line-height:1}
+  .bygger b{display:block;color:var(--ink);font-size:1rem}
+  .bygger small{color:var(--muted);font-size:.86rem;line-height:1.35;display:block}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}
+  .chip{background:#F3E8D6;color:var(--ink);font-weight:600;font-size:.92rem;padding:.4rem .85rem;border-radius:999px}
+  .chip.st{background:var(--ink);color:#fff}
+  h3.under{font-size:1.15rem;margin:30px 0 12px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;font-size:.9rem}
+
+  /* Hvem */
+  .hvem{display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:18px}
+  .foreninger{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:14px}
+  .forening{display:flex;gap:10px;align-items:center;background:#FFF4E2;border-radius:12px;padding:10px 12px}
+  .forening .bogst{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-weight:900;color:#fff;font-size:.82rem;flex:0 0 40px}
+  .forening b{color:var(--ink);font-size:.95rem;line-height:1.25}
+
+  /* Principper */
+  .principper{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+  .princip{border-radius:18px;padding:20px;color:#fff;background:var(--c)}
+  .princip .e{font-size:2rem}
+  .princip h3{color:#fff;margin:.4rem 0 .2rem;font-size:1.15rem}
+  .princip p{margin:0;font-size:.97rem;color:#fff}
+
+  /* Tidslinje */
+  .tidslinje{position:relative;margin:10px 0 0;padding:0;list-style:none}
+  .tidslinje::before{content:"";position:absolute;left:118px;top:6px;bottom:6px;width:4px;border-radius:4px;background:linear-gradient(var(--lilla),var(--pink),var(--gul),var(--groen))}
+  .tidslinje li{display:grid;grid-template-columns:100px 1fr;gap:52px;margin-bottom:16px;position:relative}
+  .tidslinje time{font-weight:800;color:var(--ink);text-align:right;font-size:.95rem;padding-top:2px}
+  .tidslinje li::after{content:"";position:absolute;left:111px;top:5px;width:18px;height:18px;border-radius:50%;background:#fff;border:4px solid var(--c,var(--lilla))}
+  .tidslinje b{color:var(--ink)}
+
+  /* Fremtiden */
+  .fremtid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  .kol{background:var(--card);border-radius:20px;padding:22px;box-shadow:0 6px 22px rgba(60,40,20,.08)}
+  .kol h3{margin:0 0 4px;display:flex;align-items:center;gap:10px;font-size:1.25rem}
+  .kol h3 .e{font-size:1.5rem}
+  .kol > p{margin:0 0 14px;color:var(--muted);font-size:.95rem}
+  .kol ul{list-style:none;margin:0;padding:0}
+  .kol li{padding:10px 12px;border-radius:12px;margin-bottom:8px;background:var(--cl)}
+  .kol li b{display:block;color:var(--ink)}
+  .kol li span{font-size:.92rem;color:var(--body)}
+
+  /* Slut */
+  .slut{background:linear-gradient(120deg,#1A9AA0,#2D6CDF 55%,#7A4FD0);color:#fff;text-align:center;border-bottom:0}
+  .slut h2{color:#fff;font-family:var(--serif);font-size:clamp(2rem,4.6vw,3.2rem)}
+  .slut p{color:#EAF2FF;font-size:1.2rem;max-width:40rem;margin:0 auto 1rem}
+  .slut .adr{display:inline-block;background:#fff;color:var(--blaa-d);font-weight:800;font-size:1.25rem;padding:.7rem 1.4rem;border-radius:999px;text-decoration:none;margin-top:.6rem}
+  footer{padding:22px 0 40px;color:var(--muted);font-size:.9rem;text-align:center}
+
+  @media (max-width:860px){
+    .hvem,.fremtid{grid-template-columns:1fr}
+    nav.menu{display:none}
+    .tidslinje::before{left:86px}
+    .tidslinje li{grid-template-columns:70px 1fr;gap:38px}
+    .tidslinje li::after{left:79px}
+  }
+  @media (max-width:520px){ .foreninger{grid-template-columns:1fr} }
+
+  /* Præsentationstilstand: ét afsnit ad gangen i fuld skærm */
+  body.praes{overflow:hidden;background:#0F0D1C}
+  body.praes .top, body.praes footer{display:none}
+  body.praes section.afsnit{display:none;position:fixed;inset:0;overflow:auto;padding:4vh 0 96px;border:0;background:var(--bg)}
+  body.praes section.afsnit.vist{display:flex;align-items:center}
+  body.praes section.afsnit.vist > .wrap{width:100%}
+  body.praes section.hero.vist{background:linear-gradient(125deg,#2A1E5C 0%,#5B35A8 38%,#D6457E 72%,#F4B638 100%)}
+  body.praes section.slut.vist{background:linear-gradient(120deg,#1A9AA0,#2D6CDF 55%,#7A4FD0)}
+  body.praes{font-size:20px}
+  .praes-bar{display:none}
+  body.praes .praes-bar{display:flex;position:fixed;z-index:50;left:50%;bottom:18px;transform:translateX(-50%);gap:8px;align-items:center;background:rgba(28,26,46,.86);color:#fff;border-radius:999px;padding:6px 8px;font-size:.9rem}
+  .praes-bar button{font:inherit;font-weight:700;border:0;border-radius:999px;background:rgba(255,255,255,.14);color:#fff;padding:.45rem .9rem;cursor:pointer}
+  .praes-bar button:hover{background:rgba(255,255,255,.28)}
+  .praes-bar .nr{min-width:4.5rem;text-align:center;font-variant-numeric:tabular-nums}
+  @media (prefers-reduced-motion:reduce){ html{scroll-behavior:auto} }
+  @media print{ .top,.praes-bar{display:none} section.afsnit{break-inside:avoid;padding:28px 0} }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="logo" href="#start"><span class="prikker" aria-hidden="true"><i style="background:var(--koral)"></i><i style="background:var(--gul)"></i><i style="background:var(--groen)"></i><i style="background:var(--blaa)"></i></span> Lokalhistorier</a>
+    <nav class="menu" aria-label="Afsnit">
+      <a href="#iden">Idéen</a><a href="#sammenhaeng">Sammenhæng</a><a href="#kassen">Værktøjer</a><a href="#hvem">Hvem</a><a href="#principper">Principper</a><a href="#tid">Tidslinje</a><a href="#fremtid">Fremtiden</a>
+    </nav>
+    <button class="praes-knap" id="praesBtn" type="button" title="Vis ét afsnit ad gangen. Skift med piletasterne, afslut med Esc.">▶ Præsentér</button>
+  </div>
+</header>
+
+<main>
+<!-- 1. Forside -->
+<section class="afsnit hero" id="start" aria-labelledby="h-start">
+  <svg class="bobler" viewBox="0 0 1200 600" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <circle cx="1080" cy="90" r="140" fill="#fff" opacity=".08"/><circle cx="980" cy="520" r="90" fill="#F4B638" opacity=".25"/>
+    <circle cx="80" cy="560" r="160" fill="#fff" opacity=".06"/><circle cx="640" cy="40" r="46" fill="#fff" opacity=".12"/>
+    <circle cx="1150" cy="330" r="30" fill="#fff" opacity=".2"/>
+  </svg>
+  <div class="wrap" style="position:relative">
+    <span class="kicker">Lokalhistorier · Roskilde og omegn</span>
+    <h1 id="h-start">Historier, der kan klare sig selv</h1>
+    <p class="lead">Frivillige laver lokalhistorie som små, selvstændige filer: tekst, billeder, lyd og video i én fil, der kan gemmes, deles og åbnes om mange år, også uden internet.</p>
+    <div class="tal">
+      <div><b>13</b><span>byggere til historier</span></div>
+      <div><b>15</b><span>værktøjer til lyd, billeder og mere</span></div>
+      <div><b>6</b><span>foreninger i den fælles søgeportal</span></div>
+      <div><b>1</b><span>afspiller til telefonen med historiehylde</span></div>
+      <div><b>116</b><span>forbedringer siden 14. oktober 2026</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- 2. Idéen -->
+<section class="afsnit" id="iden" aria-labelledby="h-iden">
+  <div class="wrap">
+    <span class="kicker" style="background:#FDE7E2;color:var(--koral-d)">Idéen</span>
+    <h2 id="h-iden">Én historie, én fil</h2>
+    <p class="lead">Lokalhistorie har to fjender: skuffen, hvor ingen ser den, og skyen, hvor platforme lukker og programmer forsvinder. Svaret er en fil, der kan klare sig selv.</p>
+    <div class="tre">
+      <div class="kort" style="--c:var(--koral);--cl:#FDE7E2"><div class="ikon" aria-hidden="true">📄</div><h3>Alt i én fil</h3><p>Tekst, billeder, lyd og billedtekster ligger i den samme fil. Billedet og historien kan aldrig komme fra hinanden.</p></div>
+      <div class="kort" style="--c:var(--gul);--cl:#FEF1D2"><div class="ikon" aria-hidden="true">🗂️</div><h3>Et kartotekskort indeni</h3><p>Hver fil fortæller selv, hvem der har lavet den, hvad den handler om, hvor den kommer fra, og hvem der må bruge den.</p></div>
+      <div class="kort" style="--c:var(--groen);--cl:#DDF1E5"><div class="ikon" aria-hidden="true">⏳</div><h3>Virker om mange år</h3><p>Almindelig HTML, som alle hjemmesider er lavet af. Ingen konto, intet abonnement og intet program, der kan forsvinde.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 3. Sammenhæng -->
+<section class="afsnit" id="sammenhaeng" aria-labelledby="h-sam">
+  <div class="wrap">
+    <span class="kicker" style="background:#E3ECFC;color:var(--blaa-d)">Sådan hænger det sammen</span>
+    <h2 id="h-sam">Fra fortælling til fil til lommen</h2>
+    <p class="lead">En bygger gør fortællingen til én fil. Derfra kan den gå mange veje, og den er den samme fil hele vejen.</p>
+    <div class="diagram">
+      <svg viewBox="0 0 1060 470" role="img" aria-labelledby="dg-t dg-d">
+        <title id="dg-t">Diagram over sammenhængen</title>
+        <desc id="dg-d">Fortællingen kommer ind i en bygger og bliver til én fil med kartotekskort. Filen kan gå til den fælles søgeportal, til historiehylden og SFB-afspilleren på telefonen, til USB-stik og mail, og den frie udgave lader alle lave deres egne.</desc>
+        <defs>
+          <marker id="pil" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#5E5A78"/></marker>
+        </defs>
+        <!-- Kilder -->
+        <g>
+          <rect x="20" y="40" width="200" height="74" rx="18" fill="#FDE7E2"/><text x="120" y="72" text-anchor="middle" font-size="26">📷 🎙️ ✍️</text><text x="120" y="100" text-anchor="middle" font-size="16" font-weight="700" fill="#1C1A2E">Billeder, lyd og tekst</text>
+          <rect x="20" y="198" width="200" height="74" rx="18" fill="#FEF1D2"/><text x="120" y="230" text-anchor="middle" font-size="26">🧓 🏘️</text><text x="120" y="258" text-anchor="middle" font-size="16" font-weight="700" fill="#1C1A2E">Erindringer og steder</text>
+          <rect x="20" y="356" width="200" height="74" rx="18" fill="#DDF1E5"/><text x="120" y="388" text-anchor="middle" font-size="26">🖼️ 🎬</text><text x="120" y="416" text-anchor="middle" font-size="16" font-weight="700" fill="#1C1A2E">Galleri og film</text>
+        </g>
+        <path d="M222 77 C 280 77, 280 220, 318 228" fill="none" stroke="#5E5A78" stroke-width="3" marker-end="url(#pil)"/>
+        <path d="M222 235 L 318 235" fill="none" stroke="#5E5A78" stroke-width="3" marker-end="url(#pil)"/>
+        <path d="M222 393 C 280 393, 280 250, 318 242" fill="none" stroke="#5E5A78" stroke-width="3" marker-end="url(#pil)"/>
+        <!-- Bygger -->
+        <rect x="322" y="170" width="170" height="130" rx="22" fill="#7A4FD0"/>
+        <text x="407" y="222" text-anchor="middle" font-size="34">🛠️</text>
+        <text x="407" y="256" text-anchor="middle" font-size="19" font-weight="800" fill="#fff">Bygger</text>
+        <text x="407" y="280" text-anchor="middle" font-size="14" fill="#EFE8FF">13 slags</text>
+        <path d="M494 235 L 548 235" fill="none" stroke="#5E5A78" stroke-width="3" marker-end="url(#pil)"/>
+        <!-- Filen -->
+        <g>
+          <path d="M556 150 h118 l38 38 v134 a10 10 0 0 1 -10 10 h-146 a10 10 0 0 1 -10 -10 v-162 a10 10 0 0 1 10 -10z" fill="#fff" stroke="#E2553F" stroke-width="4"/>
+          <path d="M674 150 v38 h38" fill="#FDE7E2" stroke="#E2553F" stroke-width="4" stroke-linejoin="round"/>
+          <text x="626" y="222" text-anchor="middle" font-size="30">📄</text>
+          <text x="626" y="256" text-anchor="middle" font-size="19" font-weight="800" fill="#1C1A2E">Én fil</text>
+          <rect x="574" y="270" width="104" height="40" rx="8" fill="#FEF1D2"/>
+          <text x="626" y="295" text-anchor="middle" font-size="13" font-weight="700" fill="#7A5200">🗂️ kartotekskort</text>
+        </g>
+        <!-- Veje ud -->
+        <path d="M716 210 C 770 150, 780 75, 818 70" fill="none" stroke="#5E5A78" stroke-width="3" marker-end="url(#pil)"/>
+        <path d="M716 228 C 770 200, 790 175, 818 172" fill="none" stroke="#5E5A78" stroke-width="3" marker-end="url(#pil)"/>
+        <path d="M716 250 C 770 270, 790 290, 818 292" fill="none" stroke="#5E5A78" stroke-width="3" marker-end="url(#pil)"/>
+        <path d="M716 268 C 770 320, 780 395, 818 400" fill="none" stroke="#5E5A78" stroke-width="3" marker-end="url(#pil)"/>
+        <rect x="822" y="36" width="218" height="68" rx="16" fill="#2D6CDF"/><text x="840" y="66" font-size="17" font-weight="800" fill="#fff">🔎 Søgeportalen</text><text x="840" y="90" font-size="13.5" fill="#E3ECFC">6 foreninger, ét sted at søge</text>
+        <rect x="822" y="138" width="218" height="68" rx="16" fill="#1A9AA0"/><text x="840" y="168" font-size="17" font-weight="800" fill="#fff">📱 Historiehylden</text><text x="840" y="192" font-size="13.5" fill="#DDF6F6">til SFB-afspilleren, uden net</text>
+        <rect x="822" y="258" width="218" height="68" rx="16" fill="#2F8A5B"/><text x="840" y="288" font-size="17" font-weight="800" fill="#fff">💾 USB, mail, web</text><text x="840" y="312" font-size="13.5" fill="#DDF1E5">gem og del den samme fil</text>
+        <rect x="822" y="366" width="218" height="68" rx="16" fill="#D6457E"/><text x="840" y="396" font-size="17" font-weight="800" fill="#fff">🎁 Fri udgave</text><text x="840" y="420" font-size="13.5" fill="#FDE3EE">så alle kan lave deres egne</text>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- 4. Værktøjskassen -->
+<section class="afsnit" id="kassen" aria-labelledby="h-kassen">
+  <div class="wrap">
+    <span class="kicker" style="background:#EFE8FF;color:var(--lilla-d)">Værktøjskassen</span>
+    <h2 id="h-kassen">13 byggere og en håndfuld hjælpere</h2>
+    <p class="lead">Hver bygger er én fil, der åbnes i browseren. Man udfylder felterne, og ud kommer en færdig historie.</p>
+    <div class="byggere">
+      <div class="bygger" style="--c:var(--koral)"><span class="e" aria-hidden="true">📰</span><div><b>Side</b><small>artikel om en gade, et sted eller et menneske</small></div></div>
+      <div class="bygger" style="--c:var(--gul)"><span class="e" aria-hidden="true">🖼️</span><div><b>Album</b><small>billeder med titel og beskrivelse</small></div></div>
+      <div class="bygger" style="--c:var(--groen)"><span class="e" aria-hidden="true">🔍</span><div><b>Enkeltbillede</b><small>ét billede i høj kvalitet</small></div></div>
+      <div class="bygger" style="--c:var(--blaa)"><span class="e" aria-hidden="true">⏳</span><div><b>Før og nu</b><small>samme sted, to tider, med skyder</small></div></div>
+      <div class="bygger" style="--c:var(--lilla)"><span class="e" aria-hidden="true">📖</span><div><b>Bog</b><small>e-bog med kapitler</small></div></div>
+      <div class="bygger" style="--c:var(--pink)"><span class="e" aria-hidden="true">🎧</span><div><b>Lydfortælling</b><small>lyd med billede og tekst</small></div></div>
+      <div class="bygger" style="--c:var(--turkis)"><span class="e" aria-hidden="true">🎙️</span><div><b>Podcastserie</b><small>flere afsnit med afspilningsliste</small></div></div>
+      <div class="bygger" style="--c:var(--koral)"><span class="e" aria-hidden="true">🎬</span><div><b>Mediekort</b><small>video med kapitler og udskrift</small></div></div>
+      <div class="bygger" style="--c:var(--gul)"><span class="e" aria-hidden="true">📽️</span><div><b>Præsentation</b><small>billedshow til foredrag</small></div></div>
+      <div class="bygger" style="--c:var(--groen)"><span class="e" aria-hidden="true">🧭</span><div><b>Vejledning</b><small>trin for trin med skærmbilleder</small></div></div>
+      <div class="bygger" style="--c:var(--blaa)"><span class="e" aria-hidden="true">🔗</span><div><b>Henvisning</b><small>skilt, der sender videre</small></div></div>
+      <div class="bygger" style="--c:var(--lilla)"><span class="e" aria-hidden="true">🗃️</span><div><b>Samling</b><small>forside for flere historier</small></div></div>
+      <div class="bygger" style="--c:var(--pink)"><span class="e" aria-hidden="true">🏛️</span><div><b>Piwigo Album</b><small>album hentet fra galleriet</small></div></div>
+    </div>
+    <h3 class="under">Hjælperne</h3>
+    <div class="chips">
+      <span class="chip">🎙️ Feltoptager</span><span class="chip">🎚️ Lydlab</span><span class="chip">🎨 Fotolab</span><span class="chip">🗄️ Billedarkiv</span><span class="chip">🏛️ Galleriarkiv</span>
+      <span class="chip">🏷️ Fælles emneord</span><span class="chip">🤖 Metadata-hjælper</span><span class="chip">🚦 Må det komme med?</span><span class="chip">🔳 QR-kode</span><span class="chip">🔎 Søgeside</span>
+      <span class="chip">🎵 Musikpakke</span><span class="chip">🪟 Skyggeramme</span><span class="chip">🧲 Billed- og lydudtrækker</span><span class="chip">📺 RTV-arbejdsliste</span><span class="chip">🔐 Kodeord og hash</span>
+      <span class="chip st">📏 Builder-standarden 2.26</span><span class="chip st">🎨 7 farvetemaer</span>
+    </div>
+  </div>
+</section>
+
+<!-- 5. Hvem -->
+<section class="afsnit" id="hvem" aria-labelledby="h-hvem">
+  <div class="wrap">
+    <span class="kicker" style="background:#DDF1E5;color:var(--groen-d)">Hvem bruger det?</span>
+    <h2 id="h-hvem">Foreninger, skoler og alle andre</h2>
+    <p class="lead">Værktøjerne er lavet til frivillige og ældre brugere: stor skrift, tydelige knapper og ingen konto.</p>
+    <div class="hvem">
+      <div class="kort" style="--c:var(--groen)">
+        <h3 style="margin-top:0">🤝 Foreningerne i søgeportalen</h3>
+        <div class="foreninger">
+          <div class="forening"><span class="bogst" style="background:#B83A26">SfB</span><b>Syd for Banen</b></div>
+          <div class="forening"><span class="bogst" style="background:#1F4FA8">HS</span><b>Historisk Samfund for Roskilde Amt</b></div>
+          <div class="forening"><span class="bogst" style="background:#226B45">RTV</span><b>Roskilde TV</b></div>
+          <div class="forening"><span class="bogst" style="background:#C8102E">RK</span><b>Røde Kors Roskilde</b></div>
+          <div class="forening"><span class="bogst" style="background:#5B35A8">RM</span><b>Roskilde Musik</b></div>
+          <div class="forening"><span class="bogst" style="background:#13797E">○</span><b>cirkler</b></div>
+        </div>
+        <p style="margin-top:12px;color:var(--muted);font-size:.95rem">Og flere er på vej, bl.a. en forening fra Jyllinge.</p>
+      </div>
+      <div class="kort" style="--c:var(--blaa)">
+        <h3 style="margin-top:0">🎒 Skoler og studerende</h3>
+        <p>Den frie udgave bruges i undervisningen, og <i>Må det komme med?</i> hjælper med samtykke, også om tavshedspligt i praktik.</p>
+      </div>
+      <div class="kort" style="--c:var(--pink)">
+        <h3 style="margin-top:0">🏡 Private og familier</h3>
+        <p>Fotos i skuffen og fortællinger fra mor og far. Og <b>Pengeskab</b> til familiens koder er blevet en lille teaser for det hele.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 6. Principper -->
+<section class="afsnit" id="principper" aria-labelledby="h-pri">
+  <div class="wrap">
+    <span class="kicker" style="background:#FEF1D2;color:#7A5200">Det, vi holder fast i</span>
+    <h2 id="h-pri">Fem løfter</h2>
+    <p class="lead">Alle værktøjerne følger den samme fælles standard, så de ser ens ud og opfører sig ens.</p>
+    <div class="principper">
+      <div class="princip" style="--c:#B83A26"><div class="e" aria-hidden="true">📄</div><h3>Én fil</h3><p>Hver bygger og hver historie er én selvstændig fil.</p></div>
+      <div class="princip" style="--c:#226B45"><div class="e" aria-hidden="true">📴</div><h3>Virker uden net</h3><p>Ingen tjenester i skyen, ingen login, intet sendes nogen steder hen.</p></div>
+      <div class="princip" style="--c:#1F4FA8"><div class="e" aria-hidden="true">🗂️</div><h3>Kartotekskort</h3><p>Metadata efter Dublin Core, så historien kan findes igen.</p></div>
+      <div class="princip" style="--c:#5B35A8"><div class="e" aria-hidden="true">👓</div><h3>Let at bruge</h3><p>Stor skrift, høj kontrast og tydelige knapper, efter WCAG 2.2 AA.</p></div>
+      <div class="princip" style="--c:#A3305E"><div class="e" aria-hidden="true">🕰️</div><h3>Holdbart</h3><p>Almindelig HTML, der kan åbnes om mange år.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 7. Tidslinje -->
+<section class="afsnit" id="tid" aria-labelledby="h-tid">
+  <div class="wrap">
+    <span class="kicker" style="background:#FDE3EE;color:#A3305E">Tidslinjen</span>
+    <h2 id="h-tid">En måned med fart på</h2>
+    <p class="lead">Fra de første byggere i én mappe til en hel værktøjskasse med portal, app og fri udgave.</p>
+    <ol class="tidslinje">
+      <li style="--c:var(--lilla)"><time datetime="2026-10-14">14. okt.</time><div><b>Projektet flytter ind på GitHub.</b> De første byggere samles ét sted.</div></li>
+      <li style="--c:var(--lilla)"><time datetime="2026-10-17">17. okt.</time><div><b>Builder-standarden 2.0.</b> Ens navne, ens udseende og ens kartotekskort.</div></li>
+      <li style="--c:var(--pink)"><time datetime="2026-10-19">19. okt.</time><div><b>Fælles emneord</b>, så man kan søge på tværs af foreningerne.</div></li>
+      <li style="--c:var(--pink)"><time datetime="2026-10-25">25. okt.</time><div><b>Den frie udgave</b> til skoler, private og alle andre.</div></li>
+      <li style="--c:var(--koral)"><time datetime="2026-10-29">28.–29. okt.</time><div><b>Søgeportalen vokser:</b> roller, statistik og Roskilde TV's arbejdsliste.</div></li>
+      <li style="--c:var(--gul)"><time datetime="2026-11-01">1. nov.</time><div><b>Video og store lydfiler</b> i mappeformatet, og Podcastserie · Bygger.</div></li>
+      <li style="--c:var(--gul)"><time datetime="2026-11-02">2. nov.</time><div><b>SFB-afspilleren og Galleriarkiv.</b> Lyd med slukket skærm i bilen og Domkirken med 572 billeder på telefonen.</div></li>
+      <li style="--c:var(--groen)"><time datetime="2026-11-06">6.–7. nov.</time><div><b>Må det komme med?</b> og <b>Vejledningsbyggeren</b>.</div></li>
+      <li style="--c:var(--groen)"><time datetime="2026-11-13">13. nov.</time><div><b>Pengeskab</b> og <b>træk og slip</b> i alle byggere.</div></li>
+      <li style="--c:var(--blaa)"><time datetime="2026-11-14">14. nov.</time><div><b>QR-kode</b> til skilte, regnet ud på egen computer.</div></li>
+    </ol>
+  </div>
+</section>
+
+<!-- 8. Fremtiden -->
+<section class="afsnit" id="fremtid" aria-labelledby="h-frem">
+  <div class="wrap">
+    <span class="kicker" style="background:#DDF6F6;color:#13797E">Fremtiden</span>
+    <h2 id="h-frem">Hvor er vi på vej hen?</h2>
+    <p class="lead">Nogle ting venter på en beslutning eller et møde, andre er drømme, vi tager op, når tiden er moden.</p>
+    <div class="fremtid">
+      <div class="kol" style="--cl:#DDF1E5">
+        <h3><span class="e" aria-hidden="true">🚀</span> Lige kommet</h3>
+        <p>Klar og i brug.</p>
+        <ul>
+          <li><b>QR-kode</b><span>til skilte og ark, også i den frie udgave</span></li>
+          <li><b>Træk og slip</b><span>i alle 13 byggere</span></li>
+          <li><b>Pengeskab med faner</b><span>familiens koder samlet ét sted</span></li>
+        </ul>
+      </div>
+      <div class="kol" style="--cl:#FEF1D2">
+        <h3><span class="e" aria-hidden="true">⏸️</span> Venter på noget</h3>
+        <p>Klar til at blive lavet, når tiden er der.</p>
+        <ul>
+          <li><b>Fælles webhotel og dynamiske QR-koder</b><span>faste korte adresser, så skilte kan hænge i mange år</span></li>
+          <li><b>Ny forening fra Jyllinge</b><span>og nye emneord som «Fiskeri og søfart»</span></li>
+          <li><b>«Vis flere» i søgeportalen</b><span>når der er ca. 500 historier</span></li>
+          <li><b>Billeder og print i Bogbyggeren</b><span>når behovet kommer igen</span></li>
+        </ul>
+      </div>
+      <div class="kol" style="--cl:#EFE8FF">
+        <h3><span class="e" aria-hidden="true">✨</span> Drømme og idéer</h3>
+        <p>Det, vi gerne vil, når det giver mening.</p>
+        <ul>
+          <li><b>Aftenens program i afspilleren</b><span>film, podcast og billeder til medlemsmøder, ét ad gangen</span></li>
+          <li><b>Søgeportalen tager en hel mappe</b><span>store film og serier som zip-fil</span></li>
+          <li><b>Arket «Til uddannelser»</b><span>til studerende og undervisere</span></li>
+          <li><b>Klikbar QR-kode i mails</b><span>og flere skilte på én gang</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 9. Slut -->
+<section class="afsnit slut" id="slut" aria-labelledby="h-slut">
+  <div class="wrap">
+    <h2 id="h-slut">Prøv det selv</h2>
+    <p>Den frie udgave er gratis, uden login, og alt foregår på din egen computer. Begynd med fem gamle fotos og en billedtekst til hvert.</p>
+    <a class="adr" href="https://pelovskov.github.io/clcode/fri/">pelovskov.github.io/clcode/fri</a>
+    <p style="font-size:1rem;margin-top:1.4rem">Poul Erik Løvskov · Syd for Banen - Lokalhistorisk Forening</p>
+  </div>
+</section>
+</main>
+
+<footer>Projekt-dashboard · version 1.0 · tal pr. 14. november 2026</footer>
+
+<div class="praes-bar" role="toolbar" aria-label="Præsentation">
+  <button type="button" id="forrige" aria-label="Forrige afsnit">←</button>
+  <span class="nr" id="nr" aria-live="polite"></span>
+  <button type="button" id="naeste" aria-label="Næste afsnit">→</button>
+  <button type="button" id="afslut">Afslut (Esc)</button>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var afsnit = Array.prototype.slice.call(document.querySelectorAll("section.afsnit"));
+  var i = 0, aktiv = false;
+  function vis(n){
+    i = Math.max(0, Math.min(afsnit.length - 1, n));
+    afsnit.forEach(function(s, k){ s.classList.toggle("vist", k === i); });
+    afsnit[i].scrollTop = 0;
+    document.getElementById("nr").textContent = (i + 1) + " / " + afsnit.length;
+  }
+  function start(){
+    // Begynd ved det afsnit, man står ved.
+    var y = window.scrollY + 120;
+    i = 0; afsnit.forEach(function(s, k){ if (s.offsetTop <= y) i = k; });
+    aktiv = true; document.body.classList.add("praes"); vis(i);
+    try { if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(function(){}); } catch (e) {}
+    document.getElementById("naeste").focus();
+  }
+  function stop(){
+    if (!aktiv) return;
+    aktiv = false; document.body.classList.remove("praes");
+    afsnit.forEach(function(s){ s.classList.remove("vist"); });
+    try { if (document.fullscreenElement) document.exitFullscreen(); } catch (e) {}
+    afsnit[i].scrollIntoView({ block: "start" });
+    document.getElementById("praesBtn").focus();
+  }
+  document.getElementById("praesBtn").addEventListener("click", start);
+  document.getElementById("forrige").addEventListener("click", function(){ vis(i - 1); });
+  document.getElementById("naeste").addEventListener("click", function(){ vis(i + 1); });
+  document.getElementById("afslut").addEventListener("click", stop);
+  document.addEventListener("fullscreenchange", function(){ if (aktiv && !document.fullscreenElement) stop(); });
+  document.addEventListener("keydown", function(e){
+    var t = e.target && e.target.tagName;
+    if (t === "INPUT" || t === "TEXTAREA") return;
+    if (!aktiv){ if (e.key === "p" || e.key === "P"){ e.preventDefault(); start(); } return; }
+    if (["ArrowRight","ArrowDown","PageDown"," "].indexOf(e.key) !== -1 && !(e.key === " " && t === "BUTTON")){ e.preventDefault(); vis(i + 1); }
+    else if (["ArrowLeft","ArrowUp","PageUp"].indexOf(e.key) !== -1){ e.preventDefault(); vis(i - 1); }
+    else if (e.key === "Home"){ e.preventDefault(); vis(0); }
+    else if (e.key === "End"){ e.preventDefault(); vis(afsnit.length - 1); }
+    else if (e.key === "Escape"){ e.preventDefault(); stop(); }
+  });
+})();
+</script>
+</body>
+</html>
