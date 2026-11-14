@@ -71,8 +71,9 @@ select:focus{outline:3px solid var(--focus);outline-offset:2px}
 <script type="application/json" id="pengeskab-data">null</script>
 <script>
 "use strict";
-/* Pengeskab v1.3 - krypteret notefil i én HTML-fil.
+/* Pengeskab v1.4 - krypteret notefil i én HTML-fil.
    Faner (fx én pr. person) gør listen kortere; søgningen søger i alle faner.
+   Noter kan hentes fra et andet pengeskab, også et fra en ældre udgave.
    Kryptering: AES-256-GCM. Nøgle udledt af brugernavn + adgangskode med PBKDF2-SHA256.
    Alt foregår lokalt i browseren. Intet sendes nogen steder hen. */
 
@@ -207,7 +208,8 @@ function renderVault() {
     search,
     h("div", { id: "list" }),
     h("div", { class: "row mt" },
-      h("button", { class: "small", onclick: changePassword, text: "Skift brugernavn/adgangskode" })),
+      h("button", { class: "small", onclick: changePassword, text: "Skift brugernavn/adgangskode" }),
+      h("button", { class: "small", onclick: hentAndet, text: "Hent noter fra et andet pengeskab" })),
     h("p", { class: "muted mt" }, h("small", { text: `Låser automatisk efter ${LOCK_MIN} minutter uden aktivitet. Gem en ny udgave efter hver ændring, og slet derefter de gamle udgaver.` })));
   renderStatus(); renderFaner(); renderList(); search.focus();
 }
@@ -277,7 +279,7 @@ function askName(titel, vaerdi, ok) {
         dlg.close(); ok(navn);
       } },
       h("h2", { id: "n-h", text: titel }),
-      h("label", { for: "n-navn", text: "Fanens navn (fx Lene, Poul Erik eller Fælles)" }), inp,
+      h("label", { for: "n-navn", text: "Fanens navn (fx et navn, Fælles eller Huset)" }), inp,
       err,
       h("div", { class: "row mt" },
         h("button", { class: "primary", type: "submit", text: "Gem" }),
@@ -403,6 +405,68 @@ function changePassword() {
 }
 
 function markDirty() { S.dirty = true; renderStatus(); }
+
+/* ---------- hent noter fra et andet pengeskab ----------
+   Læser kun de krypterede data i den anden fil. Filens egen kode bliver aldrig kørt,
+   og filen bliver ikke ændret. Noter, der findes i forvejen (samme id), springes over. */
+function hentAndet() {
+  const fil = h("input", { id: "i-fil", type: "file", accept: ".html,.htm,text/html" });
+  const u = h("input", { id: "i-u", autocomplete: "off", spellcheck: "false" });
+  const pw = h("input", { id: "i-p", type: "password", autocomplete: "off" });
+  const fs = h("select", { id: "i-fane" },
+    h("option", { value: "*", text: "Behold fanerne fra det andet pengeskab" }),
+    h("option", { value: "", text: "Ingen fane (kun under Alle)" }),
+    ...S.faner.map(f => h("option", { value: f.id, text: "Fanen " + f.navn, selected: f.id === S.aktiv })));
+  const err = h("p", { class: "err", role: "alert" });
+  const btn = h("button", { class: "primary", type: "submit", text: "Hent noterne" });
+  const dlg = h("dialog", { "aria-labelledby": "i-h", onclose: () => dlg.remove() },
+    h("form", { onsubmit: async ev => {
+        ev.preventDefault(); err.textContent = "";
+        const f = fil.files && fil.files[0];
+        if (!f) { err.textContent = "Vælg pengeskabsfilen."; fil.focus(); return; }
+        let blob = null;
+        try {
+          const doc = new DOMParser().parseFromString(await f.text(), "text/html");
+          const el = doc.getElementById("pengeskab-data");
+          blob = el ? JSON.parse(el.textContent) : null;
+        } catch (e) { blob = null; }
+        if (!blob || blob.format !== "pengeskab") { err.textContent = "Filen er ikke et pengeskab, eller pengeskabet er tomt."; return; }
+        btn.disabled = true; btn.textContent = "Arbejder …";
+        let data;
+        try { data = (await decryptBlob(blob, u.value, pw.value)).data; }
+        catch (e) { err.textContent = "Forkert brugernavn eller adgangskode til den fil."; btn.disabled = false; btn.textContent = "Hent noterne"; pw.value = ""; pw.focus(); return; }
+        // Fanerne fra den anden fil: samme navn bliver til den samme fane her.
+        const kort = {};
+        if (fs.value === "*") {
+          for (const af of (Array.isArray(data.faner) ? data.faner : [])) {
+            const findes = S.faner.find(x => x.navn.toLowerCase() === String(af.navn).toLowerCase());
+            if (findes) kort[af.id] = findes.id;
+            else { const nyF = { id: uid(), navn: String(af.navn) }; S.faner = [...S.faner, nyF]; kort[af.id] = nyF.id; }
+          }
+        }
+        const har = new Set(S.entries.map(x => x.id));
+        let nye = 0, fandtes = 0;
+        for (const n of (Array.isArray(data.entries) ? data.entries : [])) {
+          if (har.has(n.id)) { fandtes++; continue; }
+          const fane = fs.value === "*" ? (kort[n.fane] || "") : fs.value;
+          S.entries.push(Object.assign({}, n, { fane })); har.add(n.id); nye++;
+        }
+        dlg.close();
+        if (nye) markDirty();
+        renderFaner(); renderList();
+        toast(nye ? `${nye} ${nye === 1 ? "note er" : "noter er"} hentet.` + (fandtes ? ` ${fandtes} fandtes i forvejen.` : "") + " Husk at gemme."
+                  : "Der var ingen nye noter at hente.");
+      } },
+      h("h2", { id: "i-h", text: "Hent noter fra et andet pengeskab" }),
+      h("p", { class: "muted", text: "Fx et pengeskab fra en ældre udgave eller en anden persons pengeskab. Den anden fil bliver ikke ændret, og noter, der allerede er her, kommer ikke med to gange." }),
+      h("label", { for: "i-fil", text: "Pengeskabsfilen" }), fil,
+      h("label", { for: "i-u", text: "Brugernavn til den fil" }), u,
+      h("label", { for: "i-p", text: "Adgangskode til den fil" }), pw,
+      h("label", { for: "i-fane", text: "Læg noterne i" }), fs,
+      err,
+      h("div", { class: "row mt" }, btn, h("button", { type: "button", text: "Fortryd", onclick: () => dlg.close() }))));
+  document.body.append(dlg); dlg.showModal(); fil.focus();
+}
 
 async function saveFile() {
   const blob = await encryptState();
