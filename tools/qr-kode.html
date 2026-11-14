@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QR-kode</title>
+<!--
+  QR-kode · version 1.0 (nov. 2026)
+  Laver en QR-kode til et skilt, et ark eller en side: titel over koden, en lille
+  tekst under og en adresse, der eventuelt sættes sammen af en fast forstavelse
+  (fx https://pelovskov.github.io/clcode/) og resten af adressen.
+
+  Koden regnes ud i browseren efter den offentlige standard for QR-koder
+  (ISO/IEC 18004), med byte-tilstand (UTF-8), fejlrettelse M, Q eller H og den
+  maske, der giver den pæneste kode. Adressen sendes ingen steder hen, og der
+  bruges ingen tjenester på nettet. Værktøjet virker uden internet.
+
+  Det kommer ud: koden som PNG og SVG, hele skiltet som PNG, og skiltet til print.
+  Forstavelsen huskes i browseren (localStorage), så den er der næste gang.
+
+  Følger ikke Builder-standarden (det er et værktøj), men ser ud som byggerne.
+
+  Ønskeliste: flere skilte på én gang (en rute), PWA, og en klikbar QR-kode som
+  HTML til mails, WordPress og byggerne.
+-->
+<style>
+  :root{
+    --paper: #EDE7D8;
+    --paper-dim: #E2DBC8;
+    --ink: #211E19;
+    --rust: #9A4630;
+    --moss: #47543C;
+    --hint: #5F5A4B;
+    --line: #cbc2a8;
+    --serif: Georgia, 'Iowan Old Style', 'Palatino Linotype', Palatino, serif;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  *{ box-sizing:border-box; }
+  body{ margin:0; background:var(--paper); color:var(--ink); font-family:var(--sans); font-size:16px; line-height:1.55; }
+  .topbar{ padding:22px 28px 18px; border-bottom:1px solid var(--line); display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; }
+  .topbar h1{ font-family:var(--serif); font-size:25px; margin:0; letter-spacing:0.2px; }
+  .topbar span{ font-size:14.5px; color:var(--hint); letter-spacing:0.3px; }
+  .wrap{ display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:0; }
+  .form-pane{ padding:28px; border-right:1px solid var(--line); }
+  .preview-pane{ padding:28px; background:var(--paper-dim); }
+  .preview-inner{ position:sticky; top:20px; }
+  .field{ margin-bottom:20px; }
+  .field label, .field .lbl{ display:block; font-size:13.5px; text-transform:uppercase; letter-spacing:0.09em; color:var(--moss); font-weight:600; margin-bottom:7px; }
+  .field .hint{ font-size:13.5px; line-height:1.55; color:var(--hint); margin-top:6px; }
+  .field .hint code{ background:#e5dfcd; padding:1px 5px; border-radius:3px; font-size:13px; }
+  .field label.check{ display:flex; align-items:flex-start; gap:10px; cursor:pointer; font-size:15px; line-height:1.45; margin-top:4px; text-transform:none; letter-spacing:0; font-weight:400; color:var(--ink); }
+  .check input{ width:20px; height:20px; margin:1px 0 0; flex:0 0 20px; accent-color:var(--rust); cursor:pointer; }
+  input[type=text], textarea, select{
+    width:100%; padding:11px 13px; border:1px solid var(--line); background:#fff;
+    border-radius:3px; font-family:var(--sans); font-size:15.5px; color:var(--ink);
+  }
+  textarea{ min-height:84px; resize:vertical; line-height:1.5; }
+  input[type=text]:focus, textarea:focus, select:focus{ outline:2px solid var(--rust); outline-offset:1px; }
+  button:focus-visible, input:focus-visible, a:focus-visible{ outline:3px solid var(--rust); outline-offset:2px; }
+  .sectionhead{ font-size:12.5px; text-transform:uppercase; letter-spacing:0.13em; color:var(--hint); font-weight:700; margin:30px 0 14px; padding-bottom:7px; border-bottom:1px solid var(--line); }
+  .sectionhead:first-child{ margin-top:0; }
+  .samlet{ background:#fff; border:1px solid var(--line); border-left:5px solid var(--moss); border-radius:3px; padding:11px 14px; font-family:ui-monospace, Menlo, Consolas, monospace; font-size:14.5px; word-break:break-all; min-height:46px; }
+  .samlet.tom{ color:var(--hint); font-family:var(--sans); font-style:italic; }
+  .besked{ font-size:14px; margin-top:8px; line-height:1.5; }
+  .besked.ok{ color:var(--moss); }
+  .besked.adv{ color:#7A4A00; font-weight:600; }
+  .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+  .btn{ font:inherit; font-weight:600; font-size:15px; padding:10px 18px; border-radius:4px; border:2px solid var(--rust); background:#fff; color:var(--rust); cursor:pointer; text-decoration:none; display:inline-block; }
+  .btn:hover{ background:#f6ece6; }
+  .btn.primary{ background:var(--rust); color:#fff; }
+  .btn.primary:hover{ background:#7E3826; }
+  .btn:disabled{ opacity:.45; cursor:not-allowed; }
+  .raad{ background:#f7f3e7; border:1px solid var(--line); border-radius:4px; padding:14px 16px; font-size:14.5px; line-height:1.55; }
+  .raad strong{ color:var(--moss); }
+
+  /* Skiltet */
+  .skilt{ background:#fff; color:#111; border-radius:6px; box-shadow:0 4px 18px rgba(0,0,0,.14); padding:28px 26px 24px; text-align:center; max-width:440px; margin:0 auto; }
+  .skilt h2{ font-family:var(--sans); font-size:26px; line-height:1.2; margin:0 0 16px; font-weight:800; overflow-wrap:anywhere; }
+  .skilt .kode svg{ display:block; width:100%; max-width:340px; height:auto; margin:0 auto; }
+  .skilt .tekst{ font-size:17px; line-height:1.45; margin:14px 0 0; white-space:pre-line; overflow-wrap:anywhere; }
+  .skilt .adresse{ font-family:ui-monospace, Menlo, Consolas, monospace; font-size:12.5px; color:#444; margin:10px 0 0; word-break:break-all; }
+  .skilt .tom{ color:var(--hint); padding:60px 0; font-style:italic; }
+  .info{ text-align:center; font-size:13.5px; color:var(--hint); margin-top:12px; }
+
+  @media (max-width:860px){
+    .wrap{ grid-template-columns:1fr; }
+    .form-pane{ border-right:none; border-bottom:1px solid var(--line); }
+    .preview-inner{ position:static; }
+  }
+
+  /* Print: kun skiltet, midt på et A4-ark */
+  @page{ size:A4; margin:15mm; }
+  @media print{
+    body{ background:#fff; }
+    .topbar, .form-pane, .info, .noprint{ display:none !important; }
+    .wrap{ display:block; }
+    .preview-pane{ padding:0; background:#fff; }
+    .preview-inner{ position:static; }
+    .skilt{ box-shadow:none; border:1px solid #bbb; max-width:none; width:var(--printbredde, 120mm); margin:10mm auto 0; padding:10mm 9mm 9mm; }
+    .skilt h2{ font-size:22pt; margin-bottom:6mm; }
+    .skilt .kode svg{ max-width:none; width:var(--printkode, 90mm); }
+    .skilt .tekst{ font-size:14pt; margin-top:5mm; }
+    .skilt .adresse{ font-size:9pt; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <h1>QR-kode</h1>
+  <span>Lav en QR-kode til et skilt eller et ark · regnes ud på din egen computer, intet sendes nogen steder hen · version 1.0</span>
+</div>
+
+<div class="wrap">
+  <div class="form-pane">
+    <div class="sectionhead">Skiltet</div>
+
+    <div class="field">
+      <label for="titel">Titel (valgfri)</label>
+      <input type="text" id="titel" placeholder="fx Algade 12 i 1920" autocomplete="off">
+      <div class="hint">Står med stor skrift over koden.</div>
+    </div>
+
+    <div class="field">
+      <label for="tekst">Tekst under koden (valgfri)</label>
+      <textarea id="tekst" placeholder="fx Scan koden, og se hvordan her så ud for 100 år siden."></textarea>
+    </div>
+
+    <div class="sectionhead">Adressen</div>
+
+    <div class="field">
+      <label for="forstavelse">Forstavelse (valgfri)</label>
+      <input type="text" id="forstavelse" placeholder="fx https://pelovskov.github.io/clcode/" autocomplete="off" spellcheck="false" inputmode="url">
+      <div class="hint">Den faste begyndelse på jeres adresser. Den huskes til næste gang i denne browser. Er adressen nedenfor hel (begynder med <code>https://</code>), bruges forstavelsen ikke.</div>
+    </div>
+
+    <div class="field">
+      <label for="adresse">Adresse</label>
+      <input type="text" id="adresse" placeholder="fx sbtv/filer/algade-1920.html" autocomplete="off" spellcheck="false" inputmode="url">
+    </div>
+
+    <div class="field">
+      <span class="lbl" id="samletLbl">Koden fører til</span>
+      <div class="samlet tom" id="samlet" aria-labelledby="samletLbl" aria-live="polite">Skriv en adresse ovenfor.</div>
+      <div class="besked" id="besked"></div>
+      <div class="row" style="margin-top:10px">
+        <button type="button" class="btn" id="afproev" disabled>Afprøv adressen</button>
+      </div>
+    </div>
+
+    <div class="sectionhead">Indstillinger</div>
+
+    <div class="field">
+      <label for="fejl">Hvor robust skal koden være?</label>
+      <select id="fejl">
+        <option value="M" selected>Normal: til ark, plakater og skærme</option>
+        <option value="Q">Robust: til skilte udendørs</option>
+        <option value="H">Meget robust: til skilte, der kan blive snavsede eller ridsede</option>
+      </select>
+      <div class="hint">En mere robust kode kan stadig læses, selv om en del af den er snavset eller slidt. Til gengæld får den flere og mindre felter.</div>
+    </div>
+
+    <div class="field">
+      <label for="stoerrelse">Størrelse på print</label>
+      <select id="stoerrelse">
+        <option value="50">Lille: koden er 5 cm</option>
+        <option value="90" selected>Mellem: koden er 9 cm</option>
+        <option value="150">Stor: koden er 15 cm</option>
+      </select>
+      <div class="hint">Tommelfingerregel: koden skal være mindst en tiendedel så bred som afstanden, den scannes fra. 9 cm kan scannes fra knap en meter.</div>
+    </div>
+
+    <div class="field">
+      <label class="check"><input type="checkbox" id="visAdresse"> Vis adressen med lille skrift under koden, så den også kan tastes</label>
+    </div>
+
+    <div class="sectionhead">Gem og print</div>
+
+    <div class="row noprint">
+      <button type="button" class="btn primary" id="printBtn" disabled>Print skiltet</button>
+      <button type="button" class="btn" id="skiltPng" disabled>Gem skiltet som PNG</button>
+      <button type="button" class="btn" id="kodePng" disabled>Gem koden som PNG</button>
+      <button type="button" class="btn" id="kodeSvg" disabled>Gem koden som SVG</button>
+    </div>
+    <div class="hint" style="font-size:13.5px;color:var(--hint);margin-top:8px">PNG passer til Word, WordPress og mails. SVG kan gøres stor uden at blive sløret, så den passer til trykkeriet og store skilte.</div>
+
+    <div class="sectionhead">Godt at vide</div>
+    <div class="raad">
+      <strong>Et skilt kan hænge i mange år, men adresser ændrer sig.</strong> Lad derfor gerne koden pege på en fast adresse på jeres eget webhotel, fx en henvisning lavet med Henvisning · Bygger, som sender videre til historien. Flytter historien, retter I kun henvisningen, og skiltet kan blive hængende.<br><br>
+      <strong>Jo kortere adresse, jo bedre.</strong> En kort adresse giver en enkel kode med store felter, som er let at scanne, også i dårligt lys.<br><br>
+      <strong>Prøv altid at scanne</strong> det printede skilt med et par forskellige telefoner, før det bliver sat op.
+    </div>
+  </div>
+
+  <div class="preview-pane">
+    <div class="preview-inner">
+      <div class="skilt" id="skilt">
+        <h2 id="pTitel" hidden></h2>
+        <div class="kode" id="pKode"><p class="tom">Skriv en adresse, så kommer koden her.</p></div>
+        <p class="tekst" id="pTekst" hidden></p>
+        <p class="adresse" id="pAdresse" hidden></p>
+      </div>
+      <p class="info" id="pInfo"></p>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+
+/* =====================================================================
+   QR-koden regnes ud her, efter ISO/IEC 18004. Kun byte-tilstand (UTF-8),
+   som passer til adresser. Funktionen qrLav(tekst, niveau) giver en
+   firkant af sand/falsk (mørk/lys) uden den hvide kant.
+   ===================================================================== */
+var QR = (function(){
+  // Antal fejlrettelses-ord pr. blok og antal blokke, pr. niveau og version (1–40).
+  var ECC = {
+    L:[-1,7,10,15,20,26,18,20,24,30,18,20,24,26,30,22,24,28,30,28,28,28,28,30,30,26,28,30,30,30,30,30,30,30,30,30,30,30,30,30,30],
+    M:[-1,10,16,26,18,24,16,18,22,22,26,30,22,22,24,24,28,28,26,26,26,26,28,28,28,28,28,28,28,28,28,28,28,28,28,28,28,28,28,28,28],
+    Q:[-1,13,22,18,26,18,24,18,22,20,24,28,26,24,20,30,24,28,28,26,30,28,30,30,30,30,28,30,30,30,30,30,30,30,30,30,30,30,30,30,30],
+    H:[-1,17,28,22,16,22,28,26,26,24,28,24,28,22,24,24,30,28,28,26,28,30,24,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30]
+  };
+  var BLOKKE = {
+    L:[-1,1,1,1,1,1,2,2,2,2,4,4,4,4,4,6,6,6,6,7,8,8,9,9,10,12,12,12,13,14,15,16,17,18,19,19,20,21,22,24,25],
+    M:[-1,1,1,1,2,2,4,4,4,5,5,5,8,9,9,10,10,11,13,14,16,17,17,18,20,21,23,25,26,28,29,31,33,35,37,38,40,43,45,47,49],
+    Q:[-1,1,1,2,2,4,4,6,6,8,8,8,10,12,16,12,17,16,18,21,20,23,23,25,27,29,34,34,35,38,40,43,45,48,51,53,56,59,62,65,68],
+    H:[-1,1,1,2,4,4,4,5,6,8,8,11,11,16,16,18,16,19,21,25,25,25,34,30,32,35,37,40,42,45,48,51,54,57,60,63,66,70,74,77,81]
+  };
+  var FORMAT = { L:1, M:0, Q:3, H:2 };
+
+  function raaModuler(v){
+    var r = (16 * v + 128) * v + 64;
+    if (v >= 2){ var n = Math.floor(v / 7) + 2; r -= (25 * n - 10) * n - 55; if (v >= 7) r -= 36; }
+    return r;
+  }
+  function dataOrd(v, n){ return Math.floor(raaModuler(v) / 8) - ECC[n][v] * BLOKKE[n][v]; }
+
+  // Reed-Solomon i GF(256) med polynomiet 0x11D.
+  function gange(x, y){
+    var z = 0;
+    for (var i = 7; i >= 0; i--){ z = (z << 1) ^ ((z >>> 7) * 0x11D); z ^= ((y >>> i) & 1) * x; }
+    return z & 0xFF;
+  }
+  function divisor(grad){
+    var r = []; for (var i = 0; i < grad - 1; i++) r.push(0); r.push(1);
+    var rod = 1;
+    for (i = 0; i < grad; i++){
+      for (var j = 0; j < r.length; j++){ r[j] = gange(r[j], rod); if (j + 1 < r.length) r[j] ^= r[j + 1]; }
+      rod = gange(rod, 0x02);
+    }
+    return r;
+  }
+  function rest(data, div){
+    var r = div.map(function(){ return 0; });
+    data.forEach(function(b){
+      var f = b ^ r.shift(); r.push(0);
+      div.forEach(function(c, i){ r[i] ^= gange(c, f); });
+    });
+    return r;
+  }
+
+  function utf8(s){
+    var u = unescape(encodeURIComponent(s)), b = [];
+    for (var i = 0; i < u.length; i++) b.push(u.charCodeAt(i));
+    return b;
+  }
+
+  function lav(tekst, niveau, tvungenMaske){
+    var bytes = utf8(tekst), v, kapacitet, tael;
+    for (v = 1; v <= 40; v++){
+      tael = v <= 9 ? 8 : 16;
+      kapacitet = dataOrd(v, niveau) * 8;
+      if (4 + tael + bytes.length * 8 <= kapacitet) break;
+    }
+    if (v > 40) throw new Error("for lang");
+
+    // Bitstrømmen: tilstand (0100 = byte), antal, data, slutnuller, fyld.
+    var bits = [];
+    function put(val, n){ for (var i = n - 1; i >= 0; i--) bits.push((val >>> i) & 1); }
+    put(4, 4); put(bytes.length, tael); bytes.forEach(function(b){ put(b, 8); });
+    put(0, Math.min(4, kapacitet - bits.length));
+    put(0, (8 - bits.length % 8) % 8);
+    for (var fyld = 0xEC; bits.length < kapacitet; fyld ^= 0xEC ^ 0x11) put(fyld, 8);
+    var data = [];
+    for (var i = 0; i < bits.length; i += 8){ var b = 0; for (var j = 0; j < 8; j++) b = (b << 1) | bits[i + j]; data.push(b); }
+
+    // Del i blokke, læg fejlrettelse til, og fletter blokkene.
+    var antal = BLOKKE[niveau][v], eccLen = ECC[niveau][v], raa = Math.floor(raaModuler(v) / 8);
+    var korte = antal - raa % antal, kortLen = Math.floor(raa / antal), div = divisor(eccLen);
+    var blokke = [], k = 0;
+    for (i = 0; i < antal; i++){
+      var dat = data.slice(k, k + kortLen - eccLen + (i < korte ? 0 : 1)); k += dat.length;
+      var e = rest(dat, div);
+      if (i < korte) dat.push(0);
+      blokke.push(dat.concat(e));
+    }
+    var ord = [];
+    for (i = 0; i < blokke[0].length; i++)
+      for (j = 0; j < blokke.length; j++)
+        if (i !== kortLen - eccLen || j >= korte) ord.push(blokke[j][i]);
+
+    // Tegn de faste mønstre.
+    var n = v * 4 + 17, mod = [], fast = [];
+    for (i = 0; i < n; i++){ mod.push(new Array(n).fill(false)); fast.push(new Array(n).fill(false)); }
+    function saet(x, y, morkt){ mod[y][x] = morkt; fast[y][x] = true; }
+    for (i = 0; i < n; i++){ saet(6, i, i % 2 === 0); saet(i, 6, i % 2 === 0); }
+    function finder(cx, cy){
+      for (var dy = -4; dy <= 4; dy++) for (var dx = -4; dx <= 4; dx++){
+        var d = Math.max(Math.abs(dx), Math.abs(dy)), x = cx + dx, y = cy + dy;
+        if (x >= 0 && x < n && y >= 0 && y < n) saet(x, y, d !== 2 && d !== 4);
+      }
+    }
+    finder(3, 3); finder(n - 4, 3); finder(3, n - 4);
+    var pos = [];
+    if (v > 1){
+      var na = Math.floor(v / 7) + 2, trin = v === 32 ? 26 : Math.ceil((v * 4 + 4) / (na * 2 - 2)) * 2;
+      pos = [6];
+      for (var p = n - 7; pos.length < na; p -= trin) pos.splice(1, 0, p);
+    }
+    for (i = 0; i < pos.length; i++) for (j = 0; j < pos.length; j++){
+      if ((i === 0 && j === 0) || (i === 0 && j === pos.length - 1) || (i === pos.length - 1 && j === 0)) continue;
+      for (var ay = -2; ay <= 2; ay++) for (var ax = -2; ax <= 2; ax++)
+        saet(pos[i] + ax, pos[j] + ay, Math.max(Math.abs(ax), Math.abs(ay)) !== 1);
+    }
+    function formatBits(maske){
+      var d = FORMAT[niveau] << 3 | maske, r = d;
+      for (var t = 0; t < 10; t++) r = (r << 1) ^ ((r >>> 9) * 0x537);
+      var f = (d << 10 | r) ^ 0x5412;
+      function bit(t){ return ((f >>> t) & 1) !== 0; }
+      for (t = 0; t <= 5; t++) saet(8, t, bit(t));
+      saet(8, 7, bit(6)); saet(8, 8, bit(7)); saet(7, 8, bit(8));
+      for (t = 9; t < 15; t++) saet(14 - t, 8, bit(t));
+      for (t = 0; t < 8; t++) saet(n - 1 - t, 8, bit(t));
+      for (t = 8; t < 15; t++) saet(8, n - 15 + t, bit(t));
+      saet(8, n - 8, true);
+    }
+    formatBits(0);  // reserver pladsen
+    if (v >= 7){
+      var r = v;
+      for (i = 0; i < 12; i++) r = (r << 1) ^ ((r >>> 11) * 0x1F25);
+      var vb = v << 12 | r;
+      for (i = 0; i < 18; i++){
+        var vbit = ((vb >>> i) & 1) !== 0, a = n - 11 + i % 3, bb = Math.floor(i / 3);
+        saet(a, bb, vbit); saet(bb, a, vbit);
+      }
+    }
+
+    // Læg dataordene ind i zigzag.
+    var idx = 0;
+    for (var hoejre = n - 1; hoejre >= 1; hoejre -= 2){
+      if (hoejre === 6) hoejre = 5;
+      for (var lodret = 0; lodret < n; lodret++) for (j = 0; j < 2; j++){
+        var x = hoejre - j, op = ((hoejre + 1) & 2) === 0, y = op ? n - 1 - lodret : lodret;
+        if (!fast[y][x] && idx < ord.length * 8){ mod[y][x] = ((ord[idx >>> 3] >>> (7 - (idx & 7))) & 1) !== 0; idx++; }
+      }
+    }
+
+    // Prøv alle otte masker, og vælg den med færrest strafpoint.
+    function maskeFn(m, x, y){
+      switch (m){
+        case 0: return (x + y) % 2 === 0;
+        case 1: return y % 2 === 0;
+        case 2: return x % 3 === 0;
+        case 3: return (x + y) % 3 === 0;
+        case 4: return (Math.floor(x / 3) + Math.floor(y / 2)) % 2 === 0;
+        case 5: return x * y % 2 + x * y % 3 === 0;
+        case 6: return (x * y % 2 + x * y % 3) % 2 === 0;
+        default: return ((x + y) % 2 + x * y % 3) % 2 === 0;
+      }
+    }
+    function anvend(m){
+      for (var y = 0; y < n; y++) for (var x = 0; x < n; x++)
+        if (!fast[y][x] && maskeFn(m, x, y)) mod[y][x] = !mod[y][x];
+    }
+    function straf(){
+      var s = 0, x, y, k2, lob, farve;
+      for (var retning = 0; retning < 2; retning++){
+        for (var a2 = 0; a2 < n; a2++){
+          lob = 0; farve = null;
+          var linje = [];
+          for (var b2 = 0; b2 < n; b2++){
+            var c = retning === 0 ? mod[a2][b2] : mod[b2][a2];
+            linje.push(c ? 1 : 0);
+            if (c === farve){ lob++; if (lob === 5) s += 3; else if (lob > 5) s++; }
+            else { farve = c; lob = 1; }
+          }
+          var str = linje.join("");
+          var re = /(?=(10111010000|00001011101))/g, mt;
+          while ((mt = re.exec(str)) !== null){ s += 40; re.lastIndex++; }
+        }
+      }
+      for (y = 0; y < n - 1; y++) for (x = 0; x < n - 1; x++){
+        k2 = mod[y][x];
+        if (k2 === mod[y][x + 1] && k2 === mod[y + 1][x] && k2 === mod[y + 1][x + 1]) s += 3;
+      }
+      var morke = 0;
+      for (y = 0; y < n; y++) for (x = 0; x < n; x++) if (mod[y][x]) morke++;
+      var total = n * n;
+      s += (Math.ceil(Math.abs(morke * 20 - total * 10) / total) - 1) * 10;
+      return s;
+    }
+    var bedst = 0, minStraf = Infinity;
+    for (var m = 0; m < 8; m++){
+      anvend(m); formatBits(m);
+      var st = straf();
+      if (st < minStraf){ minStraf = st; bedst = m; }
+      anvend(m);  // tilbage igen (XOR)
+    }
+    if (typeof tvungenMaske === "number") bedst = tvungenMaske;  // kun til afprøvning
+    anvend(bedst); formatBits(bedst);
+    return { moduler: mod, version: v, maske: bedst, stoerrelse: n };
+  }
+
+  return { lav: lav };
+})();
+
+/* =====================================================================
+   Værktøjet
+   ===================================================================== */
+var $ = function(id){ return document.getElementById(id); };
+var KANT = 4;           // den hvide kant om koden, i felter (standarden kræver 4)
+var NOEGLE = "qr-kode-forstavelse";
+var nu = null;          // { adresse, qr }
+
+try { var gemt = localStorage.getItem(NOEGLE); if (gemt) $("forstavelse").value = gemt; } catch (e) {}
+
+function samlAdresse(){
+  var f = $("forstavelse").value.trim(), a = $("adresse").value.trim();
+  if (!a) return { adresse: "", brugtForstavelse: false };
+  if (/^[a-z][a-z0-9+.-]*:/i.test(a) || !f) return { adresse: a, brugtForstavelse: false, hel: !!f && /^[a-z][a-z0-9+.-]*:/i.test(a) };
+  if (/[\/=?#&]$/.test(f)) return { adresse: f + a.replace(/^\//, ""), brugtForstavelse: true };
+  return { adresse: f + "/" + a.replace(/^\//, ""), brugtForstavelse: true };
+}
+
+function erWeb(a){ try { var u = new URL(a); return u.protocol === "https:" || u.protocol === "http:"; } catch (e) { return false; } }
+
+function svgFor(qr, farve){
+  var n = qr.stoerrelse, s = n + KANT * 2, d = "";
+  for (var y = 0; y < n; y++){
+    var x = 0;
+    while (x < n){
+      if (!qr.moduler[y][x]){ x++; continue; }
+      var start = x; while (x < n && qr.moduler[y][x]) x++;
+      d += "M" + (start + KANT) + " " + (y + KANT) + "h" + (x - start) + "v1h-" + (x - start) + "z";
+    }
+  }
+  return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + s + ' ' + s + '" shape-rendering="crispEdges" role="img" aria-label="QR-kode">'
+    + '<rect width="' + s + '" height="' + s + '" fill="#fff"/><path fill="' + (farve || "#000") + '" d="' + d + '"/></svg>';
+}
+
+function opdater(){
+  try { localStorage.setItem(NOEGLE, $("forstavelse").value.trim()); } catch (e) {}
+  var titel = $("titel").value.trim(), tekst = $("tekst").value.trim();
+  var r = samlAdresse(), besked = $("besked");
+  $("pTitel").textContent = titel; $("pTitel").hidden = !titel;
+  $("pTekst").textContent = tekst; $("pTekst").hidden = !tekst;
+  besked.className = "besked"; besked.textContent = "";
+  nu = null;
+
+  if (!r.adresse){
+    $("samlet").textContent = "Skriv en adresse ovenfor."; $("samlet").className = "samlet tom";
+    $("pKode").innerHTML = '<p class="tom">Skriv en adresse, så kommer koden her.</p>';
+    $("pAdresse").hidden = true; $("pInfo").textContent = "";
+    knapper(false); return;
+  }
+  $("samlet").textContent = r.adresse; $("samlet").className = "samlet";
+
+  var qr;
+  try { qr = QR.lav(r.adresse, $("fejl").value); }
+  catch (e){
+    $("pKode").innerHTML = '<p class="tom">Adressen er for lang til en QR-kode.</p>';
+    besked.className = "besked adv"; besked.textContent = "Adressen er for lang til en QR-kode. Brug en kortere adresse.";
+    knapper(false); return;
+  }
+  nu = { adresse: r.adresse, qr: qr };
+  $("pKode").innerHTML = svgFor(qr);
+  $("pKode").querySelector("svg").setAttribute("aria-label", "QR-kode til " + r.adresse);
+  $("pAdresse").textContent = r.adresse; $("pAdresse").hidden = !$("visAdresse").checked;
+  $("pInfo").textContent = "Koden har " + qr.stoerrelse + " × " + qr.stoerrelse + " felter (QR-version " + qr.version + ").";
+
+  var dele = [];
+  if (r.hel) dele.push("Adressen er hel, så forstavelsen bruges ikke.");
+  if (!erWeb(r.adresse)) dele.push("Det ligner ikke en webadresse. Koden virker, men telefonen viser måske bare teksten.");
+  if (r.adresse.length > 80) dele.push("Adressen er lang (" + r.adresse.length + " tegn). En kortere adresse giver en enklere kode, som er lettere at scanne.");
+  if (dele.length){ besked.className = "besked adv"; besked.textContent = dele.join(" "); }
+  else { besked.className = "besked ok"; besked.textContent = "Adressen ser fin ud. Tryk «Afprøv adressen» for at se, at den virker."; }
+  knapper(true);
+  $("afproev").disabled = !erWeb(r.adresse);
+}
+
+function knapper(til){ ["printBtn", "skiltPng", "kodePng", "kodeSvg", "afproev"].forEach(function(id){ $(id).disabled = !til; }); }
+
+function filnavn(endelse){
+  var t = ($("titel").value.trim() || "qr-kode").toLowerCase()
+    .replace(/æ/g, "ae").replace(/ø/g, "oe").replace(/å/g, "aa")
+    .normalize("NFD").replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60) || "qr-kode";
+  return (t === "qr-kode" ? t : "qr-" + t) + "." + endelse;
+}
+
+function hent(blob, navn){
+  var url = URL.createObjectURL(blob), a = document.createElement("a");
+  a.href = url; a.download = navn; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
+}
+
+// Tegn koden på et lærred med skarpe kanter.
+function tegnKode(ctx, qr, x0, y0, felt){
+  ctx.fillStyle = "#fff"; ctx.fillRect(x0, y0, (qr.stoerrelse + KANT * 2) * felt, (qr.stoerrelse + KANT * 2) * felt);
+  ctx.fillStyle = "#000";
+  for (var y = 0; y < qr.stoerrelse; y++) for (var x = 0; x < qr.stoerrelse; x++)
+    if (qr.moduler[y][x]) ctx.fillRect(x0 + (x + KANT) * felt, y0 + (y + KANT) * felt, felt, felt);
+}
+
+function ombryd(ctx, tekst, bredde){
+  var linjer = [];
+  tekst.split(/\n/).forEach(function(afsnit){
+    var ord = afsnit.split(/\s+/).filter(Boolean), linje = "";
+    ord.forEach(function(o){
+      var proeve = linje ? linje + " " + o : o;
+      if (ctx.measureText(proeve).width > bredde && linje){ linjer.push(linje); linje = o; }
+      else linje = proeve;
+    });
+    linjer.push(linje);
+  });
+  return linjer;
+}
+
+$("kodePng").addEventListener("click", function(){
+  if (!nu) return;
+  var felt = Math.max(8, Math.ceil(1200 / (nu.qr.stoerrelse + KANT * 2)));
+  var s = (nu.qr.stoerrelse + KANT * 2) * felt, c = document.createElement("canvas");
+  c.width = s; c.height = s; tegnKode(c.getContext("2d"), nu.qr, 0, 0, felt);
+  c.toBlob(function(b){ hent(b, filnavn("png")); }, "image/png");
+});
+
+$("kodeSvg").addEventListener("click", function(){
+  if (!nu) return;
+  var svg = '<?xml version="1.0" encoding="UTF-8"?>\n<!-- QR-kode til ' + nu.adresse.replace(/--/g, "- -") + ' -->\n' + svgFor(nu.qr).replace('aria-label="QR-kode"', 'aria-label="QR-kode til ' + nu.adresse.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;") + '"');
+  hent(new Blob([svg], { type: "image/svg+xml" }), filnavn("svg"));
+});
+
+$("skiltPng").addEventListener("click", function(){
+  if (!nu) return;
+  var B = 1200, pad = 80, felt = Math.floor((B - pad * 2) / (nu.qr.stoerrelse + KANT * 2));
+  var kodeB = (nu.qr.stoerrelse + KANT * 2) * felt;
+  var c = document.createElement("canvas"), ctx = c.getContext("2d");
+  var font = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
+  var titel = $("titel").value.trim(), tekst = $("tekst").value.trim(), adr = $("visAdresse").checked ? nu.adresse : "";
+  ctx.font = "800 72px " + font; var tl = titel ? ombryd(ctx, titel, B - pad * 2) : [];
+  ctx.font = "400 44px " + font; var xl = tekst ? ombryd(ctx, tekst, B - pad * 2) : [];
+  ctx.font = "400 26px ui-monospace, Menlo, Consolas, monospace";
+  var al = []; if (adr){ var stk = ""; for (var i = 0; i < adr.length; i++){ if (ctx.measureText(stk + adr[i]).width > B - pad * 2){ al.push(stk); stk = ""; } stk += adr[i]; } al.push(stk); }
+  var H = pad + (tl.length ? tl.length * 86 + 30 : 0) + kodeB + (xl.length ? 40 + xl.length * 60 : 0) + (al.length ? 30 + al.length * 36 : 0) + pad;
+  c.width = B; c.height = H;
+  ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, B, H);
+  ctx.fillStyle = "#111"; ctx.textAlign = "center"; ctx.textBaseline = "top";
+  var y = pad;
+  ctx.font = "800 72px " + font; tl.forEach(function(l){ ctx.fillText(l, B / 2, y); y += 86; }); if (tl.length) y += 30;
+  tegnKode(ctx, nu.qr, Math.round((B - kodeB) / 2), y, felt); y += kodeB;
+  ctx.fillStyle = "#111"; ctx.font = "400 44px " + font; if (xl.length) y += 40; xl.forEach(function(l){ ctx.fillText(l, B / 2, y); y += 60; });
+  ctx.fillStyle = "#444"; ctx.font = "400 26px ui-monospace, Menlo, Consolas, monospace"; if (al.length) y += 30; al.forEach(function(l){ ctx.fillText(l, B / 2, y); y += 36; });
+  c.toBlob(function(b){ hent(b, filnavn("png").replace(/^qr-/, "skilt-")); }, "image/png");
+});
+
+// Størrelsen på print gælder også, når man printer med ⌘P eller Ctrl+P.
+function printStoerrelse(){
+  var mm = parseInt($("stoerrelse").value, 10);
+  document.documentElement.style.setProperty("--printkode", mm + "mm");
+  document.documentElement.style.setProperty("--printbredde", Math.min(180, mm + 30) + "mm");
+}
+$("stoerrelse").addEventListener("change", printStoerrelse);
+printStoerrelse();
+$("printBtn").addEventListener("click", function(){ printStoerrelse(); window.print(); });
+
+$("afproev").addEventListener("click", function(){
+  if (nu && erWeb(nu.adresse)) window.open(nu.adresse, "_blank", "noopener");
+});
+
+["titel", "tekst", "forstavelse", "adresse"].forEach(function(id){ $(id).addEventListener("input", opdater); });
+["fejl", "visAdresse"].forEach(function(id){ $(id).addEventListener("change", opdater); });
+opdater();
+</script>
+</body>
+</html>

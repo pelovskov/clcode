@@ -45,6 +45,7 @@ Værktøjerne ligger i mappen `tools/`. De følger ikke Builder-standarden, men 
 | Billedudtrækker | `tools/billedudtraekker.html` | 1.0 | trækker billederne ud af en HTML-fil, fx et gammelt album, som billedfiler eller samlet i en zip-fil |
 | Musikpakke · Bygger | `tools/musikpakke-bygger.html` | 1 | laver en offline musik-app (PWA) med 3–5 samlinger som zip-fil |
 | Skyggeramme | `tools/skyggeramme.html` | – | sætter en blød skygge om et skærmbillede til wikien |
+| QR-kode | `tools/qr-kode.html` | 1.0 | laver en QR-kode til skilte og ark, med titel over og tekst under, og en forstavelse, der huskes. Koden regnes ud i browseren, så adressen sendes ingen steder hen. Gemmer koden som PNG og SVG, skiltet som PNG, og printer skiltet på A4 |
 | Kodeord og hash | `tools/password-hash.html` | 2.0 | laver et sikkert kodeord og den linje med bcrypt-hash, der skal i `config.php` |
 
 **Billedarkiv** ligger i sin egen mappe, fordi det er et helt system med sin egen datafil og vejledning:
