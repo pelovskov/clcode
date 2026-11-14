@@ -50,15 +50,30 @@ a.openlink{display:inline-block;font-weight:600;font-size:.85em;padding:5px 12px
 a.openlink:hover{background:var(--accent-l)}
 a.openlink:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
 small{font-size:.85em}
+.faner{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:14px 0 6px;padding-bottom:10px;border-bottom:2px solid #e3d6d8}
+.fane{font-weight:600;padding:8px 16px;border-radius:999px;border:2px solid var(--accent);background:#fff;color:var(--accent)}
+.fane[aria-pressed="true"]{background:var(--accent);color:#fff}
+.fane .antal{font-weight:400;opacity:.85}
+.fane.ny{border-style:dashed}
+.fanevaerktoej{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:4px 0 10px}
+.fanemaerke{display:inline-block;font-size:.72em;font-weight:600;padding:2px 10px;border-radius:999px;background:var(--accent-l);color:var(--accent);margin-left:8px;vertical-align:middle}
+select{width:100%;font:inherit;padding:10px 12px;border:2px solid #aaa;border-radius:8px;background:#fff;color:var(--text)}
+select:focus{outline:3px solid var(--focus);outline-offset:2px}
+#tilTop{position:fixed;right:18px;bottom:18px;width:52px;height:52px;border-radius:50%;padding:0;display:none;align-items:center;justify-content:center;background:var(--accent);color:#fff;border:2px solid #fff;box-shadow:0 3px 12px rgba(0,0,0,.3)}
+#tilTop.vis{display:flex}
+#tilTop svg{width:26px;height:26px}
 </style>
 </head>
 <body>
 <main id="app" class="wrap"></main>
 <div id="toast" role="status" aria-live="polite"></div>
+<button id="tilTop" type="button" aria-label="Til toppen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 14l6-6 6 6"/></svg></button>
 <script type="application/json" id="pengeskab-data">null</script>
 <script>
 "use strict";
-/* Pengeskab v1.2 - krypteret notefil i én HTML-fil.
+/* Pengeskab v1.4 - krypteret notefil i én HTML-fil.
+   Faner (fx én pr. person) gør listen kortere; søgningen søger i alle faner.
+   Noter kan hentes fra et andet pengeskab, også et fra en ældre udgave.
    Kryptering: AES-256-GCM. Nøgle udledt af brugernavn + adgangskode med PBKDF2-SHA256.
    Alt foregår lokalt i browseren. Intet sendes nogen steder hen. */
 
@@ -73,7 +88,7 @@ const app = document.getElementById("app");
 let embedded = null;
 try { embedded = JSON.parse(document.getElementById("pengeskab-data").textContent); } catch (e) {}
 
-const S = { key: null, salt: null, entries: null, dirty: false, blob: embedded, q: "" };
+const S = { key: null, salt: null, entries: null, faner: null, aktiv: "", dirty: false, blob: embedded, q: "" };
 
 /* ---------- hjælpere ---------- */
 function h(tag, attrs, ...kids) {
@@ -102,7 +117,7 @@ async function deriveKey(user, pass, salt, iter) {
 }
 async function encryptState() {
   const iv = rnd(12);
-  const pt = enc.encode(JSON.stringify({ entries: S.entries }));
+  const pt = enc.encode(JSON.stringify({ entries: S.entries, faner: S.faner || [] }));
   const ct = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, S.key, pt);
   return { format: "pengeskab", v: 1, kdf: "PBKDF2-SHA256", iter: ITER, salt: b64e(S.salt), iv: b64e(iv), ct: b64e(ct), saved: new Date().toISOString() };
 }
@@ -133,7 +148,7 @@ function renderCreate() {
       if (p1.value !== p2.value) return err.textContent = "De to adgangskoder er ikke ens.";
       btn.disabled = true; btn.textContent = "Arbejder …";
       S.salt = rnd(16); S.key = await deriveKey(u.value, p1.value, S.salt, ITER);
-      S.entries = []; S.dirty = true; renderVault();
+      S.entries = []; S.faner = []; S.aktiv = ""; S.dirty = true; renderVault();
       toast("Pengeskabet er oprettet. Husk at gemme.");
     } },
     h("label", { for: "u", text: "Vælg brugernavn" }), u,
@@ -159,6 +174,8 @@ function renderUnlock() {
       try {
         const r = await decryptBlob(S.blob, u.value, p.value);
         S.key = r.key; S.salt = r.salt; S.entries = r.data.entries || [];
+        S.faner = Array.isArray(r.data.faner) ? r.data.faner : [];
+        if (S.aktiv && !S.faner.some(f => f.id === S.aktiv)) S.aktiv = "";
         renderVault();
       } catch (ex) {
         err.textContent = "Forkert brugernavn eller adgangskode.";
@@ -186,12 +203,15 @@ function renderVault() {
         h("button", { id: "saveBtn", onclick: saveFile, text: "Gem ny udgave" }),
         h("button", { onclick: lock, text: "Lås" }))),
     h("div", { id: "status" }),
+    h("nav", { class: "faner", id: "faner", "aria-label": "Faner" }),
+    h("div", { class: "fanevaerktoej", id: "fanevaerktoej" }),
     search,
     h("div", { id: "list" }),
     h("div", { class: "row mt" },
-      h("button", { class: "small", onclick: changePassword, text: "Skift brugernavn/adgangskode" })),
+      h("button", { class: "small", onclick: changePassword, text: "Skift brugernavn/adgangskode" }),
+      h("button", { class: "small", onclick: hentAndet, text: "Hent noter fra et andet pengeskab" })),
     h("p", { class: "muted mt" }, h("small", { text: `Låser automatisk efter ${LOCK_MIN} minutter uden aktivitet. Gem en ny udgave efter hver ændring, og slet derefter de gamle udgaver.` })));
-  renderStatus(); renderList(); search.focus();
+  renderStatus(); renderFaner(); renderList(); search.focus();
 }
 
 function renderStatus() {
@@ -209,14 +229,62 @@ function renderStatus() {
 function renderList() {
   const list = document.getElementById("list"); if (!list) return;
   const q = S.q.trim().toLowerCase();
+  // Søgningen søger i alle faner. Uden søgning vises kun den valgte fane.
   const items = S.entries
+    .filter(e => q ? true : (!S.aktiv || e.fane === S.aktiv))
     .filter(e => !q || [e.titel, e.brugernavn, e.url, e.andet].join(" ").toLowerCase().includes(q))
     .sort((a, b) => (a.titel || "").localeCompare(b.titel || "", "da"));
   if (!items.length) {
-    list.replaceChildren(h("p", { class: "empty", text: S.entries.length ? "Ingen noter matcher søgningen." : "Pengeskabet er tomt. Tryk på »+ Ny note« for at tilføje den første." }));
+    list.replaceChildren(h("p", { class: "empty", text: q ? "Ingen noter matcher søgningen." : S.aktiv && S.entries.length ? "Der er ingen noter i denne fane endnu. Tryk på »+ Ny note«." : S.entries.length ? "Ingen noter." : "Pengeskabet er tomt. Tryk på »+ Ny note« for at tilføje den første." }));
     return;
   }
-  list.replaceChildren(...items.map(card));
+  list.replaceChildren(...(q && S.aktiv ? [h("p", { class: "muted", text: "Søger i alle faner." })] : []), ...items.map(card));
+}
+
+function faneNavn(id) { const f = (S.faner || []).find(x => x.id === id); return f ? f.navn : ""; }
+
+function renderFaner() {
+  const nav = document.getElementById("faner"); if (!nav) return;
+  const knap = (id, navn, antal) => h("button", { class: "fane", type: "button", "aria-pressed": S.aktiv === id ? "true" : "false",
+      onclick: () => { S.aktiv = id; renderFaner(); renderList(); } },
+    navn, " ", h("span", { class: "antal", text: "(" + antal + ")" }));
+  nav.replaceChildren(
+    knap("", "Alle", S.entries.length),
+    ...S.faner.map(f => knap(f.id, f.navn, S.entries.filter(e => e.fane === f.id).length)),
+    h("button", { class: "fane ny", type: "button", text: "+ Ny fane", onclick: () => askName("Ny fane", "", navn => {
+        const f = { id: uid(), navn }; S.faner = [...S.faner, f]; S.aktiv = f.id; markDirty(); renderFaner(); renderList();
+        toast("Fanen »" + navn + "« er lavet."); }) }));
+  const vk = document.getElementById("fanevaerktoej");
+  const f = S.faner.find(x => x.id === S.aktiv);
+  if (!f) { vk.replaceChildren(); return; }
+  vk.replaceChildren(
+    h("button", { class: "small", type: "button", text: "Omdøb fanen", onclick: () => askName("Omdøb fanen", f.navn, navn => {
+        S.faner = S.faner.map(x => x.id === f.id ? { id: x.id, navn } : x); markDirty(); renderFaner(); renderList(); toast("Fanen er omdøbt."); }) }),
+    h("button", { class: "small danger", type: "button", text: "Slet fanen", onclick: () => {
+        const n = S.entries.filter(e => e.fane === f.id).length;
+        if (n) { alert(`Fanen »${f.navn}« har ${n} ${n === 1 ? "note" : "noter"}. Flyt eller slet dem først. En note flyttes med »Ret«.`); return; }
+        if (!confirm(`Slet fanen »${f.navn}«?`)) return;
+        S.faner = S.faner.filter(x => x.id !== f.id); S.aktiv = ""; markDirty(); renderFaner(); renderList(); toast("Fanen er slettet."); } }));
+}
+
+function askName(titel, vaerdi, ok) {
+  const inp = h("input", { id: "n-navn", value: vaerdi, autocomplete: "off", maxlength: "40" });
+  const err = h("p", { class: "err", role: "alert" });
+  const dlg = h("dialog", { "aria-labelledby": "n-h", onclose: () => dlg.remove() },
+    h("form", { onsubmit: ev => {
+        ev.preventDefault();
+        const navn = inp.value.trim();
+        if (!navn) { err.textContent = "Skriv et navn."; inp.focus(); return; }
+        if (S.faner.some(f => f.navn.toLowerCase() === navn.toLowerCase() && f.navn !== vaerdi)) { err.textContent = "Der er allerede en fane med det navn."; inp.focus(); return; }
+        dlg.close(); ok(navn);
+      } },
+      h("h2", { id: "n-h", text: titel }),
+      h("label", { for: "n-navn", text: "Fanens navn (fx et navn, Fælles eller Huset)" }), inp,
+      err,
+      h("div", { class: "row mt" },
+        h("button", { class: "primary", type: "submit", text: "Gem" }),
+        h("button", { type: "button", text: "Fortryd", onclick: () => dlg.close() }))));
+  document.body.append(dlg); dlg.showModal(); inp.focus(); inp.select();
 }
 
 function card(e) {
@@ -227,7 +295,7 @@ function card(e) {
       shown = !shown; pwSpan.textContent = shown ? e.adgangskode : "••••••••••"; showBtn.textContent = shown ? "Skjul" : "Vis";
       showBtn.setAttribute("aria-pressed", shown ? "true" : "false"); } });
   return h("article", { class: "card" },
-    h("h3", { text: e.titel || "(uden titel)" }),
+    h("h3", {}, e.titel || "(uden titel)", e.fane && faneNavn(e.fane) && (!S.aktiv || S.q.trim()) ? h("span", { class: "fanemaerke", text: faneNavn(e.fane) }) : null),
     e.brugernavn ? h("div", { class: "field" }, h("span", { class: "lbl", text: "Brugernavn" }), h("span", { class: "mono", text: e.brugernavn }),
       h("button", { class: "small", text: "Kopiér", "aria-label": "Kopiér brugernavn til " + navn, onclick: () => copy(e.brugernavn) })) : null,
     e.adgangskode ? h("div", { class: "field" }, h("span", { class: "lbl", text: "Adgangskode" }), pwSpan, showBtn,
@@ -239,7 +307,7 @@ function card(e) {
     h("div", { class: "row mt" },
       h("button", { class: "small", text: "Ret", "aria-label": "Ret " + navn, onclick: () => editEntry(e) }),
       h("button", { class: "small danger", text: "Slet", "aria-label": "Slet " + navn, onclick: () => {
-          if (confirm(`Slet »${e.titel || "(uden titel)"}«?`)) { S.entries = S.entries.filter(x => x.id !== e.id); markDirty(); renderList(); toast("Noten er slettet."); } } }),
+          if (confirm(`Slet »${e.titel || "(uden titel)"}«?`)) { S.entries = S.entries.filter(x => x.id !== e.id); markDirty(); renderFaner(); renderList(); toast("Noten er slettet."); } } }),
       e.rettet ? h("small", { class: "muted", text: "Rettet " + fmtDate(e.rettet) }) : null));
 }
 
@@ -279,17 +347,22 @@ function editEntry(e) {
       visP.textContent = vis ? "Skjul" : "Vis"; visP.setAttribute("aria-pressed", vis ? "true" : "false"); p.focus(); } });
   const w = h("input", { id: "f-w", class: "mono", type: "text", inputmode: "url", value: e ? (e.url || "") : "", autocomplete: "off", spellcheck: "false", placeholder: "fx www.netbank.dk" });
   const a = h("textarea", { id: "f-a", value: e ? e.andet : "" });
+  const valgtFane = e ? (e.fane || "") : S.aktiv;
+  const fs = h("select", { id: "f-fane" },
+    h("option", { value: "", text: "Ingen fane (kun under Alle)" }),
+    ...S.faner.map(f => h("option", { value: f.id, text: f.navn, selected: f.id === valgtFane })));
   const err = h("p", { class: "err", role: "alert" });
   const dlg = h("dialog", { "aria-labelledby": "dlg-h", onclose: () => dlg.remove() },
     h("form", { method: "dialog", onsubmit: ev => {
         ev.preventDefault();
         if (!t.value.trim()) { err.textContent = "Giv noten en titel."; t.focus(); return; }
-        const rec = { id: e ? e.id : uid(), titel: t.value.trim(), brugernavn: u.value, adgangskode: p.value, url: w.value.trim(), andet: a.value, rettet: new Date().toISOString() };
+        const rec = { id: e ? e.id : uid(), titel: t.value.trim(), brugernavn: u.value, adgangskode: p.value, url: w.value.trim(), andet: a.value, fane: fs.value, rettet: new Date().toISOString() };
         S.entries = isNew ? [...S.entries, rec] : S.entries.map(x => x.id === rec.id ? rec : x);
-        markDirty(); dlg.close(); renderList(); toast(isNew ? "Noten er tilføjet." : "Noten er rettet.");
+        markDirty(); dlg.close(); renderFaner(); renderList(); toast(isNew ? "Noten er tilføjet." : "Noten er rettet.");
       } },
       h("h2", { id: "dlg-h", text: isNew ? "Ny note" : "Ret note" }),
       h("label", { for: "f-t", text: "Titel (fx Netbank, MitID, Webhotel)" }), t,
+      S.faner.length ? h("label", { for: "f-fane", text: "Fane" }) : null, S.faner.length ? fs : null,
       h("label", { for: "f-u", text: "Brugernavn" }), u,
       h("label", { for: "f-p", text: "Adgangskode" }), p,
       h("div", { class: "row", style: "margin-top:8px" },
@@ -333,6 +406,68 @@ function changePassword() {
 
 function markDirty() { S.dirty = true; renderStatus(); }
 
+/* ---------- hent noter fra et andet pengeskab ----------
+   Læser kun de krypterede data i den anden fil. Filens egen kode bliver aldrig kørt,
+   og filen bliver ikke ændret. Noter, der findes i forvejen (samme id), springes over. */
+function hentAndet() {
+  const fil = h("input", { id: "i-fil", type: "file", accept: ".html,.htm,text/html" });
+  const u = h("input", { id: "i-u", autocomplete: "off", spellcheck: "false" });
+  const pw = h("input", { id: "i-p", type: "password", autocomplete: "off" });
+  const fs = h("select", { id: "i-fane" },
+    h("option", { value: "*", text: "Behold fanerne fra det andet pengeskab" }),
+    h("option", { value: "", text: "Ingen fane (kun under Alle)" }),
+    ...S.faner.map(f => h("option", { value: f.id, text: "Fanen " + f.navn, selected: f.id === S.aktiv })));
+  const err = h("p", { class: "err", role: "alert" });
+  const btn = h("button", { class: "primary", type: "submit", text: "Hent noterne" });
+  const dlg = h("dialog", { "aria-labelledby": "i-h", onclose: () => dlg.remove() },
+    h("form", { onsubmit: async ev => {
+        ev.preventDefault(); err.textContent = "";
+        const f = fil.files && fil.files[0];
+        if (!f) { err.textContent = "Vælg pengeskabsfilen."; fil.focus(); return; }
+        let blob = null;
+        try {
+          const doc = new DOMParser().parseFromString(await f.text(), "text/html");
+          const el = doc.getElementById("pengeskab-data");
+          blob = el ? JSON.parse(el.textContent) : null;
+        } catch (e) { blob = null; }
+        if (!blob || blob.format !== "pengeskab") { err.textContent = "Filen er ikke et pengeskab, eller pengeskabet er tomt."; return; }
+        btn.disabled = true; btn.textContent = "Arbejder …";
+        let data;
+        try { data = (await decryptBlob(blob, u.value, pw.value)).data; }
+        catch (e) { err.textContent = "Forkert brugernavn eller adgangskode til den fil."; btn.disabled = false; btn.textContent = "Hent noterne"; pw.value = ""; pw.focus(); return; }
+        // Fanerne fra den anden fil: samme navn bliver til den samme fane her.
+        const kort = {};
+        if (fs.value === "*") {
+          for (const af of (Array.isArray(data.faner) ? data.faner : [])) {
+            const findes = S.faner.find(x => x.navn.toLowerCase() === String(af.navn).toLowerCase());
+            if (findes) kort[af.id] = findes.id;
+            else { const nyF = { id: uid(), navn: String(af.navn) }; S.faner = [...S.faner, nyF]; kort[af.id] = nyF.id; }
+          }
+        }
+        const har = new Set(S.entries.map(x => x.id));
+        let nye = 0, fandtes = 0;
+        for (const n of (Array.isArray(data.entries) ? data.entries : [])) {
+          if (har.has(n.id)) { fandtes++; continue; }
+          const fane = fs.value === "*" ? (kort[n.fane] || "") : fs.value;
+          S.entries.push(Object.assign({}, n, { fane })); har.add(n.id); nye++;
+        }
+        dlg.close();
+        if (nye) markDirty();
+        renderFaner(); renderList();
+        toast(nye ? `${nye} ${nye === 1 ? "note er" : "noter er"} hentet.` + (fandtes ? ` ${fandtes} fandtes i forvejen.` : "") + " Husk at gemme."
+                  : "Der var ingen nye noter at hente.");
+      } },
+      h("h2", { id: "i-h", text: "Hent noter fra et andet pengeskab" }),
+      h("p", { class: "muted", text: "Fx et pengeskab fra en ældre udgave eller en anden persons pengeskab. Den anden fil bliver ikke ændret, og noter, der allerede er her, kommer ikke med to gange." }),
+      h("label", { for: "i-fil", text: "Pengeskabsfilen" }), fil,
+      h("label", { for: "i-u", text: "Brugernavn til den fil" }), u,
+      h("label", { for: "i-p", text: "Adgangskode til den fil" }), pw,
+      h("label", { for: "i-fane", text: "Læg noterne i" }), fs,
+      err,
+      h("div", { class: "row mt" }, btn, h("button", { type: "button", text: "Fortryd", onclick: () => dlg.close() }))));
+  document.body.append(dlg); dlg.showModal(); fil.focus();
+}
+
 async function saveFile() {
   const blob = await encryptState();
   const html = TEMPLATE.replace(DATA_RE, (m, a, b) => a + JSON.stringify(blob) + b);
@@ -348,10 +483,16 @@ async function saveFile() {
 async function lock() {
   if (!S.key) return;
   if (S.dirty) S.blob = await encryptState();   // ugemte ændringer holdes krypteret i hukommelsen
-  S.key = null; S.entries = null; S.q = "";
+  S.key = null; S.entries = null; S.faner = null; S.q = "";
   document.querySelectorAll("dialog").forEach(d => d.remove());
+  document.getElementById("tilTop").classList.remove("vis");
   renderUnlock();
 }
+
+/* ---------- pil til toppen ---------- */
+const tilTop = document.getElementById("tilTop");
+tilTop.addEventListener("click", () => { window.scrollTo({ top: 0, behavior: "smooth" }); const s = document.querySelector(".search"); if (s) s.focus({ preventScroll: true }); });
+window.addEventListener("scroll", () => tilTop.classList.toggle("vis", window.scrollY > 400), { passive: true });
 
 /* ---------- automatisk låsning ---------- */
 let idle;
