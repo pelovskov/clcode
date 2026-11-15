@@ -74,6 +74,8 @@ Efter en ændring skal du beskrive, hvordan jeg selv kan afprøve den i browsere
 
 - `tools/feltoptager.html` laver lydfortællinger i **Lydfortælling · Byggerens filformat** og skriver selv `builderVersion`. Tælles `BUILDER_VERSION` op i `lydfortaelling-bygger.html`, skal `builderVersion` i Feltoptageren rettes med, ellers afviser byggeren filerne.
 
+- `tools/fotolab.html` har en kopi af QR-beregningen fra `tools/qr-kode.html` (blokken `var QR = (function(){…})();`), så Fotolab kan lave QR-koder uden internet. Rettes beregningen i det ene værktøj, kopieres den uændret til det andet, og begge afprøves.
+
 - `billedarkiv/billedarkiv.html` eksporterer albums med en `.json`-fil ved hvert billede, som **Album · Bygger** læser (kendes på `exportedFilename`). Ændres feltnavnene i eksporten, skal `album-bygger.html` og standardens afsnit 8.1 rettes med.
 
 - `emneord.md` er foreningernes fælles emneord. Udgiveren siger, hvem der har lavet en historie, og de fælles emneord siger, hvad den handler om. Nye emneord skrives på listen, før de tages i brug. Listen står også i `tools/emneord.html`, som skal rettes med. Kør derefter `fri/lav-fri-udgave.py`, så forslagene i den frie udgave (`fri/emneord.html`) følger med.
