@@ -15,6 +15,7 @@ singlefile-HTML fra Byggerne, henvisninger og videokort.
 | `rtv-skabelon.html` | Selve listen over Roskilde TV's udsendelser. Laves af `tools/lav-rtv-arbejdsliste.py` i repoet. Ret ikke i hånden. |
 | `statistik.php` | Besøg, mest åbnede historier og søgeord. Kræver login. |
 | `vis.php` | Mellemstation, som tæller et klik og straks åbner filen. Søgesiden og forsiden linker hertil. |
+| `tilfaeldig.php` | Vælger en tilfældig historie og åbner den gennem `vis.php`. Bruges som knap på en forenings hjemmeside, se «En tilfældig historie» nedenfor. |
 | `kode.php` | Skift din egen adgangskode. Redaktører med en engangskode sendes hertil første gang. |
 | `login.php`, `logout.php` | Log ind og ud. |
 | `lav-hash.php` | Laver adgangskode-linjer til `config.php`. Gemmer intet. Det samme kan gøres uden server med `tools/password-hash.html`. |
@@ -120,6 +121,23 @@ alligevel, så det er en ekstra sikring, ikke den eneste.
 Mappen `filer/` indeholder altid en opdateret `soegeside.html`. Hent hele mappen
 med FTP – også undermappen `thumbs/` – så har du et færdigt arkiv til USB-stik eller
 tidskapsel, der virker uden internet, præcis som med den lokale Søgeside · Bygger.
+
+## En tilfældig historie
+
+`tilfaeldig.php` vælger en tilfældig historie fra søgeindekset og åbner den. Hvert tryk giver en ny. Det er godt som en knap på en forenings hjemmeside, fx i WordPress, så der altid er noget at opdage.
+
+| Adresse | Hvad den gør |
+|---|---|
+| `…/sbtv/tilfaeldig.php?forening=sfb` | en tilfældig historie fra Syd for Banen (nøglen fra `data/foreninger.json`) |
+| `…/sbtv/tilfaeldig.php?forening=sfb&type=Image` | kun billeder fra Syd for Banen (også `Text`, `Sound`, `MovingImage` osv.) |
+| `…/sbtv/tilfaeldig.php` | en tilfældig historie fra alle foreninger |
+
+- Historien åbnes gennem `vis.php`, så klikket tælles i statistikken.
+- Historiens Hjem-knap fører tilbage til søgesiden for den samme forening.
+- Har foreningen ingen historier endnu, kommer man til søgesiden. En ukendt forening giver en historie fra alle foreninger.
+- Kun filer i søgeindekset kan vælges, så siden kan ikke bruges til at sende folk videre til fremmede adresser.
+
+**I WordPress:** Lav en knap (blokken «Knapper»), skriv fx «En tilfældig historie fra Syd for Banen», og indsæt adressen `https://sfbbilleder.eu/over/sbtv/tilfaeldig.php?forening=sfb` som link.
 
 ## Flere foreninger
 
