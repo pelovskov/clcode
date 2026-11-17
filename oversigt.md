@@ -22,7 +22,7 @@ Byggerne laver en færdig fil, som kan gemmes, deles og åbnes uden internet. De
 | Samling · Bygger | `samling-bygger.html` | 2.2 | 2 | forside der binder 2–6 færdige filer sammen | Collection |
 | Podcastserie · Bygger | `podcastserie-bygger.html` | 1.1 | 1 | én side med afspilningsliste til en serie på 2–6 lydafsnit, med lydfilerne i mappen ved siden af (mappeformatet), reserve på nettet og kontroltal. Afsnit kan hentes fra færdige mediekort | Sound |
 | Piwigo Albumbygger | `piwigo-album-bygger.html` | 2.2 | 1 | billedalbum hentet fra et album i et Piwigo-galleri | Image |
-| Vejledningsbygger | `vejledning-bygger.html` | 2.2 | 1 | trin-for-trin vejledning, hvor hvert trin har et skærmbillede (sat ind med ⌘V, med pile, numre, rammer, tekst og beskæring tegnet direkte i byggeren), en video eller kun tekst og en forklaring | Text |
+| Vejledningsbygger | `vejledning-bygger.html` | 2.3 | 1 | trin-for-trin vejledning, hvor hvert trin har et skærmbillede (sat ind med ⌘V, med pile, numre, rammer, tekst, sløring og beskæring tegnet direkte i byggeren), en video eller kun tekst og en forklaring | Text |
 
 **Piwigo Albumbygger** skal ligge på galleriets egen webadresse for at kunne hente fra Piwigo. De andre kører lokalt.
 

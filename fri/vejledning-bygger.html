@@ -5,11 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Vejledningsbygger · fri udgave</title>
 <!--
-  Vejledningsbygger · version 2.2 (nov. 2026) · følger Builder-standard 2.26
+  Vejledningsbygger · version 2.3 (nov. 2026) · følger Builder-standard 2.26
   Laver en trin-for-trin vejledning som én selvstændig HTML-fil: hvert trin har
   en overskrift, et skærmbillede (eller en video eller kun tekst) og en kort
   forklaring. Skærmbilleder med pile og tekst fra fx Screenpal sættes ind med
   ⌘V / Ctrl+V direkte i det trin, man arbejder i.
+  2.3: «Slør» i tegneværktøjet til navne, adresser og andet, der skal skjules.
   2.2: «Tegn på billedet»: pile, numre, rammer, tekst og beskæring direkte i
        byggeren. Tegningen brændes fast i billedet (filformatet er uændret).
   2.0: bragt i overensstemmelse med Builder-standarden (version 1.0 kom fra et
@@ -207,7 +208,7 @@
 
 <div class="topbar">
   <h1>Vejledningsbygger</h1>
-  <span>Lav en trin-for-trin vejledning med skærmbilleder som én fil · kører lokalt, ingen server · version 2.2 · fri udgave</span>
+  <span>Lav en trin-for-trin vejledning med skærmbilleder som én fil · kører lokalt, ingen server · version 2.3 · fri udgave</span>
 </div>
 
 <div class="layout">
@@ -275,7 +276,7 @@
     </div>
 
     <div class="sectionhead">Trinene</div>
-    <p class="hint" style="margin:-4px 0 14px"><strong>Skærmbilleder:</strong> Kopiér skærmbilledet, klik i det trin, du arbejder i, og tryk <kbd>⌘V</kbd> / <kbd>Ctrl+V</kbd>. Du kan også trække en billedfil ind eller vælge den fra computeren. Med knappen <strong>«Tegn på billedet»</strong> kan du sætte pile, numre, rammer og tekst på og beskære billedet.</p>
+    <p class="hint" style="margin:-4px 0 14px"><strong>Skærmbilleder:</strong> Kopiér skærmbilledet, klik i det trin, du arbejder i, og tryk <kbd>⌘V</kbd> / <kbd>Ctrl+V</kbd>. Du kan også trække en billedfil ind eller vælge den fra computeren. Med knappen <strong>«Tegn på billedet»</strong> kan du sætte pile, numre, rammer og tekst på, sløre navne og adresser og beskære billedet.</p>
     <div id="steps"></div>
     <button class="addstep" id="btnAddStep" type="button">+ Tilføj et trin</button>
     <div class="btnrow"><button class="act-btn sec" id="btnExample" type="button">Indsæt et eksempel</button></div>
@@ -360,6 +361,7 @@
       <button type="button" data-tool="nummer" aria-pressed="false">① Nummer</button>
       <button type="button" data-tool="ramme" aria-pressed="false">▢ Ramme</button>
       <button type="button" data-tool="tekst" aria-pressed="false">T Tekst</button>
+      <button type="button" data-tool="slor" aria-pressed="false">▦ Slør</button>
       <button type="button" data-tool="beskaer" aria-pressed="false">✂ Beskær</button>
     </div>
     <div class="gruppe" role="group" aria-label="Farve">
@@ -1182,6 +1184,7 @@ const TEGN_HJAELP = {
   nummer:'Nummer: Klik på billedet, hvor tallet skal stå. Tallene tælles op af sig selv: 1, 2, 3 …',
   ramme:'Ramme: Træk en firkant rundt om det, der skal ses. Du kan også klikke i to modsatte hjørner.',
   tekst:'Tekst: Skriv teksten i feltet foroven, og klik derefter på billedet, hvor teksten skal stå.',
+  slor:'Slør: Træk en firkant hen over navne, adresser og andet, der ikke må kunne læses. Området laves om til grove firkanter, som ikke kan læses tilbage.',
   beskaer:'Beskær: Træk en firkant rundt om den del af billedet, du vil beholde. Resten skæres væk, når du klikker «Færdig».'
 };
 function tegnTekstfarve(f){ return f === '#FFD400' ? '#111111' : '#ffffff'; }
@@ -1266,6 +1269,27 @@ function tegnFigur(g, f){
     g.fillText(f.tekst, f.x + luft, f.y + luft + str / 2);
   }
 }
+/* Slør: området laves om til grove, ensfarvede firkanter (mindst 16 px), så
+   tekst ikke kan læses eller regnes tilbage. Sløringen laves før pile og tekst,
+   så de står skarpt oven på. */
+function tegnSlor(g, f){
+  const W = g.canvas.width, H = g.canvas.height;
+  const x0 = Math.max(0, Math.floor(f.x)), y0 = Math.max(0, Math.floor(f.y));
+  const x1 = Math.min(W, Math.ceil(f.x + f.w)), y1 = Math.min(H, Math.ceil(f.y + f.h));
+  if (x1 - x0 < 1 || y1 - y0 < 1) return;
+  const blok = Math.max(16, Math.round(Math.max(W, H) / 90));
+  const d = g.getImageData(x0, y0, x1 - x0, y1 - y0), px = d.data, bw = d.width, bh = d.height;
+  for (let by = 0; by < bh; by += blok){
+    for (let bx = 0; bx < bw; bx += blok){
+      const ex = Math.min(bw, bx + blok), ey = Math.min(bh, by + blok);
+      let r = 0, gr = 0, b = 0, n = 0;
+      for (let y = by; y < ey; y++) for (let x = bx; x < ex; x++){ const i = (y * bw + x) * 4; r += px[i]; gr += px[i + 1]; b += px[i + 2]; n++; }
+      r = Math.round(r / n); gr = Math.round(gr / n); b = Math.round(b / n);
+      for (let y = by; y < ey; y++) for (let x = bx; x < ex; x++){ const i = (y * bw + x) * 4; px[i] = r; px[i + 1] = gr; px[i + 2] = b; px[i + 3] = 255; }
+    }
+  }
+  g.putImageData(d, x0, y0);
+}
 function tegnBeskaering(){
   for (let i = tegn.figurer.length - 1; i >= 0; i--) if (tegn.figurer[i].type === 'beskaer') return tegn.figurer[i];
   return null;
@@ -1275,7 +1299,13 @@ function tegnAlt(){
   g.clearRect(0, 0, c.width, c.height);
   g.drawImage(tegn.img, 0, 0);
   const figurer = tegn.figurer.concat(tegn.traek ? [tegn.traek] : []);
-  figurer.forEach(f => { if (f.type !== 'beskaer') tegnFigur(g, f); });
+  tegn.figurer.forEach(f => { if (f.type === 'slor') tegnSlor(g, f); });
+  figurer.forEach(f => { if (f.type !== 'beskaer' && f.type !== 'slor') tegnFigur(g, f); });
+  if (tegn.traek && tegn.traek.type === 'slor'){
+    const f = tegn.traek; g.save(); g.setLineDash([tegn.tykkelse * 2, tegn.tykkelse * 2]);
+    g.lineWidth = Math.max(2, tegn.tykkelse * 0.6); g.strokeStyle = '#ffffff'; g.strokeRect(f.x, f.y, f.w, f.h);
+    g.strokeStyle = '#111111'; g.lineDashOffset = tegn.tykkelse * 2; g.strokeRect(f.x, f.y, f.w, f.h); g.restore();
+  }
   // Beskæring vises som et mørkt område uden for udsnittet.
   const b = (tegn.traek && tegn.traek.type === 'beskaer') ? tegn.traek : tegnBeskaering();
   if (b){
@@ -1295,7 +1325,8 @@ function brandTegning(){
   const fuld = document.createElement('canvas'); fuld.width = W; fuld.height = H;
   const g = fuld.getContext('2d');
   g.fillStyle = '#fff'; g.fillRect(0, 0, W, H); g.drawImage(tegn.img, 0, 0);
-  tegn.figurer.forEach(f => { if (f.type !== 'beskaer') tegnFigur(g, f); });
+  tegn.figurer.forEach(f => { if (f.type === 'slor') tegnSlor(g, f); });
+  tegn.figurer.forEach(f => { if (f.type !== 'beskaer' && f.type !== 'slor') tegnFigur(g, f); });
   const b = tegnBeskaering();
   if (b){
     const x = Math.max(0, Math.round(b.x)), y = Math.max(0, Math.round(b.y));
