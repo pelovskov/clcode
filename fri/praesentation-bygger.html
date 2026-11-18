@@ -74,6 +74,8 @@
   .mini-btn{ min-width:44px; min-height:44px; border:1px solid var(--line); background:#fff; border-radius:4px; font-size:18px; cursor:pointer; color:var(--ink); }
   .mini-btn:hover:not(:disabled){ background:#f2ecdd; }
   .mini-btn:disabled{ opacity:.35; cursor:default; }
+  .draw-btn{ display:block; width:100%; margin-top:8px; min-height:40px; border:1px solid var(--rust); background:#fff; color:var(--rust); border-radius:4px; font-family:var(--sans); font-size:14px; font-weight:700; cursor:pointer; }
+  .draw-btn:hover{ background:var(--rust); color:#fff; }
   .mini-btn.del{ color:#7d2c1a; }
   .slide-fields .sf{ margin-bottom:9px; }
   .slide-fields .sf span{ display:block; font-size:12.5px; font-weight:600; color:var(--moss); text-transform:uppercase; letter-spacing:0.07em; margin-bottom:4px; }
@@ -124,13 +126,31 @@
   .filebox.indlaes{ border:2px dashed var(--line); }
   .filebox.indlaes.dragover{ border-color:var(--rust); background:#f2e4dc; }
   .filebox .slip{ margin:0 0 8px; font-weight:600; color:var(--hint); }
+  /* ---- Tegn på billedet ---- */
+  .tegn{position:fixed; inset:0; z-index:50; background:rgba(25,22,17,0.88); display:flex; flex-direction:column; padding:12px; gap:10px}
+  .tegn[hidden]{display:none}
+  .tegn-bar{background:var(--paper); border-radius:6px; padding:10px 12px; display:flex; flex-wrap:wrap; gap:8px; align-items:center}
+  .tegn-bar .gruppe{display:flex; flex-wrap:wrap; gap:6px; align-items:center; padding-right:10px; margin-right:4px; border-right:1px solid var(--line)}
+  .tegn-bar .gruppe:last-child{border-right:none; margin-left:auto; padding-right:0}
+  .tegn-bar button{min-height:44px; min-width:44px; padding:8px 13px; font-family:var(--sans); font-size:15px; font-weight:700; border:2px solid var(--line); border-radius:4px; background:#fff; color:var(--ink); cursor:pointer}
+  .tegn-bar button:hover{border-color:var(--rust)}
+  .tegn-bar button[aria-pressed="true"]{background:var(--rust); border-color:var(--rust); color:#fdf8ee}
+  .tegn-bar button.farve{width:44px; padding:0; border-radius:50%; border:3px solid #fff; box-shadow:0 0 0 2px var(--line)}
+  .tegn-bar button.farve[aria-pressed="true"]{box-shadow:0 0 0 3px var(--ink)}
+  .tegn-bar button.gem{background:var(--moss); border-color:var(--moss); color:#fff}
+  .tegn-bar input[type=text]{width:240px; padding:9px 11px}
+  .tegn-bar .tekstfelt[hidden]{display:none}
+  .tegn-bar label{font-size:14px; font-weight:600}
+  .tegn-hjaelp{color:#fdf8ee; font-size:15.5px; line-height:1.5; margin:0}
+  .tegn-flade{flex:1; min-height:0; display:flex; align-items:center; justify-content:center}
+  .tegn-flade canvas{max-width:100%; max-height:100%; background:#fff; cursor:crosshair; touch-action:none; box-shadow:0 4px 18px rgba(0,0,0,0.4)}
 </style>
 </head>
 <body>
 
 <div class="topbar">
   <h1>Præsentation · Bygger</h1>
-  <span>Lav et billedshow til foredrag og oplæg, der kan vises uden internet · kører lokalt, ingen server · version 1.4 · fri udgave</span>
+  <span>Lav et billedshow til foredrag og oplæg, der kan vises uden internet · kører lokalt, ingen server · version 1.5 · fri udgave</span>
 </div>
 
 <div class="layout">
@@ -314,6 +334,39 @@
   </div>
 </div>
 
+<div class="tegn" id="tegn" hidden role="dialog" aria-modal="true" aria-labelledby="tegnTitel">
+  <div class="tegn-bar">
+    <h2 id="tegnTitel" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Tegn på billedet</h2>
+    <div class="gruppe" role="group" aria-label="Værktøj">
+      <button type="button" data-tool="pil" aria-pressed="true">➜ Pil</button>
+      <button type="button" data-tool="nummer" aria-pressed="false">① Nummer</button>
+      <button type="button" data-tool="ramme" aria-pressed="false">▢ Ramme</button>
+      <button type="button" data-tool="tekst" aria-pressed="false">T Tekst</button>
+      <button type="button" data-tool="slor" aria-pressed="false">▦ Slør</button>
+      <button type="button" data-tool="beskaer" aria-pressed="false">✂ Beskær</button>
+    </div>
+    <div class="gruppe" role="group" aria-label="Farve">
+      <button type="button" class="farve" data-farve="#D7261E" aria-pressed="true" aria-label="Rød" title="Rød" style="background:#D7261E"></button>
+      <button type="button" class="farve" data-farve="#FFD400" aria-pressed="false" aria-label="Gul" title="Gul" style="background:#FFD400"></button>
+      <button type="button" class="farve" data-farve="#111111" aria-pressed="false" aria-label="Sort" title="Sort" style="background:#111111"></button>
+    </div>
+    <div class="gruppe tekstfelt" id="tegnTekstGruppe" hidden>
+      <label for="tegnTekst">Tekst:</label>
+      <input type="text" id="tegnTekst" placeholder="Skriv teksten først">
+    </div>
+    <div class="gruppe">
+      <button type="button" id="tegnFortryd">↶ Fortryd</button>
+      <button type="button" id="tegnRyd">Slet alt</button>
+    </div>
+    <div class="gruppe">
+      <button type="button" id="tegnAnnuller">Annullér</button>
+      <button type="button" class="gem" id="tegnFaerdig">✓ Færdig</button>
+    </div>
+  </div>
+  <p class="tegn-hjaelp" id="tegnHjaelp" aria-live="polite"></p>
+  <div class="tegn-flade"><canvas id="tegnLaerred" role="img" aria-label="Billedet, du tegner på"></canvas></div>
+</div>
+
 <script>
 const BUILDER_VERSION = 1;   // tælles op ved formatændringer
 const MAX_SLIDES = 25;
@@ -447,6 +500,258 @@ function scaleToJpeg(img, maxDim, quality){
   ctx.drawImage(img, 0, 0, w, h);
   return canvas.toDataURL('image/jpeg', quality);
 }
+
+/* ---------- Tegn på billedet ----------
+   Samme værktøj som i Vejledningsbygger (version 2.3): pile, numre, rammer, tekst,
+   slør til ansigter, navne og adresser, og beskæring. Sløringen bruger grovere
+   firkanter end i Vejledningsbygger, så også ansigter bliver uigenkendelige.
+   Tegningen brændes fast i billedet, når man klikker «Færdig». Pil, ramme og
+   beskær kan laves ved at trække – eller ved at klikke to gange (start og slut),
+   så det også kan gøres uden at holde museknappen nede. */
+const tegn = {
+  st:null, img:null, figurer:[], vaerktoej:'pil', farve:'#D7261E',
+  start:null, traek:null, aendret:false, tykkelse:4
+};
+const TEGN_HJAELP = {
+  pil:'Pil: Træk fra der, hvor pilen starter, til der, den skal pege. Du kan også klikke to gange: først start, så spids.',
+  nummer:'Nummer: Klik på billedet, hvor tallet skal stå. Tallene tælles op af sig selv: 1, 2, 3 …',
+  ramme:'Ramme: Træk en firkant rundt om det, der skal ses. Du kan også klikke i to modsatte hjørner.',
+  tekst:'Tekst: Skriv teksten i feltet foroven, og klik derefter på billedet, hvor teksten skal stå.',
+  slor:'Slør: Træk en firkant hen over et ansigt, et navn, en adresse eller andet, der ikke må kunne genkendes. Området laves om til grove firkanter, som ikke kan regnes tilbage.',
+  beskaer:'Beskær: Træk en firkant rundt om den del af billedet, du vil beholde. Resten skæres væk, når du klikker «Færdig».'
+};
+function tegnTekstfarve(f){ return f === '#FFD400' ? '#111111' : '#ffffff'; }
+
+async function aabnTegning(st){
+  if (!st || !st.data) return;
+  tegn.st = st; tegn.figurer = []; tegn.start = null; tegn.traek = null; tegn.aendret = false;
+  tegn.img = await loadImg(st.data);
+  const c = $('tegnLaerred');
+  c.width = tegn.img.naturalWidth; c.height = tegn.img.naturalHeight;
+  tegn.tykkelse = Math.max(4, Math.round(Math.max(c.width, c.height) / 260));
+  $('tegnTekst').value = '';
+  vaelgVaerktoej('pil');
+  $('tegn').hidden = false;
+  document.body.style.overflow = 'hidden';
+  tegnAlt();
+  $('tegn').querySelector('[data-tool="pil"]').focus();
+}
+function lukTegning(gem){
+  if (!gem && tegn.aendret && !confirm('Vil du lukke uden at gemme det, du har tegnet?')) return;
+  const st = tegn.st, gemt = gem && tegn.aendret;
+  if (gemt) brandTegning();
+  $('tegn').hidden = true;
+  document.body.style.overflow = '';
+  tegn.st = null; tegn.img = null; tegn.figurer = [];
+  if (st){
+    const nr = state.slides.indexOf(st);
+    renderSlideList();
+    if (gemt) renderPreview();
+    const knap = document.querySelector('#slideList [data-act="draw"][data-i="' + nr + '"]');
+    if (knap) knap.focus();
+    if (gemt){ const m = $('imgStatus'); if (m) m.textContent = 'Tegningen er sat ind i billede ' + (nr + 1) + '.'; }
+  }
+}
+function vaelgVaerktoej(v){
+  tegn.vaerktoej = v; tegn.start = null; tegn.traek = null;
+  document.querySelectorAll('#tegn [data-tool]').forEach(b => b.setAttribute('aria-pressed', b.dataset.tool === v ? 'true' : 'false'));
+  $('tegnTekstGruppe').hidden = v !== 'tekst';
+  $('tegnHjaelp').textContent = TEGN_HJAELP[v];
+  if (tegn.img) tegnAlt();
+  if (v === 'tekst') $('tegnTekst').focus();
+}
+
+/* Tegner en figur. Hvid kant under farven, så den kan ses på både lyse og mørke billeder. */
+function tegnFigur(g, f){
+  const t = tegn.tykkelse;
+  g.lineJoin = 'round'; g.lineCap = 'round';
+  if (f.type === 'pil'){
+    const vinkel = Math.atan2(f.y2 - f.y1, f.x2 - f.x1), hoved = t * 6;
+    const bx = f.x2 - Math.cos(vinkel) * hoved * 0.8, by = f.y2 - Math.sin(vinkel) * hoved * 0.8;
+    const spids = () => {
+      g.beginPath(); g.moveTo(f.x2, f.y2);
+      g.lineTo(f.x2 - hoved * Math.cos(vinkel - 0.45), f.y2 - hoved * Math.sin(vinkel - 0.45));
+      g.lineTo(f.x2 - hoved * Math.cos(vinkel + 0.45), f.y2 - hoved * Math.sin(vinkel + 0.45));
+      g.closePath();
+    };
+    [['#ffffff', t + 4], [f.farve, t]].forEach(([farve, b]) => {
+      g.strokeStyle = farve; g.fillStyle = farve; g.lineWidth = b;
+      g.beginPath(); g.moveTo(f.x1, f.y1); g.lineTo(bx, by); g.stroke();
+      spids(); if (b > t) g.stroke(); g.fill();
+    });
+  } else if (f.type === 'ramme'){
+    [['#ffffff', t + 4], [f.farve, t]].forEach(([farve, b]) => {
+      g.strokeStyle = farve; g.lineWidth = b; g.strokeRect(f.x, f.y, f.w, f.h);
+    });
+  } else if (f.type === 'nummer'){
+    const r = t * 4.5;
+    g.beginPath(); g.arc(f.x, f.y, r, 0, Math.PI * 2);
+    g.fillStyle = f.farve; g.fill();
+    g.lineWidth = Math.max(2, t * 0.7); g.strokeStyle = '#ffffff'; g.stroke();
+    g.fillStyle = tegnTekstfarve(f.farve);
+    g.font = 'bold ' + Math.round(r * 1.15) + 'px Arial, Helvetica, sans-serif';
+    g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.fillText(String(f.n), f.x, f.y + r * 0.05);
+  } else if (f.type === 'tekst'){
+    const str = Math.round(t * 5.5), luft = Math.round(str * 0.35);
+    g.font = 'bold ' + str + 'px Arial, Helvetica, sans-serif';
+    g.textAlign = 'left'; g.textBaseline = 'middle';
+    const bredde = g.measureText(f.tekst).width;
+    g.fillStyle = f.farve; g.fillRect(f.x, f.y, bredde + luft * 2, str + luft * 2);
+    g.lineWidth = 2; g.strokeStyle = '#ffffff'; g.strokeRect(f.x, f.y, bredde + luft * 2, str + luft * 2);
+    g.fillStyle = tegnTekstfarve(f.farve);
+    g.fillText(f.tekst, f.x + luft, f.y + luft + str / 2);
+  }
+}
+/* Slør: området laves om til grove, ensfarvede firkanter (mindst 16 px), så
+   tekst ikke kan læses eller regnes tilbage. Sløringen laves før pile og tekst,
+   så de står skarpt oven på. */
+function tegnSlor(g, f){
+  const W = g.canvas.width, H = g.canvas.height;
+  const x0 = Math.max(0, Math.floor(f.x)), y0 = Math.max(0, Math.floor(f.y));
+  const x1 = Math.min(W, Math.ceil(f.x + f.w)), y1 = Math.min(H, Math.ceil(f.y + f.h));
+  if (x1 - x0 < 1 || y1 - y0 < 1) return;
+  // Firkanterne er mindst 16 px, og der er højst ca. 8 på tværs af områdets korteste side,
+  // så også et ansigt bliver uigenkendeligt. En smal stribe over en adresse ændres ikke.
+  const blok = Math.max(16, Math.round(Math.max(W, H) / 90), Math.round(Math.min(x1 - x0, y1 - y0) / 8));
+  const d = g.getImageData(x0, y0, x1 - x0, y1 - y0), px = d.data, bw = d.width, bh = d.height;
+  for (let by = 0; by < bh; by += blok){
+    for (let bx = 0; bx < bw; bx += blok){
+      const ex = Math.min(bw, bx + blok), ey = Math.min(bh, by + blok);
+      let r = 0, gr = 0, b = 0, n = 0;
+      for (let y = by; y < ey; y++) for (let x = bx; x < ex; x++){ const i = (y * bw + x) * 4; r += px[i]; gr += px[i + 1]; b += px[i + 2]; n++; }
+      r = Math.round(r / n); gr = Math.round(gr / n); b = Math.round(b / n);
+      for (let y = by; y < ey; y++) for (let x = bx; x < ex; x++){ const i = (y * bw + x) * 4; px[i] = r; px[i + 1] = gr; px[i + 2] = b; px[i + 3] = 255; }
+    }
+  }
+  g.putImageData(d, x0, y0);
+}
+function tegnBeskaering(){
+  for (let i = tegn.figurer.length - 1; i >= 0; i--) if (tegn.figurer[i].type === 'beskaer') return tegn.figurer[i];
+  return null;
+}
+function tegnAlt(){
+  const c = $('tegnLaerred'), g = c.getContext('2d');
+  g.clearRect(0, 0, c.width, c.height);
+  g.drawImage(tegn.img, 0, 0);
+  const figurer = tegn.figurer.concat(tegn.traek ? [tegn.traek] : []);
+  tegn.figurer.forEach(f => { if (f.type === 'slor') tegnSlor(g, f); });
+  figurer.forEach(f => { if (f.type !== 'beskaer' && f.type !== 'slor') tegnFigur(g, f); });
+  if (tegn.traek && tegn.traek.type === 'slor'){
+    const f = tegn.traek; g.save(); g.setLineDash([tegn.tykkelse * 2, tegn.tykkelse * 2]);
+    g.lineWidth = Math.max(2, tegn.tykkelse * 0.6); g.strokeStyle = '#ffffff'; g.strokeRect(f.x, f.y, f.w, f.h);
+    g.strokeStyle = '#111111'; g.lineDashOffset = tegn.tykkelse * 2; g.strokeRect(f.x, f.y, f.w, f.h); g.restore();
+  }
+  // Beskæring vises som et mørkt område uden for udsnittet.
+  const b = (tegn.traek && tegn.traek.type === 'beskaer') ? tegn.traek : tegnBeskaering();
+  if (b){
+    g.save(); g.fillStyle = 'rgba(0,0,0,0.55)';
+    g.beginPath(); g.rect(0, 0, c.width, c.height); g.rect(b.x, b.y, b.w, b.h); g.fill('evenodd');
+    g.setLineDash([tegn.tykkelse * 3, tegn.tykkelse * 2]); g.lineWidth = Math.max(2, tegn.tykkelse * 0.6);
+    g.strokeStyle = '#ffffff'; g.strokeRect(b.x, b.y, b.w, b.h); g.restore();
+  }
+  // Startpunktet, når man klikker to gange.
+  if (tegn.start && !tegn.traek){
+    g.beginPath(); g.arc(tegn.start.x, tegn.start.y, tegn.tykkelse * 1.6, 0, Math.PI * 2);
+    g.fillStyle = tegn.farve; g.fill(); g.lineWidth = 2; g.strokeStyle = '#ffffff'; g.stroke();
+  }
+}
+function brandTegning(){
+  const W = tegn.img.naturalWidth, H = tegn.img.naturalHeight;
+  const fuld = document.createElement('canvas'); fuld.width = W; fuld.height = H;
+  const g = fuld.getContext('2d');
+  g.fillStyle = '#fff'; g.fillRect(0, 0, W, H); g.drawImage(tegn.img, 0, 0);
+  tegn.figurer.forEach(f => { if (f.type === 'slor') tegnSlor(g, f); });
+  tegn.figurer.forEach(f => { if (f.type !== 'beskaer' && f.type !== 'slor') tegnFigur(g, f); });
+  const b = tegnBeskaering();
+  if (b){
+    const x = Math.max(0, Math.round(b.x)), y = Math.max(0, Math.round(b.y));
+    const w = Math.min(W - x, Math.round(b.w)), h = Math.min(H - y, Math.round(b.h));
+    const ud = document.createElement('canvas'); ud.width = w; ud.height = h;
+    ud.getContext('2d').drawImage(fuld, x, y, w, h, 0, 0, w, h);
+    tegnGem(ud, tegn.st);
+  } else tegnGem(fuld, tegn.st);
+}
+/* Det tegnede billede gemmes som præsentationens billede og miniature. */
+function tegnGem(c, st){
+  st.data = c.toDataURL('image/jpeg', FULL_Q);
+  st.thumb = scaleToJpeg(c, THUMB_DIM, THUMB_Q);
+}
+
+function tegnPunkt(e){
+  const c = $('tegnLaerred'), r = c.getBoundingClientRect();
+  return {
+    x: Math.max(0, Math.min(c.width, (e.clientX - r.left) * c.width / r.width)),
+    y: Math.max(0, Math.min(c.height, (e.clientY - r.top) * c.height / r.height))
+  };
+}
+function tegnFigurFra(a, b){
+  const v = tegn.vaerktoej;
+  if (v === 'pil') return { type:'pil', x1:a.x, y1:a.y, x2:b.x, y2:b.y, farve:tegn.farve };
+  return { type: v, x:Math.min(a.x, b.x), y:Math.min(a.y, b.y), w:Math.abs(b.x - a.x), h:Math.abs(b.y - a.y), farve:tegn.farve };
+}
+function tegnTilfoej(f){ tegn.figurer.push(f); tegn.aendret = true; }
+let tegnNede = null;
+$('tegnLaerred').addEventListener('pointerdown', e => {
+  e.preventDefault();
+  const p = tegnPunkt(e), v = tegn.vaerktoej;
+  if (v === 'nummer'){
+    const n = tegn.figurer.filter(f => f.type === 'nummer').length + 1;
+    tegnTilfoej({ type:'nummer', x:p.x, y:p.y, n:n, farve:tegn.farve }); tegnAlt(); return;
+  }
+  if (v === 'tekst'){
+    const tekst = $('tegnTekst').value.trim();
+    if (!tekst){ $('tegnHjaelp').textContent = 'Skriv først teksten i feltet foroven, og klik så på billedet.'; $('tegnTekst').focus(); return; }
+    tegnTilfoej({ type:'tekst', x:p.x, y:p.y, tekst:tekst, farve:tegn.farve });
+    $('tegnTekst').value = ''; tegnAlt(); return;
+  }
+  tegnNede = tegn.start || p;
+  $('tegnLaerred').setPointerCapture(e.pointerId);
+});
+$('tegnLaerred').addEventListener('pointermove', e => {
+  if (!tegnNede) return;
+  tegn.traek = tegnFigurFra(tegnNede, tegnPunkt(e)); tegnAlt();
+});
+$('tegnLaerred').addEventListener('pointerup', e => {
+  if (!tegnNede) return;
+  const a = tegnNede, b = tegnPunkt(e);
+  tegnNede = null; tegn.traek = null;
+  const lille = tegn.tykkelse * 3;
+  if (Math.abs(b.x - a.x) < lille && Math.abs(b.y - a.y) < lille){
+    // Et klik uden at trække: husk det som startpunkt og vent på næste klik.
+    tegn.start = tegn.start ? null : a;
+  } else {
+    tegnTilfoej(tegnFigurFra(a, b)); tegn.start = null;
+  }
+  tegnAlt();
+});
+$('tegnLaerred').addEventListener('pointercancel', () => { tegnNede = null; tegn.traek = null; tegnAlt(); });
+
+document.querySelectorAll('#tegn [data-tool]').forEach(b => b.addEventListener('click', () => vaelgVaerktoej(b.dataset.tool)));
+document.querySelectorAll('#tegn [data-farve]').forEach(b => b.addEventListener('click', () => {
+  tegn.farve = b.dataset.farve;
+  document.querySelectorAll('#tegn [data-farve]').forEach(x => x.setAttribute('aria-pressed', x === b ? 'true' : 'false'));
+}));
+function tegnFortryd(){ tegn.start = null; if (tegn.figurer.length){ tegn.figurer.pop(); tegn.aendret = true; } tegnAlt(); }
+$('tegnFortryd').addEventListener('click', tegnFortryd);
+$('tegnRyd').addEventListener('click', () => {
+  if (!tegn.figurer.length || !confirm('Vil du slette alt, du har tegnet på billedet?')) return;
+  tegn.figurer = []; tegn.start = null; tegn.aendret = true; tegnAlt();
+});
+$('tegnAnnuller').addEventListener('click', () => lukTegning(false));
+$('tegnFaerdig').addEventListener('click', () => lukTegning(true));
+$('tegn').addEventListener('keydown', e => {
+  if (e.key === 'Escape'){ e.preventDefault(); lukTegning(false); return; }
+  if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'z' && e.target.id !== 'tegnTekst'){ e.preventDefault(); tegnFortryd(); return; }
+  if (e.key === 'Tab'){
+    // Hold tastaturet inde i tegnevinduet.
+    const ting = Array.from($('tegn').querySelectorAll('button, input')).filter(x => x.offsetParent !== null);
+    const forst = ting[0], sidst = ting[ting.length - 1];
+    if (e.shiftKey && document.activeElement === forst){ e.preventDefault(); sidst.focus(); }
+    else if (!e.shiftKey && document.activeElement === sidst){ e.preventDefault(); forst.focus(); }
+  }
+});
+
 
 async function processImageFile(file){
   const url = URL.createObjectURL(file);
@@ -1140,7 +1445,9 @@ function renderSlideList(){
     + '<button type="button" class="mini-btn" data-act="up" data-i="' + i + '" aria-label="Flyt billede ' + (i + 1) + ' op"' + (i === 0 ? ' disabled' : '') + '>&#8593;</button>'
     + '<button type="button" class="mini-btn" data-act="down" data-i="' + i + '" aria-label="Flyt billede ' + (i + 1) + ' ned"' + (i === n - 1 ? ' disabled' : '') + '>&#8595;</button>'
     + '<button type="button" class="mini-btn del" data-act="del" data-i="' + i + '" aria-label="Fjern billede ' + (i + 1) + '">&#10005;</button>'
-    + '</div></div>'
+    + '</div>'
+    + '<button type="button" class="draw-btn" data-act="draw" data-i="' + i + '" aria-label="Tegn eller slør på billede ' + (i + 1) + '">Tegn og slør</button>'
+    + '</div>'
     + '<div class="slide-fields">'
     + '<label class="sf"><span>Titel</span><input type="text" data-i="' + i + '" data-k="title" value="' + escapeHtml(sl.title) + '" placeholder="fx Fællesbageriet"></label>'
     + '<label class="sf"><span>Uddybende tekst (valgfri)</span><textarea data-i="' + i + '" data-k="desc" placeholder="Vises under titlen i forevisningen">' + escapeHtml(sl.desc) + '</textarea></label>'
@@ -1175,6 +1482,7 @@ $('slideList').addEventListener('click', e => {
   const i = parseInt(b.dataset.i, 10), s = state.slides;
   if (b.dataset.act === 'up' && i > 0){ [s[i-1], s[i]] = [s[i], s[i-1]]; }
   else if (b.dataset.act === 'down' && i < s.length - 1){ [s[i+1], s[i]] = [s[i], s[i+1]]; }
+  else if (b.dataset.act === 'draw'){ aabnTegning(s[i]); return; }
   else if (b.dataset.act === 'del'){
     if (!confirm('Fjern billede ' + (i + 1) + ' fra præsentationen?')) return;
     s.splice(i, 1);
