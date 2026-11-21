@@ -37,6 +37,7 @@ Værktøjerne ligger i mappen `tools/`. De følger ikke Builder-standarden, men 
 | Fælles emneord | `tools/emneord.html` | 1.0 | de fælles emneord fra `emneord.md` som en side med søgning og en kopiér-knap ved hvert ord |
 | Feltoptager | `tools/feltoptager.html` | 1 | optager lyd, rydder op og gemmer som mp3 eller som lydfortælling (HTML) |
 | Lydlab | `tools/lydlab.html` | 1 | gør en lydoptagelse klar: mono, jævn lyd og fast lydstyrke, ud kommer en mp3 |
+| Lydlab · Samling | `tools/lydlab-samling.html` | 1 | lægger flere numre (fx sange fra et kassettebånd) sammen til én mp3. Hvert nummer gøres klar som i Lydlab og får samme lydstyrke, og der er kort pause, blød overgang eller ingen pause imellem. Gemmer også en nummerliste med tidspunkter |
 | Fotolab | `tools/fotolab.html` | 6 | farve-effekter, billedformat og Polaroid med håndskrevet tekst. «Et billede med tekst 16:9» laver 1920 × 1080 eller stående 1080 × 1920 med teksten i en kant, på en stribe eller uden billede, og en valgfri QR-kode, til fx Præsentation · Bygger. Formatet «Delingsbillede» laver en JPG på 1200 × 630 under 300 KB til forhåndsvisningen, når et link sendes i en besked |
 | Lydudtrækker | `tools/lydudtraekker.html` | 1.1 | trækker lyden ud af en HTML-fil som mp3, når den oprindelige lydfil er væk |
 | Roskilde TV · arbejdsliste | `tools/rtv-arbejdsliste.html` | – | alle Roskilde TV's udsendelser med knappen «Lav mediekort», der åbner Mediekort med videoen udfyldt. Laves af `tools/lav-rtv-arbejdsliste.py` ud fra `roskilde-tv-videoarkiv.html`. Udgaven med fælles prikker ligger i søgeindekset som `sbtv/rtv.php` |
@@ -63,7 +64,7 @@ Byggere og værktøjer er hver én fil og henter ikke kode eller skrifttyper fra
 I mappen `fri/` ligger **Lokalhistorier · fri udgave** til enkeltpersoner, skoleklasser og institutioner, som ikke er med i den fælles portal. Den har sin egen forside, `fri/index.html`, og sin egen vejledning, `fri/LAES-MIG.md`.
 
 - **Byggere:** Side, Album, Enkeltbillede, Før og Nu, Bog, Lydfortælling, Mediekort, Præsentation, Samling og Vejledning i fri udgave. Udgiveren skrives i et tekstfelt, og der er kun temaerne Vinter, Sommer og Hindbær.
-- **Værktøjer:** Søgeside · Bygger med neutrale ord, eget design og temaerne Vinter, Sommer og Hindbær, Forslag til emneord (de fælles emneord som frie forslag, uden Roskilde Festival), og Feltoptager, Lydlab, Fotolab, Skyggeramme, Må det komme med? og QR-kode uændret.
+- **Værktøjer:** Søgeside · Bygger med neutrale ord, eget design og temaerne Vinter, Sommer og Hindbær, Forslag til emneord (de fælles emneord som frie forslag, uden Roskilde Festival), og Feltoptager, Lydlab, Lydlab · Samling, Fotolab, Skyggeramme, Må det komme med? og QR-kode uændret.
 - **Zip-fil:** Det hele kan hentes som `fri/lokalhistorier-fri-udgave.zip` med knappen på forsiden, når mappen ligger på en hjemmeside. Søgeside · Bygger og de søgesider, den laver, har desuden en knap, der gemmer søgesiden og dens filer som én zip-fil.
 - **Opskriften:** Filerne laves af `fri/lav-fri-udgave.py` ud fra de almindelige byggere og har samme versionsnumre og filformater som dem.
 
