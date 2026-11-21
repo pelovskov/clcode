@@ -24,7 +24,7 @@ Filformatet er det samme. En fil fra den frie udgave kan derfor åbnes i forenin
 | Sidebygger, Album, Enkeltbillede, Før og Nu, Bog, Lydfortælling, Mediekort, Præsentation, Vejledning | `…-bygger.html` |
 | Samling · Bygger, som binder 2–6 filer sammen | `samling-bygger.html` |
 | Søgeside · Bygger, som laver en søgeside til en mappe | `soegeside-bygger.html` |
-| Feltoptager, Lydlab, Fotolab og Skyggeramme | `feltoptager.html`, `lydlab.html`, `fotolab.html`, `skyggeramme.html` |
+| Feltoptager, Lydlab, Lydlab · Samling, Fotolab og Skyggeramme | `feltoptager.html`, `lydlab.html`, `lydlab-samling.html`, `fotolab.html`, `skyggeramme.html` |
 | Huskesedler til Side, Album, Lydfortælling, Præsentation, Bog, Mediekort og Samling med Søgeside | `vejledning-….html` |
 | Forslag til emneord, med en kopiér-knap ved hvert ord | `emneord.html` |
 | Må det komme med? Tjek af samtykke til billeder, lyd og tekst, med øvelser og samtykkesedler | `maa-det-komme-med.html` |
