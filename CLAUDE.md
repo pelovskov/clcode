@@ -41,9 +41,9 @@ Værktøjerne bruges af frivillige og ældre brugere, så de skal være enkle, r
 
 ### To måder at arbejde på, og to computere
 
-- **I skyen** (Claude i browseren eller Claude-appen, fx fra den gamle iMac): Claude arbejder på en kopi i skyen på sin egen arbejdsgren, gemmer og skubber op og laver pull request, når jeg siger ja. Jeg henter resultatet med Fetch og Pull i GitHub Desktop.
-- **Lokalt** (Claude Desktop på den nye Mac, med repo-mappen valgt): Claude arbejder direkte i filerne på min Mac. Jeg laver en ny gren i GitHub Desktop, før vi begynder, og prøver ændringerne ved at åbne filerne i browseren. Commit, push og pull request laver jeg normalt selv i GitHub Desktop. Claude må gerne gøre det, hvis jeg beder om det. Arbejd aldrig direkte på `main`.
-- **Gyldne regler med to computere:** Hent altid først (Fetch og Pull), før arbejdet begynder. Gem og skub op, når arbejdet er færdigt, så den anden computer kan hente det. Arbejd kun ét sted ad gangen på den samme gren. Aldrig Force push.
+- **I skyen** (Claude i browseren, fx fra Chromebook'en med ChromeOS Flex): Claude arbejder på en kopi i skyen på sin egen arbejdsgren, gemmer og skubber op og laver pull request, når jeg siger ja. GitHub Desktop findes ikke til ChromeOS, så her fletter jeg på github.com i browseren og prøver filerne ved at hente dem og åbne dem i Chrome. På MacBook Air'en henter jeg bagefter resultatet med Fetch og Pull i GitHub Desktop.
+- **Lokalt** (Claude Desktop på min MacBook Air, med repo-mappen valgt): Claude arbejder direkte i filerne på min Mac. Jeg laver en ny gren i GitHub Desktop, før vi begynder, og prøver ændringerne ved at åbne filerne i browseren. Commit, push og pull request laver jeg normalt selv i GitHub Desktop. Claude må gerne gøre det, hvis jeg beder om det. Arbejd aldrig direkte på `main`.
+- **Gyldne regler med to computere:** Hent altid først (Fetch og Pull), før arbejdet begynder. Gem og skub op, når arbejdet er færdigt, så den anden computer kan hente det. Den gamle iMac er taget ud af brug. Arbejd kun ét sted ad gangen på den samme gren. Aldrig Force push.
 - **Lokalt skal Claude** begynde med at tjekke, at jeg står på en arbejdsgren og har det nyeste fra `main`, og ellers sige det, før der ændres noget.
 
 ## Det skal følge med, når noget ændres
