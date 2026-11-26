@@ -12,6 +12,7 @@ singlefile-HTML fra Byggerne, henvisninger og videokort.
 | `upload.php` | Læg filer op (kræver login). |
 | `admin.php` | Kun for superadmins: slet filer, byg søgesiden forfra, ret overskrift, opret og luk redaktører, se hvem der har gjort hvad. |
 | `rtv.php` | Roskilde TV's arbejdsliste med fælles prikker: rød (bør have et mediekort), gul (i gang) og grøn (færdig). Kræver login. Viser `rtv-skabelon.html`. |
+| `piwigo.php` | Arbejdsliste over Piwigo-galleriet med fælles prikker og knapperne *Lav album* og *Gem som galleriarkiv*. Kræver login. Se «Arbejdsliste over galleriet» nedenfor. |
 | `rtv-skabelon.html` | Selve listen over Roskilde TV's udsendelser. Laves af `tools/lav-rtv-arbejdsliste.py` i repoet. Ret ikke i hånden. |
 | `statistik.php` | Besøg, mest åbnede historier og søgeord. Kræver login. |
 | `vis.php` | Mellemstation, som tæller et klik og straks åbner filen. Søgesiden og forsiden linker hertil. |
@@ -24,7 +25,7 @@ singlefile-HTML fra Byggerne, henvisninger og videokort.
 | `filer/` | Alle de filer, der er lagt op, plus en færdig `soegeside.html`. |
 | `filer/thumbs/` | Små billeder (240 × 180 px) til søgesiden og forsiden. Laves af sig selv. |
 | `grafik/` | Foreningernes logoer, fx `grafik/rmu.png`. Skal kunne ses udefra, så de må **ikke** ligge i `data/`. |
-| `data/` | Indeks, log, papirkurv, `foreninger.json`, `brugere.json` med redaktørerne, `rtv-status.json` med prikkerne og `statistik.json` med tællerne. Spærret for adgang udefra. |
+| `data/` | Indeks, log, papirkurv, `foreninger.json`, `brugere.json` med redaktørerne, `rtv-status.json` og `piwigo-status.json` med prikkerne og `statistik.json` med tællerne. Spærret for adgang udefra. |
 
 ## Sådan sætter du det op
 
@@ -45,7 +46,7 @@ singlefile-HTML fra Byggerne, henvisninger og videokort.
 | | Superadmin | Redaktør |
 |---|---|---|
 | Lægge filer op | ✓ | ✓ |
-| Se og sætte prikker i arbejdslisten (`rtv.php`) | ✓ | ✓ |
+| Se og sætte prikker i arbejdslisterne (`rtv.php` og `piwigo.php`) | ✓ | ✓ |
 | Se statistikken (`statistik.php`) | ✓ | ✓ |
 | Skifte sin egen adgangskode | i `config.php` | ✓ på siden *Skift adgangskode* |
 | Slette filer, bygge søgesiden forfra, rette overskrift | ✓ | – |
@@ -71,6 +72,18 @@ Tryk på prikken for at skifte farve, eller hold musen over en video og tryk **R
 Knappen *Lav mediekort* åbner Mediekort · Bygger på adressen i `$MEDIEKORT_ADRESSE` i `config.php`, normalt repoets GitHub Pages.
 
 Efter opdateringen: Tryk én gang på **Byg søgesiden forfra** på admin-siden, så de mediekort, der allerede ligger i søgeindekset, også giver grønne prikker.
+
+## Arbejdsliste over galleriet
+
+`piwigo.php` (menupunktet **Galleriet**) viser alle **offentlige** album i Piwigo-galleriet, så foreningen kan se, hvor meget der er reddet ud som singlefile-album eller galleriarkiv. Listen hentes direkte fra galleriet hver gang, så nye album kommer med af sig selv. Lukkede album, der kun kan ses med login i Piwigo, kommer ikke med.
+
+- **Øverst:** hvor mange album med billeder der er reddet, hvor mange billeder det er, og en bjælke.
+- **Hvert album** har en prik: grå (ikke vurderet), rød (bør reddes), gul (i gang) og grøn (reddet). Tryk på prikken for at skifte farve. Prikkerne gemmes i `data/piwigo-status.json`, og alle, der er logget ind, ser de samme.
+- **Grøn kommer af sig selv**, når der ligger et album i søgeindekset, som er lavet med Piwigo Albumbygger. Den skriver albummets adresse (`…/index.php?/category/25`) i feltet *Kilde*. Galleriarkiver er mapper og kommer ikke i søgeindekset, så dem sætter man grøn i hånden.
+- **Knapperne** *Lav album* og *Gem som galleriarkiv* åbner Piwigo Albumbygger og Galleriarkiv med `?album=NUMMER`, så albummet er udfyldt med det samme. Album med over 300 billeder får en lille advarsel: de er bedre som galleriarkiv end som ét album.
+- **Søgning, sortering** (som i galleriet, flest billeder først eller A–Å) og **filtre** (ikke reddet, i gang, reddet).
+
+Galleriet skal ligge på samme webadresse som søgeportalen. Standard er roden (`https://sfbbilleder.eu/ws.php`). Ligger galleriet et andet sted på webhotellet, så ret `$PIWIGO_ADRESSE` i `config.php`. Piwigo Albumbygger (2.3 eller nyere) og Galleriarkiv (1.1 eller nyere) skal ligge i samme mappe som galleriet.
 
 ## Statistik
 
