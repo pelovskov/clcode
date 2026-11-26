@@ -29,6 +29,11 @@ $STANDARD_UNDERTITEL = '';
    åbne Mediekort · Bygger. Normalt repoets adresse på GitHub Pages. */
 $MEDIEKORT_ADRESSE = 'https://pelovskov.github.io/clcode/mediekort-bygger.html';
 
+/* Hvor Piwigo-galleriet ligger på samme webhotel, set fra roden. Bruges af
+   arbejdslisten over galleriet (piwigo.php). Galleriets ws.php, Piwigo
+   Albumbygger og Galleriarkiv skal ligge i denne mappe. Standard er roden. */
+$PIWIGO_ADRESSE = '/';
+
 /* Siden lav-hash.php laver hashes til brugerlisten. Den gemmer intet.
    Sæt til false, når alle brugere er oprettet. */
 $TILLAD_HASH_SIDE = true;

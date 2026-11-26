@@ -31,6 +31,7 @@ define('INDSTILLINGER', DATA_MAPPE . '/indstillinger.json');
 define('LOGIN_FORSOEG', DATA_MAPPE . '/login-forsoeg.json');
 define('BRUGER_FIL',    DATA_MAPPE . '/brugere.json');        // redaktører, oprettet på admin-siden
 define('RTV_STATUS',    DATA_MAPPE . '/rtv-status.json');     // prikkerne i Roskilde TV's arbejdsliste
+define('PIWIGO_STATUS', DATA_MAPPE . '/piwigo-status.json');  // prikkerne i arbejdslisten over Piwigo-galleriet
 define('FORENINGER_FIL', DATA_MAPPE . '/foreninger.json');   // registret over deltagende foreninger
 define('STATISTIK_FIL', DATA_MAPPE . '/statistik.json');     // besøg, klik og søgeord (kun tal)
 define('THUMB_MAPPE',   FIL_MAPPE . '/thumbs');               // små billeder til søgesiden (240 × 180 px)
@@ -1492,7 +1493,7 @@ function side_top(string $titel, string $sub, ?string $bruger, string $aktiv = '
     header('Referrer-Policy: same-origin');
     $nav = '';
     if ($bruger !== null) {
-        $pkt = [['index.php', 'Søgesiden', ''], ['upload.php', 'Læg filer op', 'upload'], ['rtv.php', 'Arbejdsliste', 'rtv'], ['statistik.php', 'Statistik', 'statistik']];
+        $pkt = [['index.php', 'Søgesiden', ''], ['upload.php', 'Læg filer op', 'upload'], ['rtv.php', 'Arbejdsliste', 'rtv'], ['piwigo.php', 'Galleriet', 'piwigo'], ['statistik.php', 'Statistik', 'statistik']];
         if (er_admin($bruger)) $pkt[] = ['admin.php', 'Admin', 'admin'];
         $nav = '<nav aria-label="Menu"><ul>';
         foreach ($pkt as [$url, $txt, $id]) {

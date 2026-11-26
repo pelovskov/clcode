@@ -80,6 +80,8 @@ Efter en ændring skal du beskrive, hvordan jeg selv kan afprøve den i browsere
 
 - `tools/lydlab-samling.html` har en kopi af Lydlabs lydbehandling fra `tools/lydlab.html` (konstanterne, loudness-målingen, begrænseren, `klipTavshed`, `lægFade` og `tilInt16`) og den samme lamejs. Rettes behandlingen i Lydlab, kopieres den uændret til Samling, og begge afprøves.
 
+- `sbtv/piwigo.php` (arbejdslisten over Piwigo-galleriet) åbner Piwigo Albumbygger og Galleriarkiv med `?album=NUMMER`, så de adresser skal værktøjerne blive ved med at forstå. Grøn prik kommer af sig selv fra feltet *Kilde* (`dc.source`), som Piwigo Albumbygger udfylder med albummets adresse (`…/index.php?/category/NUMMER`). Arbejdslisten linkes kun fra dashboardet og søgeportalens menu for dem, der er logget ind.
+
 - `billedarkiv/billedarkiv.html` eksporterer albums med en `.json`-fil ved hvert billede, som **Album · Bygger** læser (kendes på `exportedFilename`). Ændres feltnavnene i eksporten, skal `album-bygger.html` og standardens afsnit 8.1 rettes med.
 
 - `emneord.md` er foreningernes fælles emneord. Udgiveren siger, hvem der har lavet en historie, og de fælles emneord siger, hvad den handler om. Nye emneord skrives på listen, før de tages i brug. Listen står også i `tools/emneord.html`, som skal rettes med. Kør derefter `fri/lav-fri-udgave.py`, så forslagene i den frie udgave (`fri/emneord.html`) følger med.
