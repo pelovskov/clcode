@@ -21,7 +21,7 @@ Byggerne laver en færdig fil, som kan gemmes, deles og åbnes uden internet. De
 | Henvisning · Bygger | `henvisning-bygger.html` | 2.2 | 2 | "skilt" der sender videre til en side på nettet | Text (kan ændres) |
 | Samling · Bygger | `samling-bygger.html` | 2.2 | 2 | forside der binder 2–6 færdige filer sammen | Collection |
 | Podcastserie · Bygger | `podcastserie-bygger.html` | 1.1 | 1 | én side med afspilningsliste til en serie på 2–6 lydafsnit, med lydfilerne i mappen ved siden af (mappeformatet), reserve på nettet og kontroltal. Afsnit kan hentes fra færdige mediekort | Sound |
-| Piwigo Albumbygger | `piwigo-album-bygger.html` | 2.2 | 1 | billedalbum hentet fra et album i et Piwigo-galleri | Image |
+| Piwigo Albumbygger | `piwigo-album-bygger.html` | 2.3 | 1 | billedalbum hentet fra et album i et Piwigo-galleri | Image. Forstår `?album=NUMMER`, så albummet udfyldes og hentes med det samme |
 | Vejledningsbygger | `vejledning-bygger.html` | 2.3 | 1 | trin-for-trin vejledning, hvor hvert trin har et skærmbillede (sat ind med ⌘V, med pile, numre, rammer, tekst, sløring og beskæring tegnet direkte i byggeren), en video eller kun tekst og en forklaring | Text |
 
 **Piwigo Albumbygger** skal ligge på galleriets egen webadresse for at kunne hente fra Piwigo. De andre kører lokalt.
@@ -41,7 +41,7 @@ Værktøjerne ligger i mappen `tools/`. De følger ikke Builder-standarden, men 
 | Fotolab | `tools/fotolab.html` | 6 | farve-effekter, billedformat og Polaroid med håndskrevet tekst. «Et billede med tekst 16:9» laver 1920 × 1080 eller stående 1080 × 1920 med teksten i en kant, på en stribe eller uden billede, og en valgfri QR-kode, til fx Præsentation · Bygger. Formatet «Delingsbillede» laver en JPG på 1200 × 630 under 300 KB til forhåndsvisningen, når et link sendes i en besked |
 | Lydudtrækker | `tools/lydudtraekker.html` | 1.1 | trækker lyden ud af en HTML-fil som mp3, når den oprindelige lydfil er væk |
 | Roskilde TV · arbejdsliste | `tools/rtv-arbejdsliste.html` | – | alle Roskilde TV's udsendelser med knappen «Lav mediekort», der åbner Mediekort med videoen udfyldt. Laves af `tools/lav-rtv-arbejdsliste.py` ud fra `roskilde-tv-videoarkiv.html`. Udgaven med fælles prikker ligger i søgeindekset som `sbtv/rtv.php` |
-| Galleriarkiv | `tools/galleriarkiv.html` | 1.0 | gemmer et helt album fra Piwigo med alle underalbum som en almindelig mappe med albumsider, billeder i ca. 1650 px, miniaturer, `album.json` og `LAES-MIG.txt`, så galleriet kan ses uden PHP og database (standardens 5.8). Skal ligge på galleriets webadresse ligesom Piwigo Albumbygger |
+| Galleriarkiv | `tools/galleriarkiv.html` | 1.1 | gemmer et helt album fra Piwigo med alle underalbum som en almindelig mappe med albumsider, billeder i ca. 1650 px, miniaturer, `album.json` og `LAES-MIG.txt`, så galleriet kan ses uden PHP og database (standardens 5.8). Skal ligge på galleriets webadresse ligesom Piwigo Albumbygger. Forstår `?album=NUMMER`, så albummet udfyldes og findes med det samme |
 | Må det komme med? | `tools/maa-det-komme-med.html` | 1.1 | tjek-lys om billeder, lyd og tekst med mennesker i, i tre udgaver (5. klasse, unge og studerende, og 60+, med tavshedspligt i praktik), med øvelser og samtykkesedler til udskrift. Vejledning, ikke juridisk rådgivning |
 | Billedudtrækker | `tools/billedudtraekker.html` | 1.0 | trækker billederne ud af en HTML-fil, fx et gammelt album, som billedfiler eller samlet i en zip-fil |
 | Musikpakke · Bygger | `tools/musikpakke-bygger.html` | 1 | laver en offline musik-app (PWA) med 3–5 samlinger som zip-fil |
