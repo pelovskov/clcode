@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Piwigo Albumbygger</title>
 <!--
-  Piwigo Albumbygger · version 2.2 · følger Builder-standard 1.6
+  Piwigo Albumbygger · version 2.3 · følger Builder-standard 1.6
   Bevidste afvigelser fra standarden:
   - Hentningen fra Piwigo kræver, at filen ligger på galleriets egen webadresse
     (fx https://sfbbilleder.eu/piwigo-album-bygger.html). Åbnet fra computeren kan
@@ -157,7 +157,7 @@
 
 <div class="topbar">
   <h1>Piwigo Albumbygger</h1>
-  <span>Hent et album fra Piwigo og byg et billedalbum i én fil · skal ligge på galleriets egen webadresse · version 2.2</span>
+  <span>Hent et album fra Piwigo og byg et billedalbum i én fil · skal ligge på galleriets egen webadresse · version 2.3</span>
 </div>
 
 <div class="layout">
@@ -1619,6 +1619,21 @@ $('generateBtn').addEventListener('click', async () => {
 });
 
 $('btnFetch').addEventListener('click', fetchAlbum);
+
+/* Åbnet fra galleriets arbejdsliste, fx piwigo-album-bygger.html?album=25: albummets adresse
+   udfyldes, og albummets oplysninger hentes med det samme. Kun et albumnummer (et tal) tages imod,
+   og adressen bygges ud fra værktøjets egen webadresse, så linket ikke kan
+   pege på et fremmed sted. */
+(function(){
+  let p;
+  try { p = new URLSearchParams(location.search); } catch (e) { return; }
+  const nr = (p.get('album') || '').trim();
+  if (!/^[0-9]{1,9}$/.test(nr)) return;
+  let adr;
+  try { adr = new URL('index.php?/category/' + nr, location.href).href; } catch (e) { return; }
+  $('albumUrl').value = adr;
+  setTimeout(fetchAlbum, 0);   // når resten af byggeren er klar
+})();
 $('btnDownload').addEventListener('click', hentBilleder);
 $('btnZip').addEventListener('click', gemZip);
 $('btnJson').addEventListener('click', () => {

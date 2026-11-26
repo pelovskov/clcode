@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Galleriarkiv</title>
 <!--
-  Galleriarkiv · version 1.0 (nov. 2026) · følger Builder-standard 2.19, afsnit 5.8
+  Galleriarkiv · version 1.1 (nov. 2026) · følger Builder-standard 2.19, afsnit 5.8
   Gemmer et helt album fra Piwigo med alle underalbum som en almindelig mappe:
   HTML-sider, billeder i ca. 1650 px, miniaturer, album.json og LAES-MIG.txt.
   Mappen kan åbnes med et dobbeltklik og lægges på et hvilket som helst webhotel
@@ -116,7 +116,7 @@
 
 <div class="topbar">
   <h1>Galleriarkiv</h1>
-  <span>Gem et helt album fra Piwigo med underalbum som en mappe, der kan åbnes uden internet · skal ligge på galleriets egen webadresse · version 1.0</span>
+  <span>Gem et helt album fra Piwigo med underalbum som en mappe, der kan åbnes uden internet · skal ligge på galleriets egen webadresse · version 1.1</span>
 </div>
 
 <main class="form-pane">
@@ -1176,6 +1176,21 @@ figcaption .f{display:block; color:var(--muted); margin-top:4px; font-style:ital
 /* ---------- Opstart ---------- */
 
 $('btnFind').addEventListener('click', findAlbum);
+
+/* Åbnet fra galleriets arbejdsliste, fx galleriarkiv.html?album=25: albummets adresse
+   udfyldes, og albummet og dets underalbum findes med det samme. Kun et albumnummer (et tal) tages imod,
+   og adressen bygges ud fra værktøjets egen webadresse, så linket ikke kan
+   pege på et fremmed sted. */
+(function(){
+  let p;
+  try { p = new URLSearchParams(location.search); } catch (e) { return; }
+  const nr = (p.get('album') || '').trim();
+  if (!/^[0-9]{1,9}$/.test(nr)) return;
+  let adr;
+  try { adr = new URL('index.php?/category/' + nr, location.href).href; } catch (e) { return; }
+  $('albumUrl').value = adr;
+  setTimeout(findAlbum, 0);   // når resten af værktøjet er klar
+})();
 $('albumUrl').addEventListener('keydown', e => { if (e.key === 'Enter') findAlbum(); });
 $('btnHent').addEventListener('click', hentArkiv);
 $('btnStop').addEventListener('click', () => { state.stop = true; showMsg($('hentMsg'), 'Stopper efter det billede, der hentes nu …', 'info'); });
