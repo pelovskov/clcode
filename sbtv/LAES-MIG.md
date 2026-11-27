@@ -16,6 +16,7 @@ singlefile-HTML fra Byggerne, henvisninger og videokort.
 | `rtv-skabelon.html` | Selve listen over Roskilde TV's udsendelser. Laves af `tools/lav-rtv-arbejdsliste.py` i repoet. Ret ikke i hånden. |
 | `statistik.php` | Besøg, mest åbnede historier og søgeord. Kræver login. |
 | `vis.php` | Mellemstation, som tæller et klik og straks åbner filen. Søgesiden og forsiden linker hertil. |
+| `start-her.html` | Til roden af et USB-stik ved siden af mappen `filer`: et dobbeltklik åbner søgesiden. Se «Offline-kopi». |
 | `tilfaeldig.php` | Vælger en tilfældig historie og åbner den gennem `vis.php`. Bruges som knap på en forenings hjemmeside, se «En tilfældig historie» nedenfor. |
 | `kode.php` | Skift din egen adgangskode. Redaktører med en engangskode sendes hertil første gang. |
 | `login.php`, `logout.php` | Log ind og ud. |
@@ -134,6 +135,19 @@ alligevel, så det er en ekstra sikring, ikke den eneste.
 Mappen `filer/` indeholder altid en opdateret `soegeside.html`. Hent hele mappen
 med FTP – også undermappen `thumbs/` – så har du et færdigt arkiv til USB-stik eller
 tidskapsel, der virker uden internet, præcis som med den lokale Søgeside · Bygger.
+
+**Til et USB-stik:** Læg mappen `filer` og filen `start-her.html` (fra repoets `sbtv/`) ved siden af hinanden i roden af stikket:
+
+```
+USB-stik
+ ├─ start-her.html     ← dobbeltklik her
+ └─ filer/
+     ├─ soegeside.html
+     ├─ … alle historierne …
+     └─ thumbs/
+```
+
+Et dobbeltklik på `start-her.html` åbner søgesiden. Historiernes Hjem-knap fører tilbage til søgesiden. `filer/index.html` virker også: på webhotellet sender den videre til søgeportalen, og fra en computer eller et USB-stik åbner den `soegeside.html`. Den gamle udgave af `index.html`, som sendte én op i mappen ovenover, skiftes ud af sig selv, første gang søgeportalen åbnes efter opdateringen.
 
 ## En tilfældig historie
 

@@ -65,11 +65,19 @@ function sikr_mapper(): void
             . "  <IfModule !mod_authz_core.c>\n    Order allow,deny\n    Deny from all\n  </IfModule>\n"
             . "</FilesMatch>\n");
     }
-    /* Den, der åbner /filer/ direkte, sendes videre til søgesiden. */
-    if (!is_file(FIL_MAPPE . '/index.html')) {
-        @file_put_contents(FIL_MAPPE . '/index.html',
-            "<!DOCTYPE html><meta charset=\"utf-8\"><meta http-equiv=\"refresh\" content=\"0;url=../\">"
-            . "<title>Søgeside</title><a href=\"../\">Gå til søgesiden</a>\n");
+    /* Den, der åbner /filer/ direkte på webhotellet, sendes videre til søgeportalen.
+       Åbnes mappen fra en computer eller et USB-stik (file:), går man i stedet til
+       soegeside.html i mappen, så man ikke havner i en liste over computerens filer.
+       Den gamle udgave, der altid sendte én en mappe op, skiftes ud af sig selv. */
+    $indeksSti = FIL_MAPPE . '/index.html';
+    $gammelIndeks = "<!DOCTYPE html><meta charset=\"utf-8\"><meta http-equiv=\"refresh\" content=\"0;url=../\">"
+        . "<title>Søgeside</title><a href=\"../\">Gå til søgesiden</a>\n";
+    if (!is_file($indeksSti) || @file_get_contents($indeksSti) === $gammelIndeks) {
+        @file_put_contents($indeksSti,
+            "<!DOCTYPE html>\n<html lang=\"da\">\n<meta charset=\"utf-8\">\n"
+            . "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n<title>Søgeside</title>\n"
+            . "<script>location.replace(location.protocol === 'file:' ? 'soegeside.html' : '../');</script>\n"
+            . "<p style=\"font:1.3rem Georgia,serif;margin:2rem\"><a href=\"soegeside.html\">Åbn søgesiden</a></p>\n</html>\n");
     }
 }
 
