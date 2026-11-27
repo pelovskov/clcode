@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lokalhistorier · Start her</title>
+<!--
+  Start her · til roden af et USB-stik eller en mappe med Søgeindeksets offline-kopi.
+  Læg filen ved siden af mappen «filer» (hentet fra webhotellet med FTP, med thumbs/).
+  Et dobbeltklik åbner filer/soegeside.html. Hedder mappen noget andet, så ret
+  adressen i MAPPE nedenfor. Ingen internet, ingen eksterne filer.
+-->
+<style>
+  :root{ --accent:#8E1F49; --paper:#FAF9F5; --ink:#241520; --muted:#58424D; --line:#D9C7CF; }
+  *{ box-sizing:border-box; }
+  body{ margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center; background:var(--paper); color:var(--ink);
+        font-family:Georgia,"Times New Roman",serif; font-size:1.3rem; line-height:1.55; padding:24px; }
+  main{ max-width:38rem; text-align:center; }
+  h1{ font-size:2.2rem; line-height:1.2; margin:0 0 .4rem; }
+  p{ margin:.6rem 0; color:var(--muted); }
+  a.knap{ display:inline-block; margin:1.4rem 0 .6rem; padding:1rem 2rem; border-radius:12px; background:var(--accent); color:#fff;
+          font-size:1.5rem; font-weight:bold; text-decoration:none; }
+  a.knap:hover{ background:#6E1638; }
+  a.knap:focus-visible{ outline:4px solid var(--ink); outline-offset:4px; }
+  .lille{ font-size:1rem; }
+  @media (prefers-color-scheme:dark){ :root{ --paper:#1d1619; --ink:#f4eef1; --muted:#d3c4cb; --accent:#c2557f; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>Lokalhistorier</h1>
+  <p>Historier fra Roskilde og omegn. De virker uden internet.</p>
+  <a class="knap" id="knap" href="filer/soegeside.html">Åbn søgesiden</a>
+  <p class="lille">Søgesiden åbner af sig selv om et øjeblik. Ellers tryk på knappen.</p>
+  <p class="lille">Mappen <strong>filer</strong> skal ligge ved siden af denne fil.</p>
+</main>
+<script>
+/* Åbn søgesiden med det samme. Går man tilbage, står siden her med knappen. */
+(function(){
+  var MAPPE = 'filer/soegeside.html';
+  document.getElementById('knap').setAttribute('href', MAPPE);
+  setTimeout(function(){ location.href = MAPPE; }, 600);
+})();
+</script>
+</body>
+</html>
